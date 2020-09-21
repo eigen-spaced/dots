@@ -1,0 +1,27 @@
+{
+  "prettier.disableSuccessMessage": true,
+  "suggest.noselect": false,
+  "coc.preferences.formatOnSaveFiletypes": [
+    "html",
+    "javascript",
+    "typescript",
+    "typescriptreact",
+    "javascriptreact",
+    "json",
+    "typescript.tsx",
+    "css",
+    "markdown"
+  ],
+  "eslint.filetypes": [
+    "javascript",
+    "typescript",
+    "typescriptreact",
+    "javascriptreact"
+  ],
+  "eslint.options": {
+    "env": {
+      "browser": true,
+      "node": true
+    }
+  }
+}
