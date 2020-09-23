@@ -8,26 +8,34 @@ autocmd FileType css setlocal shiftwidth=2 softtabstop=2 expandtab
 autocmd FileType javascript setlocal  shiftwidth=2 softtabstop=2 expandtab
 autocmd FileType json setlocal shiftwidth=2 softtabstop=2 expandtab
 
-set noerrorbells
-set nu rnu
 set tabstop=4 softtabstop=4
 set shiftwidth=4
 set smartindent
 set autoindent
-set splitbelow
-set splitright
-set wrap
+
 set smartcase
+set splitright
+set splitbelow
+set noswapfile
+
+" ## Search ##
+set ignorecase
+set smartcase
+
+" ## User interface ##
+set laststatus=2
+set ruler
+set nu rnu
+set noerrorbells
+set title
 set colorcolumn=81
 
-set splitright
-set splitbelow
-
-set noswapfile
-set laststatus=2
+" ## Text rendering ##
+set linebreak
+set wrap
 set scrolloff=8
 set sidescrolloff=5
-set title
+
 
 let mapleader=" "
 
@@ -40,13 +48,8 @@ call plug#begin('~/.config/nvim/plugged/')
 	Plug 'preservim/nerdtree'
 	Plug 'sheerun/vim-polyglot'
 
-	" dracula theme for nvim
 	Plug 'dracula/vim'
-
-	if (has("termguicolors"))
-		set termguicolors
-	endif
-	colorscheme dracula
+	Plug 'https://github.com/joshdick/onedark.vim.git'
 
 	Plug 'pangloss/vim-javascript'
 	Plug 'leafgarland/typescript-vim'
@@ -69,8 +72,25 @@ let g:NERDTreeStatusline = ''
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") &&
 			\ b:NERDTree.isTabTree()) | q | endif
 
+
 " Toggle
 nnoremap <silent> <leader>n :NERDTreeToggle<CR>
+
+
+if (has("nvim"))
+    "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
+    let $NVIM_TUI_ENABLE_TRUE_COLOR=1
+endif
+
+if (has("termguicolors"))
+	set termguicolors
+endif
+
+let g:onedark_termcolors = 256
+let g:onedark_terminal_italics = 1
+
+colorscheme onedark
+
 
 " fzf
 nnoremap <silent> <C-p> :Files<CR>
