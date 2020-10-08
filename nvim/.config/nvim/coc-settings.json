@@ -1,6 +1,9 @@
 {
   "prettier.disableSuccessMessage": true,
   "suggest.noselect": false,
+  // python config
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
   "coc.preferences.formatOnSaveFiletypes": [
     "html",
     "javascript",
@@ -23,5 +26,11 @@
       "browser": true,
       "node": true
     }
+  },
+  // coc-explorer
+  "explorer.width": 30,
+  "explorer.previewAction.onHover": false,
+  "explorer.keyMappings": {
+    "<cr>": ["expandable?", ["expanded?", "collapse", "expand"], "open"]
   }
 }

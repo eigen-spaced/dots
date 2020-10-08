@@ -1,15 +1,15 @@
 syntax enable
 
+set encoding=UTF-8
+
 " Filetype indentation rules
 filetype plugin indent on
 
-autocmd FileType html setlocal shiftwidth=2 softtabstop=2 expandtab
-autocmd FileType css setlocal shiftwidth=2 softtabstop=2 expandtab
-autocmd FileType javascript setlocal  shiftwidth=2 softtabstop=2 expandtab
-autocmd FileType json setlocal shiftwidth=2 softtabstop=2 expandtab
+autocmd FileType java setlocal shiftwidth=4 softtabstop=4 expandtab
+autocmd FileType python setlocal shiftwidth=4 softtabstop=4 expandtab
 
-set tabstop=4 softtabstop=4
-set shiftwidth=4
+set tabstop=2 softtabstop=2
+set shiftwidth=2
 set smartindent
 set autoindent
 
@@ -36,45 +36,117 @@ set wrap
 set scrolloff=8
 set sidescrolloff=5
 
+set nohlsearch " Turn off search highlighting
 
 let mapleader=" "
 
-set nohlsearch " Turn off search highlighting
+" custom tabline
+set tabline=%!MyTabLine()  " custom tab pages line
+function! MyTabLine()
+	let s = ''
+	" loop through each tab page
+	for i in range(tabpagenr('$'))
+		if i + 1 == tabpagenr()
+			let s .= '%#TabLineSel#'
+		else
+			let s .= '%#TabLine#'
+		endif
+		if i + 1 == tabpagenr()
+			let s .= '%#TabLineSel#' " WildMenu
+		else
+			let s .= '%#Title#'
+		endif
+		" set the tab page number (for mouse clicks)
+		let s .= '%' . (i + 1) . 'T '
+		" set page number string
+		let s .= i + 1 . ''
+		" get buffer names and statuses
+		let n = ''  " temp str for buf names
+		let m = 0   " &modified counter
+		let buflist = tabpagebuflist(i + 1)
+		" loop through each buffer in a tab
+		for b in buflist
+			if getbufvar(b, "&buftype") == 'help'
+				" let n .= '[H]' . fnamemodify(bufname(b), ':t:s/.txt$//')
+			elseif getbufvar(b, "&buftype") == 'quickfix'
+				" let n .= '[Q]'
+			elseif getbufvar(b, "&modifiable")
+				let n .= fnamemodify(bufname(b), ':t') . ', ' " pathshorten(bufname(b))
+			endif
+			if getbufvar(b, "&modified")
+				let m += 1
+			endif
+		endfor
+		" let n .= fnamemodify(bufname(buflist[tabpagewinnr(i + 1) - 1]), ':t')
+		let n = substitute(n, ', $', '', '')
+		" add modified label
+		if m > 0
+			let s .= '+'
+			" let s .= '[' . m . '+]'
+		endif
+		if i + 1 == tabpagenr()
+			let s .= ' %#TabLineSel#'
+		else
+			let s .= ' %#TabLine#'
+		endif
+		" add buffer names
+		if n == ''
+			let s.= '[New]'
+		else
+			let s .= n
+		endif
+		" switch to no underlining and add final space
+		let s .= ' '
+	endfor
+	let s .= '%#TabLineFill#%T'
+	" right-aligned close button
+	" if tabpagenr('$') > 1
+	"   let s .= '%=%#TabLineFill#%999Xclose'
+	" endif
+	return s
+endfunction
+
+" ## netrw config ##
+" display in tree structure
+let g:netrw_liststyle = 3
+
+" Remove annoying banner
+let g:netrw_banner = 0
+
+" sort is affecting only: directories on the top, files below
+let g:netrw_sort_sequence = '[\/]$,*'
+
+" Use right side of project window
+let g:netrw_altv = 1
+
+" Open file, but keep focus in Explorer
+autocmd filetype netrw nmap <c-a> <cr>:wincmd W<cr>
+
 
 call plug#begin('~/.config/nvim/plugged/')
 	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 	Plug 'junegunn/fzf.vim'
 
-	Plug 'preservim/nerdtree'
-	Plug 'sheerun/vim-polyglot'
+	Plug 'vimwiki/vimwiki'
+	Plug 'junegunn/goyo.vim'
+
+	Plug 'tpope/vim-eunuch'
+	Plug 'tpope/vim-surround'
 
 	Plug 'dracula/vim'
 	Plug 'https://github.com/joshdick/onedark.vim.git'
 
+	Plug 'sheerun/vim-polyglot'
 	Plug 'pangloss/vim-javascript'
 	Plug 'leafgarland/typescript-vim'
 	Plug 'peitalin/vim-jsx-typescript'
 	Plug 'neoclide/coc.nvim', {'branch': 'release'}
-	Plug 'tpope/vim-surround'
 " nvim root write and read privileges
 	Plug 'lambdalisue/suda.vim'
 call plug#end()
 
 " SudaWrite (for sudo read and write)
 let g:suda#prompt = 'Enter password beep boop: '
-
-" NERDTree config
-let g:NERDTreeShowHidden = 1
-let g:NERDTreeMinimalUI = 1
-let g:NERDTreeIgnore = []
-let g:NERDTreeStatusline = ''
-" Automaticaly close nvim if NERDTree is only thing left open
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") &&
-			\ b:NERDTree.isTabTree()) | q | endif
-
-
-" Toggle
-nnoremap <silent> <leader>n :NERDTreeToggle<CR>
 
 
 if (has("nvim"))
@@ -88,11 +160,12 @@ endif
 
 let g:onedark_termcolors = 256
 let g:onedark_terminal_italics = 1
+let g:onedark_hide_endofbuffer = 1
 
 colorscheme onedark
 
 
-" fzf
+" ## fzf ##
 nnoremap <silent> <C-p> :Files<CR>
 nnoremap <silent> <C-g> :GFiles<CR>
 nnoremap <silent> <C-o> :Buffers<CR>
@@ -109,7 +182,8 @@ let g:coc_global_extensions = [
 	\'coc-prettier',
 	\'coc-tsserver',
 	\'coc-python',
-	\'coc-java'
+	\'coc-java',
+	\'coc-explorer'
 \]
 
 " Some servers have issues with backup files, see #649.
@@ -180,6 +254,16 @@ vmap <leader>cf  <Plug>(coc-format-selected)
 vmap <leader>ca  <Plug>(coc-codeaction-selected)
 nmap <leader>ca  <Plug>(coc-codeaction-selected)
 
+" Explorer
+nmap <leader>e :CocCommand explorer<CR>
+nmap <leader>f :CocCommand explorer --preset floating<CR>
+autocmd BufEnter * if (winnr("$") == 1 && &filetype == 'coc-explorer') | q | endif
+
+" ## vimwiki ##
+let g:vimwiki_list = [{'path': '~/vimwiki/markdown-notes',
+                      \ 'syntax': 'markdown', 'ext': '.md'}]
+
+
 "pynvim path
 let g:python3_host_prog = '/usr/bin/python3'
 
@@ -191,9 +275,11 @@ map <C-l> <C-w>l
 
 " Standard bindings
 inoremap jk <Esc>
-inoremap jj <Esc>:wq<CR>
 inoremap kj <Esc>
 inoremap kk <Esc>:w<CR>
+
+nmap <Tab> :tabnext<CR>
+nmap <S-Tab> :tabprev<CR>
 
 " Auto closing brackets
 inoremap (; (<CR>);<C-c>O
@@ -202,7 +288,7 @@ inoremap {; {<CR>};<C-c>O
 inoremap {, {<CR>},<C-c>O
 inoremap [; [<CR>];<C-c>O
 inoremap [, [<CR>],<C-c>O
-inoremap {<Space><Space> {<CR>}<C-c>O
+inoremap {<CR> {<CR>}<C-c>O
 
 " Use blackhole registers by default
 nnoremap d "_d
