@@ -35,75 +35,76 @@ set linebreak
 set wrap
 set scrolloff=8
 set sidescrolloff=5
+" Disable auto-commenting to the next line
+set formatoptions-=cro
 
 set nohlsearch " Turn off search highlighting
 
 let mapleader=" "
 
-" custom tabline
 set tabline=%!MyTabLine()  " custom tab pages line
 function! MyTabLine()
-	let s = ''
-	" loop through each tab page
-	for i in range(tabpagenr('$'))
-		if i + 1 == tabpagenr()
-			let s .= '%#TabLineSel#'
-		else
-			let s .= '%#TabLine#'
-		endif
-		if i + 1 == tabpagenr()
-			let s .= '%#TabLineSel#' " WildMenu
-		else
-			let s .= '%#Title#'
-		endif
-		" set the tab page number (for mouse clicks)
-		let s .= '%' . (i + 1) . 'T '
-		" set page number string
-		let s .= i + 1 . ''
-		" get buffer names and statuses
-		let n = ''  " temp str for buf names
-		let m = 0   " &modified counter
-		let buflist = tabpagebuflist(i + 1)
-		" loop through each buffer in a tab
-		for b in buflist
-			if getbufvar(b, "&buftype") == 'help'
-				" let n .= '[H]' . fnamemodify(bufname(b), ':t:s/.txt$//')
-			elseif getbufvar(b, "&buftype") == 'quickfix'
-				" let n .= '[Q]'
-			elseif getbufvar(b, "&modifiable")
-				let n .= fnamemodify(bufname(b), ':t') . ', ' " pathshorten(bufname(b))
-			endif
-			if getbufvar(b, "&modified")
-				let m += 1
-			endif
-		endfor
-		" let n .= fnamemodify(bufname(buflist[tabpagewinnr(i + 1) - 1]), ':t')
-		let n = substitute(n, ', $', '', '')
-		" add modified label
-		if m > 0
-			let s .= '+'
-			" let s .= '[' . m . '+]'
-		endif
-		if i + 1 == tabpagenr()
-			let s .= ' %#TabLineSel#'
-		else
-			let s .= ' %#TabLine#'
-		endif
-		" add buffer names
-		if n == ''
-			let s.= '[New]'
-		else
-			let s .= n
-		endif
-		" switch to no underlining and add final space
-		let s .= ' '
-	endfor
-	let s .= '%#TabLineFill#%T'
-	" right-aligned close button
-	" if tabpagenr('$') > 1
-	"   let s .= '%=%#TabLineFill#%999Xclose'
-	" endif
-	return s
+  let s = ''
+  " loop through each tab page
+  for i in range(tabpagenr('$'))
+    if i + 1 == tabpagenr()
+      let s .= '%#TabLineSel#'
+    else
+      let s .= '%#TabLine#'
+    endif
+    if i + 1 == tabpagenr()
+      let s .= '%#TabLineSel#' " WildMenu
+    else
+      let s .= '%#Title#'
+    endif
+    " set the tab page number (for mouse clicks)
+    let s .= '%' . (i + 1) . 'T '
+    " set page number string
+    let s .= i + 1 . ''
+    " get buffer names and statuses
+    let n = ''  " temp str for buf names
+    let m = 0   " &modified counter
+    let buflist = tabpagebuflist(i + 1)
+    " loop through each buffer in a tab
+    for b in buflist
+      if getbufvar(b, "&buftype") == 'help'
+        " let n .= '[H]' . fnamemodify(bufname(b), ':t:s/.txt$//')
+      elseif getbufvar(b, "&buftype") == 'quickfix'
+        " let n .= '[Q]'
+      elseif getbufvar(b, "&modifiable")
+        let n .= fnamemodify(bufname(b), ':t') . ', ' " pathshorten(bufname(b))
+      endif
+      if getbufvar(b, "&modified")
+        let m += 1
+      endif
+    endfor
+    " let n .= fnamemodify(bufname(buflist[tabpagewinnr(i + 1) - 1]), ':t')
+    let n = substitute(n, ', $', '', '')
+    " add modified label
+    if m > 0
+      let s .= '+'
+      " let s .= '[' . m . '+]'
+    endif
+    if i + 1 == tabpagenr()
+      let s .= ' %#TabLineSel#'
+    else
+      let s .= ' %#TabLine#'
+    endif
+    " add buffer names
+    if n == ''
+      let s.= '[New]'
+    else
+      let s .= n
+    endif
+    " switch to no underlining and add final space
+    let s .= ' '
+  endfor
+  let s .= '%#TabLineFill#%T'
+  " right-aligned close button
+  " if tabpagenr('$') > 1
+  "   let s .= '%=%#TabLineFill#%999Xclose'
+  " endif
+  return s
 endfunction
 
 " ## netrw config ##
@@ -134,13 +135,18 @@ call plug#begin('~/.config/nvim/plugged/')
 	Plug 'tpope/vim-surround'
 
 	Plug 'dracula/vim'
-	Plug 'https://github.com/joshdick/onedark.vim.git'
+	Plug 'sainnhe/sonokai'
+	Plug 'rakr/vim-one'
 
 	Plug 'sheerun/vim-polyglot'
 	Plug 'pangloss/vim-javascript'
 	Plug 'leafgarland/typescript-vim'
 	Plug 'peitalin/vim-jsx-typescript'
 	Plug 'neoclide/coc.nvim', {'branch': 'release'}
+	Plug 'jparise/vim-graphql'
+
+	Plug 'neovimhaskell/haskell-vim'
+
 " nvim root write and read privileges
 	Plug 'lambdalisue/suda.vim'
 call plug#end()
@@ -149,21 +155,29 @@ call plug#end()
 let g:suda#prompt = 'Enter password beep boop: '
 
 
-if (has("nvim"))
-    "For Neovim 0.1.3 and 0.1.4 < https://github.com/neovim/neovim/pull/2198 >
-    let $NVIM_TUI_ENABLE_TRUE_COLOR=1
-endif
-
 if (has("termguicolors"))
 	set termguicolors
 endif
 
-let g:onedark_termcolors = 256
-let g:onedark_terminal_italics = 1
-let g:onedark_hide_endofbuffer = 1
+" set background=dark
+" let g:one_allow_italics=1
+" colorscheme one
 
-colorscheme onedark
+let g:sonokai_style = 'andromeda'
+let g:sonokai_enable_italic = 1 
 
+colorscheme sonokai
+
+" ## haskell vim ##
+let g:haskell_classic_highlighting = 1		" Enable to classical highlighting
+let g:haskell_enable_quantification = 1   " Enable highlighting of `forall`
+let g:haskell_enable_recursivedo = 1      " Enable highlighting of `mdo` and `rec`
+let g:haskell_enable_arrowsyntax = 1      " Enable highlighting of `proc`
+let g:haskell_enable_pattern_synonyms = 1 " Enable highlighting of `pattern`
+let g:haskell_enable_typeroles = 1        " Enable highlighting of type roles
+let g:haskell_enable_static_pointers = 1  " Enable highlighting of `static`
+let g:haskell_backpack = 1                " Enable highlighting of backpack keywords
+let g:haskell_indent_case = 2							" Enable indenting (or switch to hident?)
 
 " ## fzf ##
 nnoremap <silent> <C-p> :Files<CR>
@@ -259,11 +273,6 @@ nmap <leader>e :CocCommand explorer<CR>
 nmap <leader>f :CocCommand explorer --preset floating<CR>
 autocmd BufEnter * if (winnr("$") == 1 && &filetype == 'coc-explorer') | q | endif
 
-" ## vimwiki ##
-let g:vimwiki_list = [{'path': '~/vimwiki/markdown-notes',
-                      \ 'syntax': 'markdown', 'ext': '.md'}]
-
-
 "pynvim path
 let g:python3_host_prog = '/usr/bin/python3'
 
@@ -275,7 +284,6 @@ map <C-l> <C-w>l
 
 " Standard bindings
 inoremap jk <Esc>
-inoremap kj <Esc>
 inoremap kk <Esc>:w<CR>
 
 nmap <Tab> :tabnext<CR>
@@ -328,3 +336,9 @@ nnoremap <Leader><Down> :<C-u>silent! move+<CR>==
 xnoremap <Leader><Up>   :<C-u>silent! '<,'>move-2<CR>gv=gv
 xnoremap <Leader><Down> :<C-u>silent! '<,'>move'>+<CR>gv=gv
 
+" Better indenting
+vnoremap < <gv
+vnoremap > >gv
+
+" Split line under cursor into two seperate lines
+nmap <NL> i<CR><ESC>

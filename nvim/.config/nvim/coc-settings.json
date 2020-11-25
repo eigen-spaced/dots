@@ -1,20 +1,41 @@
 {
+  // Hakell config
+  //  "languageserver": {
+  //    "haskell": {
+  //      "command": "haskell-language-server-wrapper",
+  //      "args": ["--lsp"],
+  //      "rootPatterns": [
+  //        "*.cabal",
+  //        "stack.yaml",
+  //        "cabal.project",
+  //        "package.yaml",
+  //        "hie.yaml"
+  //      ],
+  //      "filetypes": ["haskell", "lhaskell"]
+  //    }
+  //  },
+
   "prettier.disableSuccessMessage": true,
   "suggest.noselect": false,
+
   // python config
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": true,
+  // prettier
   "coc.preferences.formatOnSaveFiletypes": [
     "html",
     "javascript",
     "typescript",
     "typescriptreact",
     "javascriptreact",
+    "ejs",
     "json",
     "typescript.tsx",
     "css",
     "markdown"
   ],
+  "prettier.singleQuote": true,
+  "prettier.arrowParens": "avoid",
   "eslint.filetypes": [
     "javascript",
     "typescript",
@@ -23,10 +44,12 @@
   ],
   "eslint.options": {
     "env": {
+      "es2021": true,
       "browser": true,
       "node": true
     }
   },
+  "eslint.run": "onSave",
   // coc-explorer
   "explorer.width": 30,
   "explorer.previewAction.onHover": false,
