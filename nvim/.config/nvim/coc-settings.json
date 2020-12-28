@@ -14,14 +14,14 @@
   //      "filetypes": ["haskell", "lhaskell"]
   //    }
   //  },
-
-  "prettier.disableSuccessMessage": true,
   "suggest.noselect": false,
 
   // python config
   "python.linting.enabled": true,
   "python.linting.pylintEnabled": true,
+
   // prettier
+  "prettier.disableSuccessMessage": true,
   "coc.preferences.formatOnSaveFiletypes": [
     "html",
     "javascript",
@@ -42,6 +42,7 @@
     "typescriptreact",
     "javascriptreact"
   ],
+
   "eslint.options": {
     "env": {
       "es2021": true,
@@ -50,10 +51,24 @@
     }
   },
   "eslint.run": "onSave",
-  // coc-explorer
+
+  // explorer
   "explorer.width": 30,
   "explorer.previewAction.onHover": false,
-  "explorer.keyMappings": {
+  "explorer.keyMappings.global": {
     "<cr>": ["expandable?", ["expanded?", "collapse", "expand"], "open"]
+  },
+
+  // snippets
+  "snippets.userSnippetsDirectory": "~/.config/nvim/snippets",
+  "snippets.extends": {
+    // "javascriptreact": ["javascript"],
+    "typescriptreact": ["javascript"],
+    "typescript": ["javascript"]
+  },
+
+  // emmet
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
   }
 }

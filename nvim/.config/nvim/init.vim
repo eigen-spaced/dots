@@ -2,11 +2,18 @@ syntax enable
 
 set encoding=UTF-8
 
+filetype plugin on
+
 " Filetype indentation rules
 filetype plugin indent on
 
 autocmd FileType java setlocal shiftwidth=4 softtabstop=4 expandtab
 autocmd FileType python setlocal shiftwidth=4 softtabstop=4 expandtab
+autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
+autocmd BufNewFile,BufRead *.ts set filetype=typescript
+
+" tsconfig.json is actually jsonc, help TypeScript set the correct filetype
+autocmd BufNewFile,BufRead tsconfig.json set filetype=jsonc
 
 set tabstop=2 softtabstop=2
 set shiftwidth=2
@@ -37,6 +44,9 @@ set scrolloff=8
 set sidescrolloff=5
 " Disable auto-commenting to the next line
 set formatoptions-=cro
+set re=0
+set list
+set listchars=tab:!·,trail:·
 
 set nohlsearch " Turn off search highlighting
 
@@ -134,16 +144,20 @@ call plug#begin('~/.config/nvim/plugged/')
 	Plug 'tpope/vim-eunuch'
 	Plug 'tpope/vim-surround'
 
-	Plug 'dracula/vim'
-	Plug 'sainnhe/sonokai'
-	Plug 'rakr/vim-one'
+  Plug 'dracula/vim'
+  Plug 'rakr/vim-one'
+  Plug 'kaicataldo/material.vim', { 'branch': 'main' }
 
 	Plug 'sheerun/vim-polyglot'
-	Plug 'pangloss/vim-javascript'
-	Plug 'leafgarland/typescript-vim'
+  Plug 'pangloss/vim-javascript'
+	Plug 'HerringtonDarkholme/yats.vim'
 	Plug 'peitalin/vim-jsx-typescript'
+  Plug 'neoclide/jsonc.vim'
+  Plug 'jparise/vim-graphql'
+  Plug 'preservim/nerdcommenter'
+
 	Plug 'neoclide/coc.nvim', {'branch': 'release'}
-	Plug 'jparise/vim-graphql'
+  Plug 'honza/vim-snippets'
 
 	Plug 'neovimhaskell/haskell-vim'
 
@@ -163,10 +177,9 @@ endif
 " let g:one_allow_italics=1
 " colorscheme one
 
-let g:sonokai_style = 'andromeda'
-let g:sonokai_enable_italic = 1 
-
-colorscheme sonokai
+let g:material_terminal_italics = 1
+let g:material_theme_style = 'darker'
+colorscheme material
 
 " ## haskell vim ##
 let g:haskell_classic_highlighting = 1		" Enable to classical highlighting
@@ -197,7 +210,8 @@ let g:coc_global_extensions = [
 	\'coc-tsserver',
 	\'coc-python',
 	\'coc-java',
-	\'coc-explorer'
+	\'coc-explorer',
+  \'coc-snippets'
 \]
 
 " Some servers have issues with backup files, see #649.
@@ -227,7 +241,6 @@ nmap <silent> gi <Plug>(coc-implementation)
 nmap <silent> gr <Plug>(coc-references)
 
 " gh - get hint on whatever's under the cursor
-nnoremap <silent> K :call <SID>show_documentation()<CR>
 nnoremap <silent> gh :call <SID>show_documentation()<CR>
 
 function! s:show_documentation()
@@ -276,11 +289,29 @@ autocmd BufEnter * if (winnr("$") == 1 && &filetype == 'coc-explorer') | q | end
 "pynvim path
 let g:python3_host_prog = '/usr/bin/python3'
 
+" nerd commenter
+
+" Add spaces after comment delimiters by default
+let g:NERDSpaceDelims = 1
+
+" Allow commenting and inverting empty lines (useful when commenting a region)
+let g:NERDCommentEmptyLines = 1
+
+" Enable trimming of trailing whitespace when uncommenting
+let g:NERDTrimTrailingWhitespace = 1
+
+
 " Split navigation shortcut remapping
 map <C-h> <C-w>h
 map <C-j> <C-w>j
 map <C-k> <C-w>k
 map <C-l> <C-w>l
+
+" Change split orientation
+map <C-w>t <C-w>H <C-w>H
+map <C-w>t <C-w>J <C-w>J
+map <C-w>t <C-w>K <C-w>K
+map <C-w>t <C-w>L <C-w>L
 
 " Standard bindings
 inoremap jk <Esc>
@@ -341,4 +372,4 @@ vnoremap < <gv
 vnoremap > >gv
 
 " Split line under cursor into two seperate lines
-nmap <NL> i<CR><ESC>
+" nmap <NL> i<CR><ESC>
