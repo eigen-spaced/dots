@@ -1,34 +1,34 @@
 syntax enable
-
+ 
 set encoding=UTF-8
-
+ 
 filetype plugin on
-
+ 
 " Filetype indentation rules
 filetype plugin indent on
-
-autocmd FileType java setlocal shiftwidth=4 softtabstop=4 expandtab
+ 
+autocmd FileType c setlocal shiftwidth=4 softtabstop=4 expandtab
 autocmd FileType python setlocal shiftwidth=4 softtabstop=4 expandtab
 autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
 autocmd BufNewFile,BufRead *.ts set filetype=typescript
-
+ 
 " tsconfig.json is actually jsonc, help TypeScript set the correct filetype
 autocmd BufNewFile,BufRead tsconfig.json set filetype=jsonc
-
+ 
 set tabstop=2 softtabstop=2
 set shiftwidth=2
 set smartindent
 set autoindent
-
+ 
 set smartcase
 set splitright
 set splitbelow
 set noswapfile
-
+ 
 " ## Search ##
 set ignorecase
 set smartcase
-
+ 
 " ## User interface ##
 set laststatus=2
 set ruler
@@ -36,7 +36,7 @@ set nu rnu
 set noerrorbells
 set title
 set colorcolumn=81
-
+ 
 " ## Text rendering ##
 set linebreak
 set wrap
@@ -47,11 +47,11 @@ set formatoptions-=cro
 set re=0
 set list
 set listchars=tab:!·,trail:·
-
+ 
 set nohlsearch " Turn off search highlighting
-
+ 
 let mapleader=" "
-
+ 
 set tabline=%!MyTabLine()  " custom tab pages line
 function! MyTabLine()
   let s = ''
@@ -116,133 +116,124 @@ function! MyTabLine()
   " endif
   return s
 endfunction
-
+ 
 " ## netrw config ##
 " display in tree structure
-let g:netrw_liststyle = 3
-
+let g:netrw_liststyle = 4
 " Remove annoying banner
 let g:netrw_banner = 0
-
 " sort is affecting only: directories on the top, files below
 let g:netrw_sort_sequence = '[\/]$,*'
-
 " Use right side of project window
 let g:netrw_altv = 1
-
+ 
 " Open file, but keep focus in Explorer
 autocmd filetype netrw nmap <c-a> <cr>:wincmd W<cr>
-
-
+ 
+ 
 call plug#begin('~/.config/nvim/plugged/')
-	Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-	Plug 'junegunn/fzf.vim'
+    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf.vim'
 
-	Plug 'vimwiki/vimwiki'
-	Plug 'junegunn/goyo.vim'
+    Plug 'vimwiki/vimwiki'
+    Plug 'junegunn/goyo.vim'
 
-	Plug 'tpope/vim-eunuch'
-	Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-eunuch'
+    Plug 'tpope/vim-surround'
+    Plug 'tpope/vim-fugitive'
 
-  Plug 'dracula/vim'
-  Plug 'rakr/vim-one'
-  Plug 'kaicataldo/material.vim', { 'branch': 'main' }
+    Plug 'dracula/vim'
+    Plug 'sainnhe/sonokai'
+ 
+    Plug 'sheerun/vim-polyglot'
+    Plug 'pangloss/vim-javascript'
+    Plug 'HerringtonDarkholme/yats.vim'
+    Plug 'neoclide/jsonc.vim'
+    Plug 'jparise/vim-graphql'
+    Plug 'preservim/nerdcommenter'
 
-	Plug 'sheerun/vim-polyglot'
-  Plug 'pangloss/vim-javascript'
-	Plug 'HerringtonDarkholme/yats.vim'
-	Plug 'peitalin/vim-jsx-typescript'
-  Plug 'neoclide/jsonc.vim'
-  Plug 'jparise/vim-graphql'
-  Plug 'preservim/nerdcommenter'
-
-	Plug 'neoclide/coc.nvim', {'branch': 'release'}
-  Plug 'honza/vim-snippets'
-
-	Plug 'neovimhaskell/haskell-vim'
-
-" nvim root write and read privileges
-	Plug 'lambdalisue/suda.vim'
+    Plug 'leafgarland/typescript-vim'
+    Plug 'peitalin/vim-jsx-typescript'
+ 
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    Plug 'honza/vim-snippets'
+ 
 call plug#end()
-
+ 
 " SudaWrite (for sudo read and write)
 let g:suda#prompt = 'Enter password beep boop: '
-
-
+ 
+ 
 if (has("termguicolors"))
-	set termguicolors
+    set termguicolors
 endif
-
-" set background=dark
-" let g:one_allow_italics=1
-" colorscheme one
-
-let g:material_terminal_italics = 1
-let g:material_theme_style = 'darker'
-colorscheme material
-
-" ## haskell vim ##
-let g:haskell_classic_highlighting = 1		" Enable to classical highlighting
-let g:haskell_enable_quantification = 1   " Enable highlighting of `forall`
-let g:haskell_enable_recursivedo = 1      " Enable highlighting of `mdo` and `rec`
-let g:haskell_enable_arrowsyntax = 1      " Enable highlighting of `proc`
-let g:haskell_enable_pattern_synonyms = 1 " Enable highlighting of `pattern`
-let g:haskell_enable_typeroles = 1        " Enable highlighting of type roles
-let g:haskell_enable_static_pointers = 1  " Enable highlighting of `static`
-let g:haskell_backpack = 1                " Enable highlighting of backpack keywords
-let g:haskell_indent_case = 2							" Enable indenting (or switch to hident?)
-
+ 
+let g:sonokai_style = 'andromeda'
+let g:sonokai_enable_italic = 0
+let g:sonokai_disable_italic_comment = 0
+ 
+colorscheme sonokai
+ 
 " ## fzf ##
-nnoremap <silent> <C-p> :Files<CR>
-nnoremap <silent> <C-g> :GFiles<CR>
-nnoremap <silent> <C-o> :Buffers<CR>
+nnoremap <silent> <C-p>  :Files<CR>
+nnoremap <silent> <C-x>l :BLines<CR>
+nnoremap <silent> <C-g>  :GFiles<CR>
+nnoremap <silent> <C-x>b :Buffers<CR>
 " Pulls file search in full screen with the (!)
-nnoremap <C-o> :Rg! 
-
-" coc.nvim config
+nnoremap <C-f> :Rg! 
+ 
+let g:fzf_preview_window = []
+let g:fzf_layout = { 'down': '40%' }
+let g:fzf_action = {
+    \ 'ctrl-t': 'tab split',
+    \ 'ctrl-s': 'split',
+    \ 'ctrl-v': 'vsplit'
+    \}
+ 
+" ## coc.nvim ##
 let g:coc_global_extensions = [
-	\'coc-emmet',
-	\'coc-css',
-	\'coc-eslint',
-	\'coc-html',
-	\'coc-json',
-	\'coc-prettier',
-	\'coc-tsserver',
-	\'coc-python',
-	\'coc-java',
-	\'coc-explorer',
-  \'coc-snippets'
-\]
-
+    \'coc-emmet',
+    \'coc-css',
+    \'coc-eslint',
+    \'coc-html',
+    \'coc-json',
+    \'coc-prettier',
+    \'coc-tsserver',
+    \'coc-python',
+    \'coc-java',
+    \'coc-explorer',
+    \'coc-snippets'
+    \]
+ 
 " Some servers have issues with backup files, see #649.
 set nobackup
 set nowritebackup
-
+ 
 " Give more space for displaying messages.
 set cmdheight=1
-
+ 
 " Having longer updatetime (default is 4000 ms = 4 s) leads to noticeable
 " delays and poor user experience.
 set updatetime=300
-
+ 
 " Don't pass messages to |ins-completion-menu|.
 set shortmess+=c
-
+ 
 noremap <silent><expr> <c-space> coc#refresh()
-
+ 
 " gd - go to definition of word under cursor
 nmap <silent> gd <Plug>(coc-definition)
 nmap <silent> gy <Plug>(coc-type-definition)
-
+ 
 " gi - go to implementation
 nmap <silent> gi <Plug>(coc-implementation)
-
+ 
 " gr - find references
 nmap <silent> gr <Plug>(coc-references)
-
+ 
 " gh - get hint on whatever's under the cursor
 nnoremap <silent> gh :call <SID>show_documentation()<CR>
-
+ 
 function! s:show_documentation()
   if &filetype == 'vim'
     execute 'h '.expand('<cword>')
@@ -250,76 +241,73 @@ function! s:show_documentation()
     call CocAction('doHover')
   endif
 endfunction
-
+ 
 " Highlight symbol under cursor on CursorHold
 autocmd CursorHold * silent call CocActionAsync('highlight')
-
+ 
 nnoremap <silent> <leader>co  :<C-u>CocList outline<cr>
 nnoremap <silent> <leader>cs  :<C-u>CocList -I symbols<cr>
-
+ 
 " List errors
 nnoremap <silent> <leader>cl  :<C-u>CocList locationlist<cr>
-
+ 
 " list commands available in tsserver (and others)
-nnoremap <silent> <leader>cc  :<C-u>CocList commands<cr>
-
+nnoremap <silent> <leader>tc  :<C-u>CocList commands<cr>
+ 
 " restart when tsserver gets wonky
 nnoremap <silent> <leader>cR  :<C-u>CocRestart<CR>
-
+ 
 " view all errors
 nnoremap <silent> <leader>cl  :<C-u>CocList locationlist<CR>
-
+ 
 " manage extensions
 nnoremap <silent> <leader>cx  :<C-u>CocList extensions<cr>
-
+ 
 " rename the current word in the cursor
 nmap <leader>cr  <Plug>(coc-rename)
 nmap <leader>cf  <Plug>(coc-format-selected)
 vmap <leader>cf  <Plug>(coc-format-selected)
-
+ 
 " run code actions
 vmap <leader>ca  <Plug>(coc-codeaction-selected)
 nmap <leader>ca  <Plug>(coc-codeaction-selected)
-
+ 
 " Explorer
 nmap <leader>e :CocCommand explorer<CR>
 nmap <leader>f :CocCommand explorer --preset floating<CR>
 autocmd BufEnter * if (winnr("$") == 1 && &filetype == 'coc-explorer') | q | endif
-
-"pynvim path
-let g:python3_host_prog = '/usr/bin/python3'
-
-" nerd commenter
-
+ 
+" -- nerd commenter --
+ 
 " Add spaces after comment delimiters by default
 let g:NERDSpaceDelims = 1
-
+ 
 " Allow commenting and inverting empty lines (useful when commenting a region)
 let g:NERDCommentEmptyLines = 1
-
+ 
 " Enable trimming of trailing whitespace when uncommenting
 let g:NERDTrimTrailingWhitespace = 1
-
-
+ 
+ 
 " Split navigation shortcut remapping
 map <C-h> <C-w>h
 map <C-j> <C-w>j
 map <C-k> <C-w>k
 map <C-l> <C-w>l
-
+ 
 " Change split orientation
 map <C-w>t <C-w>H <C-w>H
 map <C-w>t <C-w>J <C-w>J
 map <C-w>t <C-w>K <C-w>K
 map <C-w>t <C-w>L <C-w>L
-
+ 
 " Standard bindings
 inoremap jk <Esc>
 inoremap kk <Esc>:w<CR>
-
-nmap <Tab> :tabnext<CR>
-nmap <S-Tab> :tabprev<CR>
-
+ 
+nmap <silent> <Tab> :bnext<CR>
+nmap <silent> <S-Tab> :bprev<CR>
+ 
 " Auto closing brackets
 inoremap (; (<CR>);<C-c>O
 inoremap (, (<CR>),<C-c>O
@@ -328,7 +316,7 @@ inoremap {, {<CR>},<C-c>O
 inoremap [; [<CR>];<C-c>O
 inoremap [, [<CR>],<C-c>O
 inoremap {<CR> {<CR>}<C-c>O
-
+ 
 " Use blackhole registers by default
 nnoremap d "_d
 vnoremap d "_d
@@ -342,7 +330,7 @@ nnoremap x "_x
 vnoremap x "_x
 nnoremap X "_X
 vnoremap X "_X
-
+ 
 " USE clipboard with leader
 nnoremap <leader>d d
 vnoremap <leader>d d
@@ -356,20 +344,17 @@ nnoremap <leader>x x
 vnoremap <leader>x x
 nnoremap <leader>X X
 vnoremap <leader>X X
-
+ 
 " Quickly insert an empty new line without entering insert mode
 nnoremap <Leader>o o<Esc>
 nnoremap <Leader>O O<Esc>
-
+ 
 " Line bubbling
 nnoremap <Leader><Up>   :<C-u>silent! move-2<CR>==
 nnoremap <Leader><Down> :<C-u>silent! move+<CR>==
 xnoremap <Leader><Up>   :<C-u>silent! '<,'>move-2<CR>gv=gv
 xnoremap <Leader><Down> :<C-u>silent! '<,'>move'>+<CR>gv=gv
-
+ 
 " Better indenting
 vnoremap < <gv
 vnoremap > >gv
-
-" Split line under cursor into two seperate lines
-" nmap <NL> i<CR><ESC>

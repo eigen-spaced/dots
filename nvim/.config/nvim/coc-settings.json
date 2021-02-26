@@ -50,7 +50,7 @@
       "node": true
     }
   },
-  "eslint.run": "onSave",
+  "eslint.run": "onType",
 
   // explorer
   "explorer.width": 30,
