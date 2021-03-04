@@ -142,8 +142,8 @@ call plug#begin('~/.config/nvim/plugged/')
     Plug 'tpope/vim-surround'
     Plug 'tpope/vim-fugitive'
 
-    Plug 'dracula/vim'
-    Plug 'sainnhe/sonokai'
+    Plug 'franbach/miramare'
+    Plug 'cocopon/iceberg.vim'
  
     Plug 'sheerun/vim-polyglot'
     Plug 'pangloss/vim-javascript'
@@ -168,11 +168,10 @@ if (has("termguicolors"))
     set termguicolors
 endif
  
-let g:sonokai_style = 'andromeda'
-let g:sonokai_enable_italic = 0
-let g:sonokai_disable_italic_comment = 0
- 
-colorscheme sonokai
+let g:miramare_enable_italic = 0
+let g:miramare_disable_italic_comment = 0
+
+colorscheme iceberg
  
 " ## fzf ##
 nnoremap <silent> <C-p>  :Files<CR>
@@ -199,8 +198,7 @@ let g:coc_global_extensions = [
     \'coc-json',
     \'coc-prettier',
     \'coc-tsserver',
-    \'coc-python',
-    \'coc-java',
+    \'coc-pyright',
     \'coc-explorer',
     \'coc-snippets'
     \]
