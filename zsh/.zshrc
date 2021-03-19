@@ -263,8 +263,11 @@ alias ssn="sudo shutdown now"
 alias sr="sudo reboot"
 
 alias nconf="nvim ~/.config/nvim/init.vim"
+alias xconf="nvim ~/.xmonad/xmonad.hs"
+
 alias vi="nvim"
 alias vim="nvim"
+
 alias py="python3"
 
 # # ex = EXtractor for all kinds of archives
@@ -320,4 +323,17 @@ else
 fi
 unset __conda_setup
 # <<< conda initialize <<<
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/magnuscake/google-cloud-sdk/path.zsh.inc' ]; then . '/home/magnuscake/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/magnuscake/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/magnuscake/google-cloud-sdk/completion.zsh.inc'; fi
+
+# pyenv config
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
 
