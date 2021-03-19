@@ -2,19 +2,26 @@ syntax enable
  
 set encoding=UTF-8
  
-filetype plugin on
- 
 " Filetype indentation rules
 filetype plugin indent on
  
-autocmd FileType c setlocal shiftwidth=4 softtabstop=4 expandtab
-autocmd FileType python setlocal shiftwidth=4 softtabstop=4 expandtab
+" Polyglot
+let g:polyglot_disabled = ['autoindent']
+
+autocmd FileType haskell setlocal shiftwidth=2 softtabstop=2 expandtab
+autocmd FileType c setlocal shiftwidth=4 softtabstop=4
+autocmd FileType python setlocal shiftwidth=4 softtabstop=4
 autocmd BufNewFile,BufRead *.tsx,*.jsx set filetype=typescriptreact
 autocmd BufNewFile,BufRead *.ts set filetype=typescript
  
 " tsconfig.json is actually jsonc, help TypeScript set the correct filetype
 autocmd BufNewFile,BufRead tsconfig.json set filetype=jsonc
+
+set backspace=indent,eol,start
  
+" Ignore list
+set wildignore=.git,.svn,CVS,*.o,*.a,*.class,*.mo,*.la,*.so,*.obj,*.swp,*.jpg,*.png,*.xpm,*.gif,*.pyc,tags,*.tags
+
 set tabstop=2 softtabstop=2
 set shiftwidth=2
 set smartindent
@@ -147,7 +154,6 @@ call plug#begin('~/.config/nvim/plugged/')
  
     Plug 'sheerun/vim-polyglot'
     Plug 'pangloss/vim-javascript'
-    Plug 'HerringtonDarkholme/yats.vim'
     Plug 'neoclide/jsonc.vim'
     Plug 'jparise/vim-graphql'
     Plug 'preservim/nerdcommenter'
@@ -203,6 +209,8 @@ let g:coc_global_extensions = [
     \'coc-snippets'
     \]
  
+let g:python3_host_prog = '$HOME/.pyenv/shims/python3.9'
+
 " Some servers have issues with backup files, see #649.
 set nobackup
 set nowritebackup
@@ -298,6 +306,10 @@ map <C-w>t <C-w>H <C-w>H
 map <C-w>t <C-w>J <C-w>J
 map <C-w>t <C-w>K <C-w>K
 map <C-w>t <C-w>L <C-w>L
+
+nnoremap <silent><Leader>> :exe "vertical resize " . (winwidth(0) + 15)<CR>
+nnoremap <silent><Leader>< :exe "vertical resize " . (winwidth(0) - 15)<CR>
+
  
 " Standard bindings
 inoremap jk <Esc>
@@ -344,8 +356,8 @@ nnoremap <leader>X X
 vnoremap <leader>X X
  
 " Quickly insert an empty new line without entering insert mode
-nnoremap <Leader>o o<Esc>
-nnoremap <Leader>O O<Esc>
+nnoremap <Leader>o o<Esc>k
+nnoremap <Leader>O O<Esc>j
  
 " Line bubbling
 nnoremap <Leader><Up>   :<C-u>silent! move-2<CR>==
@@ -356,3 +368,6 @@ xnoremap <Leader><Down> :<C-u>silent! '<,'>move'>+<CR>gv=gv
 " Better indenting
 vnoremap < <gv
 vnoremap > >gv
+
+" Exit terminal using easier keybindings
+tnoremap jk <C-\><C-n>

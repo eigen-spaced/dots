@@ -1,5 +1,8 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhistcnt =5
+let g:netrw_dirhistcnt =8
+let g:netrw_dirhist_8='/home/magnuscake/dotfiles/xmonad/.xmonad'
+let g:netrw_dirhist_7='/home/magnuscake/Documents/PYTHON/flask-website-tut/website/templates'
+let g:netrw_dirhist_6='/home/magnuscake/.xmonad/scripts'
 let g:netrw_dirhist_5='/home/magnuscake/dotfiles/nvim/.config/nvim'
 let g:netrw_dirhist_4='/home/magnuscake/dotfiles/nvim/.config/nvim/plugged'
 let g:netrw_dirhist_3='/home/magnuscake/dotfiles/nvim/.config/nvim/sessions'
@@ -7,6 +10,3 @@ let g:netrw_dirhist_2='/home/magnuscake/dotfiles/nvim/.config/nvim'
 let g:netrw_dirhist_1='/home/magnuscake/dotfiles/nvim/.config/nvim/sessions'
 let g:netrw_dirhist_0='/home/magnuscake/dotfiles/nvim/.config/nvim/snippets'
 let g:netrw_dirhist_9='/home/magnuscake/dotfiles/nvim/.config/nvim'
-let g:netrw_dirhist_8='/home/magnuscake/dotfiles/nvim/.config/nvim/plugged'
-let g:netrw_dirhist_7='/home/magnuscake/dotfiles/nvim/.config/nvim/snippets'
-let g:netrw_dirhist_6='/home/magnuscake/dotfiles/nvim/.config/nvim'
