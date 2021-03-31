@@ -32,9 +32,9 @@ Config { font = "xft:Roboto:size=11:style=Light"
                                                 , "--high"     , "#fd0537"
                                                 ] 10
 
-                        , Run Battery           [ "--template" , "Battery:: <acstatus>"
+                        , Run Battery           [ "--template" , "Battery: <acstatus>"
                                                 , "--Low"      , "25"        -- units: %
-                                                , "--High"     , "80"        -- units: %
+                                                , "--High"     , "70"        -- units: %
                                                 , "--low"      , "#d50000"
                                                 , "--normal"   , "darkorange"
                                                 , "--high"     , "#66bb6a"
