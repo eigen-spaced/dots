@@ -309,6 +309,8 @@ export EDITOR="$VISUAL"
 
 eval "$(starship init zsh)"
 
+# >> To be removed <<
+#
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
 __conda_setup="$('/home/magnuscake/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
@@ -337,3 +339,5 @@ if command -v pyenv 1>/dev/null 2>&1; then
   eval "$(pyenv init -)"
 fi
 
+# To auto activate virtualenv
+eval "$(pyenv virtualenv-init -)"
