@@ -22,8 +22,7 @@ set backspace=indent,eol,start
 " Ignore list
 set wildignore=.git,.svn,CVS,*.o,*.a,*.class,*.mo,*.la,*.so,*.obj,*.swp,*.jpg,*.png,*.xpm,*.gif,*.pyc,tags,*.tags
 
-set tabstop=2 softtabstop=2
-set shiftwidth=2
+set tabstop=2 softtabstop=2 shiftwidth=2 expandtab
 set smartindent
 set autoindent
  
@@ -183,7 +182,7 @@ colorscheme iceberg
 nnoremap <silent> <C-p>  :Files<CR>
 nnoremap <silent> <C-x>l :BLines<CR>
 nnoremap <silent> <C-g>  :GFiles<CR>
-nnoremap <silent> <C-x>b :Buffers<CR>
+nnoremap <silent> <leader>bB :Buffers<CR>
 " Pulls file search in full screen with the (!)
 nnoremap <C-f> :Rg! 
  
@@ -325,7 +324,9 @@ inoremap {; {<CR>};<C-c>O
 inoremap {, {<CR>},<C-c>O
 inoremap [; [<CR>];<C-c>O
 inoremap [, [<CR>],<C-c>O
+
 inoremap {<CR> {<CR>}<C-c>O
+inoremap (<CR> (<CR>)<C-c>O
  
 " Use blackhole registers by default
 nnoremap d "_d
@@ -371,3 +372,5 @@ vnoremap > >gv
 
 " Exit terminal using easier keybindings
 tnoremap jk <C-\><C-n>
+
+noremap <leader>bk :bw<CR>
