@@ -365,6 +365,11 @@ nnoremap <Leader><Up>   :<C-u>silent! move-2<CR>==
 nnoremap <Leader><Down> :<C-u>silent! move+<CR>==
 xnoremap <Leader><Up>   :<C-u>silent! '<,'>move-2<CR>gv=gv
 xnoremap <Leader><Down> :<C-u>silent! '<,'>move'>+<CR>gv=gv
+
+nnoremap <Leader>k   :<C-u>silent! move-2<CR>==
+nnoremap <Leader>j :<C-u>silent! move+<CR>==
+xnoremap <Leader>k   :<C-u>silent! '<,'>move-2<CR>gv=gv
+xnoremap <Leader>j :<C-u>silent! '<,'>move'>+<CR>gv=gv
  
 " Better indenting
 vnoremap < <gv
