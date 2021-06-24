@@ -1,7 +1,31 @@
+local fn = vim.fn -- to call Vim functions e.g. fn.bufnr()
+
 local o = vim.o
 local bo = vim.bo
 local wo = vim.wo
 local cmd = vim.api.nvim_command
+
+local executable = function(e)
+    return fn.executable(e) > 0
+end
+local opts_info = vim.api.nvim_get_all_options_info()
+local opt = setmetatable({}, {
+    __newindex = function(_, key, value)
+        vim.o[key] = value
+        local scope = opts_info[key].scope
+        if scope == 'win' then
+            vim.wo[key] = value
+        elseif scope == 'buf' then
+            vim.bo[key] = value
+        end
+    end,
+})
+local function add(value, str, sep)
+    sep = sep or ','
+    str = str or ''
+    value = type(value) == 'table' and table.concat(value, sep) or value
+    return str ~= '' and table.concat({ value, str }, sep) or value
+  end
 
 cmd('set iskeyword+=-') -- treat dash separated words as a word text object"
 cmd('set shortmess+=c') -- Don't pass messages to |ins-completion-menu|.
@@ -10,7 +34,9 @@ cmd('set inccommand=split') -- Make substitution work in realtime
 vim.cmd('set scrolloff=8')
 vim.cmd('set sidescrolloff=5')
 
-wo.number = true -- set numbered lines
+wo.number = true
+wo.relativenumber = true
+
 o.title = true
 TERMINAL = vim.fn.expand('$TERMINAL')
 cmd('let &titleold="'..TERMINAL..'"')
@@ -20,7 +46,7 @@ cmd('set whichwrap+=<,>,[,],h,l') -- move to next line with theses keys
 cmd('syntax on') -- syntax highlighting
 o.pumheight = 10 -- Makes popup menu smaller
 
-o.fileencoding = "utf-8" -- The encoding written to file
+o.fileencoding = 'utf-8' -- The encoding written to file
 o.cmdheight = 2 -- More space for displaying messages
 
 -- To fix a neovim bug affecting indent-blankline
@@ -37,16 +63,15 @@ o.hlsearch = true
 o.ignorecase = true
 o.smartcase = true
 
-o.t_Co = "256" -- Support 256 colors
+vim.go.t_Co = "256" -- Support 256 colors
 -- vim.o.conceallevel = 0 -- So that I can see `` in markdown files
 
-bo.expandtab = true
-bo.tabstop = 2
-bo.softtabstop = 2 -- Change the number of space characters inserted for indentation
-bo.shiftwidth = 2
-bo.smartindent = true -- Makes indenting smart
+opt.expandtab = true -- Use spaces instead of tabs
+opt.shiftwidth = 2 -- Size of an indent
+opt.smartindent = true -- Insert indents automatically
+opt.tabstop = 2 -- Number of spaces tabs count for
+opt.softtabstop = 2
 
-wo.relativenumber = true -- set relative number
 -- vim.wo.cursorline = true -- Enable highlighting of the current line
 -- vim.o.showmode = false -- We don't need to see things like -- INSERT -- anymore
 o.backup = false -- This is recommended by coc

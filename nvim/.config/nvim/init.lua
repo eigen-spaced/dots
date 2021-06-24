@@ -4,9 +4,10 @@ require 'keymaps'
 require 'colorscheme'
 require 'tree-sitter'
 
-require 'nvim-compe'
-require 'nvim-kommentary'
-require 'nvim-telescope'
+require 'nv-compe'
+require 'nv-kommentary'
+require 'nv-telescope'
+require 'nv-tree'
 
 require 'lsp'
 

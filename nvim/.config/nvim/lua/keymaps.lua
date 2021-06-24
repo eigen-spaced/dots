@@ -39,9 +39,6 @@ U.map('n', '<leader>si', ':luafile ~/.config/nvim/init.lua<CR>', { silent = true
 -- Source current lua file
 U.map('n', '<leader>so', ':luafile %<CR>', { noremap = false })
 
--- Nvim tree
-U.map('n', '<leader>e', ':NvimTreeToggle<CR>')
-
 -- Auto closing brackets
 U.map('i', '(;', '(<CR>);<C-c>O')
 U.map('i', '{;', '{<CR>};<C-c>O')

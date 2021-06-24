@@ -1,3 +1,5 @@
+local U = require 'utils'
+
 require('plugins')
 local actions = require('telescope.actions')
 -- Global remapping
@@ -20,6 +22,7 @@ require('telescope').setup{
   }
 }
 
-vim.api.nvim_set_keymap('n', '<C-p>', '<cmd>Telescope find_files<CR>', { silent = true })
-vim.api.nvim_set_keymap('n', '<Leader>bB', '<cmd>Telescope buffers<CR>', { silent = true })
-vim.api.nvim_set_keymap('n', '<Leader>h', '<cmd>Telescope help_tags<CR>', { silent = true })
+U.map('n', '<C-p>', '<cmd>Telescope find_files<CR>', { silent = true })
+U.map('n', '<Leader>bB', '<cmd>Telescope buffers<CR>', { silent = true })
+U.map('n', '<Leader>h', '<cmd>Telescope help_tags<CR>', { silent = true })
+
