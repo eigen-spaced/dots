@@ -72,7 +72,6 @@ opt.smartindent = true -- Insert indents automatically
 opt.tabstop = 2 -- Number of spaces tabs count for
 opt.softtabstop = 2
 
--- vim.wo.cursorline = true -- Enable highlighting of the current line
 -- vim.o.showmode = false -- We don't need to see things like -- INSERT -- anymore
 o.backup = false -- This is recommended by coc
 o.writebackup = false -- This is recommended by coc
