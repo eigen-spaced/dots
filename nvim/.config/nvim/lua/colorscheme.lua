@@ -1,8 +1,9 @@
-local o = vim.o
+local M = {}
 
-o.termguicolors = true -- set term gui colors most terminals support this
+function M.config()
+  vim.g.moonlight_italic_keywords = false
+  require('moonlight').set()
+end
 
-vim.g.moonlight_italic_keywords = false
-
-require('moonlight').set()
+return M
 

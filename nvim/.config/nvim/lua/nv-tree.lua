@@ -14,15 +14,15 @@ function M.config()
   --  Modify some of the key mappings
   local tree_cb = require('nvim-tree.config').nvim_tree_callback
   vim.g.nvim_tree_bindings = {
-    ['<CR>'] = tree_cb 'edit',
-    ['o'] = tree_cb 'edit',
-    ['l'] = tree_cb 'edit',
-    ['<C-v>'] = tree_cb 'vsplit',
-    ['<C-s>'] = tree_cb 'split',
-    ['<C-t>'] = tree_cb 'tabnew',
-    ['R'] = tree_cb 'refresh',
-    ['r'] = tree_cb 'rename',
-    ['-'] = tree_cb 'dir_up',
+    { key = '<CR>',     cb = tree_cb 'edit' },
+    { key = 'o',        cb = tree_cb('edit') },
+    { key = 'l',        cb = tree_cb('edit') },
+    { key = '<C-v>',    cb = tree_cb('vsplit') },
+    { key = '<C-s>',    cb = tree_cb('split') },
+    { key = '<C-t>',    cb = tree_cb('tabnew') },
+    { key = 'R',        cb = tree_cb('refresh') },
+    { key = 'r',        cb = tree_cb('rename') },
+    { key = '-',        cb = tree_cb('dir_up') },
   }
 
   vim.g.nvim_tree_icons = {
@@ -35,7 +35,22 @@ function M.config()
       renamed = '➜',
       untracked = '★',
     },
-    folder = { default = '', open = '' },
+    folder = {
+      arrow_open = "",
+      arrow_closed = "",
+      default = "",
+      open = "",
+      empty = "",
+      empty_open = "",
+      symlink = "",
+      symlink_open = "",
+    },
+    lsp = {
+      hint = "",
+      info = "",
+      warning = "",
+      error = "",
+    },
   }
 
   -- lazy-loading

@@ -29,17 +29,34 @@ packer.startup(function ()
     requires = { 'kyazdani42/nvim-web-devicons', opt = true },
   }
 
-  use 'hrsh7th/nvim-compe'
+  use {
+    'hrsh7th/nvim-compe',
+    event = { 'InsertEnter' },
+    config = require('nv-compe').config,
+    -- after = 'LuaSnip',
+  }
+
   use 'neovim/nvim-lspconfig'
 
-  use 'karb94/neoscroll.nvim'
+  use {
+    'karb94/neoscroll.nvim',
+    config = function() require'neoscroll'.setup() end
+  }
+
   use 'tpope/vim-eunuch'
   use 'tpope/vim-surround'
   use 'tpope/vim-fugitive'
 
-  use 'shaunsingh/moonlight.nvim'
+  use {
+    'shaunsingh/moonlight.nvim',
+    config = require('colorscheme').config
+  }
 
-  use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate',
+    config = require('tree-sitter').config
+  }
 
   use {
     'nvim-telescope/telescope.nvim',
@@ -50,17 +67,17 @@ packer.startup(function ()
   }
 
   use 'b3nj5m1n/kommentary'
+
+  use {
+    'famiu/bufdelete.nvim',
+    cmd = { 'Bdelete', 'Bwipeout' },
+  }
 end)
 
 local executable = function(e)
     return fn.executable(e) > 0
 end
 
-
-require 'colorscheme'
-require 'tree-sitter'
-
-require 'nv-compe'
 
 require 'lsp'
 
@@ -101,7 +118,6 @@ vim.g.vimsyn_embed = 'lPr' -- allow embedded syntax highlighting for lua, python
 opt.showmode = false
 opt.lazyredraw = true
 opt.emoji = false -- turn off as they are treated as double width characters
-opt.virtualedit = 'onemore' -- allow cursor to move past end of line in visual block mode, needed for my custom paste mapping
 opt.list = true -- show invisible characters
 
 opt.listchars = {
@@ -237,7 +253,7 @@ U.map('v', '>', '>gv')
 U.map('n', '<Tab>', '<cmd>bnext<CR>')
 U.map('n', '<S-Tab>', '<cmd>bprev<CR>')
 
-U.map('n', '<Leader>bk', '<cmd>bw<CR>')
+U.map('n', '<Leader>bk', '<cmd>Bdelete<CR>',{ silent = true })
 
 -- Exit terminal using easier keybindings
 U.map('t', 'jk', '<C-\\><C-n>')
@@ -254,6 +270,8 @@ U.map('i', '{;', '{<CR>};<C-c>O')
 U.map('i', '[;', '[<CR>];<C-c>O')
 U.map('i', '[;', '[<CR>];<C-c>O')
 
+U.map('i', '{<Space>', '{<Space><Space>}<C-c>hi')
+U.map('i', '[<Space>', '[<Space><Space>]<C-c>hi')
 
 U.map('i', '{<CR>', '{<CR>}<C-c>O')
 U.map('i', '(<CR>', '(<CR>)<C-c>O')
