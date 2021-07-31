@@ -75,6 +75,12 @@ _G.packer_plugins = {
     needs_bufread = false,
     path = "/home/magnuscake/.local/share/nvim/site/pack/packer/opt/bufdelete.nvim"
   },
+  ["gitsigns.nvim"] = {
+    config = { "\27LJ\1\2�\n\0\0\4\0\28\0\0314\0\0\0%\1\1\0>\0\2\0027\0\2\0003\1\14\0003\2\4\0003\3\3\0:\3\5\0023\3\6\0:\3\a\0023\3\b\0:\3\t\0023\3\n\0:\3\v\0023\3\f\0:\3\r\2:\2\15\0013\2\16\0:\2\17\0013\2\18\0003\3\19\0:\3\20\0023\3\21\0:\3\22\2:\2\23\0013\2\24\0:\2\25\0013\2\26\0:\2\27\1>\0\2\1G\0\1\0\tyadm\1\0\1\venable\2\16watch_index\1\0\1\rinterval\3�\a\fkeymaps\tn [c\1\2\1\0@&diff ? '[c' : '<cmd>lua require\"gitsigns\".prev_hunk()<CR>'\texpr\2\tn ]c\1\2\1\0@&diff ? ']c' : '<cmd>lua require\"gitsigns\".next_hunk()<CR>'\texpr\2\1\0\b\vbuffer\2\17n <leader>hs0<cmd>lua require\"gitsigns\".stage_hunk()<CR>\17n <leader>hR2<cmd>lua require\"gitsigns\".reset_buffer()<CR>\17n <leader>hb0<cmd>lua require\"gitsigns\".blame_line()<CR>\17n <leader>hr0<cmd>lua require\"gitsigns\".reset_hunk()<CR>\fnoremap\2\17n <leader>hp2<cmd>lua require\"gitsigns\".preview_hunk()<CR>\17n <leader>hu5<cmd>lua require\"gitsigns\".undo_stage_hunk()<CR>\16count_chars\1\n\1\0\5\b₂\b₃\b₄\b₅\b₆\b₇\b₈\b₉\6+\b₊\nsigns\1\0\a\20update_debounce\3d\vlinehl\1\nnumhl\1\18sign_priority\3\6\23current_line_blame\1\22use_internal_diff\2\23use_decoration_api\2\17changedelete\1\0\5\ttext\6~\nnumhl\21GitSignsChangeNr\15show_count\2\vlinehl\21GitSignsChangeLn\ahl\19GitSignsChange\14topdelete\1\0\5\ttext\b‾\nnumhl\21GitSignsDeleteNr\15show_count\2\vlinehl\21GitSignsDeleteLn\ahl\19GitSignsDelete\vdelete\1\0\5\ttext\6_\nnumhl\21GitSignsDeleteNr\15show_count\2\vlinehl\21GitSignsDeleteLn\ahl\19GitSignsDelete\vchange\1\0\4\ttext\6~\nnumhl\21GitSignsChangeNr\vlinehl\21GitSignsChangeLn\ahl\19GitSignsChange\badd\1\0\0\1\0\4\ttext\6+\nnumhl\18GitSignsAddNr\vlinehl\18GitSignsAddLn\ahl\16GitSignsAdd\nsetup\rgitsigns\frequire\0" },
+    loaded = false,
+    needs_bufread = false,
+    path = "/home/magnuscake/.local/share/nvim/site/pack/packer/opt/gitsigns.nvim"
+  },
   kommentary = {
     loaded = true,
     path = "/home/magnuscake/.local/share/nvim/site/pack/packer/start/kommentary"
@@ -155,14 +161,14 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
--- Setup for: telescope.nvim
-time([[Setup for telescope.nvim]], true)
-try_loadstring('\27LJ\1\2�\2\0\0\6\0\r\0\0224\0\0\0%\1\1\0>\0\2\0027\1\2\0%\2\3\0%\3\4\0%\4\5\0003\5\6\0>\1\5\0017\1\2\0%\2\3\0%\3\a\0%\4\b\0003\5\t\0>\1\5\0017\1\2\0%\2\3\0%\3\n\0%\4\v\0003\5\f\0>\1\5\1G\0\1\0\1\0\2\fnoremap\2\vsilent\2!<cmd>Telescope help_tags<CR>\14<Leader>h\1\0\2\fnoremap\2\vsilent\2\31<cmd>Telescope buffers<CR>\15<Leader>bb\1\0\2\fnoremap\2\vsilent\2"<cmd>Telescope find_files<CR>\n<C-p>\6n\bmap\nutils\frequire\0', "setup", "telescope.nvim")
-time([[Setup for telescope.nvim]], false)
 -- Setup for: nvim-tree.lua
 time([[Setup for nvim-tree.lua]], true)
 try_loadstring("\27LJ\1\2y\0\0\6\0\a\0\n4\0\0\0%\1\1\0>\0\2\0027\1\2\0%\2\3\0%\3\4\0%\4\5\0003\5\6\0>\1\5\1G\0\1\0\1\0\2\fnoremap\2\vsilent\2\28<cmd>NvimTreeToggle<CR>\14<leader>e\6n\bmap\nutils\frequire\0", "setup", "nvim-tree.lua")
 time([[Setup for nvim-tree.lua]], false)
+-- Setup for: telescope.nvim
+time([[Setup for telescope.nvim]], true)
+try_loadstring('\27LJ\1\2�\2\0\0\6\0\r\0\0224\0\0\0%\1\1\0>\0\2\0027\1\2\0%\2\3\0%\3\4\0%\4\5\0003\5\6\0>\1\5\0017\1\2\0%\2\3\0%\3\a\0%\4\b\0003\5\t\0>\1\5\0017\1\2\0%\2\3\0%\3\n\0%\4\v\0003\5\f\0>\1\5\1G\0\1\0\1\0\2\fnoremap\2\vsilent\2!<cmd>Telescope help_tags<CR>\14<Leader>h\1\0\2\fnoremap\2\vsilent\2\31<cmd>Telescope buffers<CR>\15<Leader>bb\1\0\2\fnoremap\2\vsilent\2"<cmd>Telescope find_files<CR>\n<C-p>\6n\bmap\nutils\frequire\0', "setup", "telescope.nvim")
+time([[Setup for telescope.nvim]], false)
 -- Config for: moonlight.nvim
 time([[Config for moonlight.nvim]], true)
 try_loadstring("\27LJ\1\2e\0\0\2\0\6\0\n4\0\0\0007\0\1\0)\1\1\0:\1\2\0004\0\3\0%\1\4\0>\0\2\0027\0\5\0>\0\1\1G\0\1\0\bset\14moonlight\frequire\30moonlight_italic_keywords\6g\bvim\0", "config", "moonlight.nvim")
@@ -188,8 +194,8 @@ vim.cmd [[augroup packer_load_aucmds]]
 vim.cmd [[au!]]
   -- Event lazy-loads
 time([[Defining lazy-load event autocommands]], true)
+vim.cmd [[au VimEnter * ++once lua require("packer.load")({'telescope.nvim', 'gitsigns.nvim'}, { event = "VimEnter *" }, _G.packer_plugins)]]
 vim.cmd [[au InsertEnter * ++once lua require("packer.load")({'nvim-compe'}, { event = "InsertEnter *" }, _G.packer_plugins)]]
-vim.cmd [[au VimEnter * ++once lua require("packer.load")({'telescope.nvim'}, { event = "VimEnter *" }, _G.packer_plugins)]]
 time([[Defining lazy-load event autocommands]], false)
 vim.cmd("augroup END")
 if should_profile then save_profiles() end

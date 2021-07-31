@@ -43,6 +43,13 @@ packer.startup(function ()
     config = function() require'neoscroll'.setup() end
   }
 
+  use {
+    'lewis6991/gitsigns.nvim',
+    event = { 'BufReadPre', 'BufNewFile' },
+    config = require('_gitsigns').config,
+    requires = { 'nvim-lua/plenary.nvim' }
+  }
+
   use 'tpope/vim-eunuch'
   use 'tpope/vim-surround'
   use 'tpope/vim-fugitive'
@@ -105,7 +112,7 @@ opt.joinspaces = false -- No double spaces with join after a dot
 -----------------------------------------------------------------------------//
 -- Display {{{1
 -----------------------------------------------------------------------------//
-opt.number = true -- Print line number
+opt.number = true -- Display line number
 opt.relativenumber = true -- Relative line numbers
 opt.numberwidth = 2
 opt.signcolumn = 'yes:1' -- 'auto:1-2'
@@ -282,6 +289,9 @@ U.map('n', '<Leader>k', ':move-2<CR>==')
 
 U.map('x', 'K', '<cmd>move \'<-2<CR>gv-gv')
 U.map('x', 'J', '<cmd>move \'>+1<CR>gv-gv')
+
+-- Close readonly buffers with q
+U.map('n', 'q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = true })
 
 -- Sensible defaults
 -- from https://github.com/disrupted/dotfiles/blob/master/.config/nvim/init.lua
