@@ -262,11 +262,15 @@ alias gpg-retrieve="gpg2 --keyserver-options auto-key-retrieve --receive-keys"
 alias ssn="sudo shutdown now"
 alias sr="sudo reboot"
 
-alias nconf="nvim ~/.config/nvim/init.vim"
-alias xconf="nvim ~/.xmonad/xmonad.hs"
-
 alias vi="nvim"
 alias vim="nvim"
+alias nv="nvim"
+
+alias nconf="cd ~/.config/nvim && nvim init.lua"
+alias xconf="vim ~/.xmonad/xmonad.hs"
+
+alias csi="chicken-csi"
+alias csc="chicken-csc"
 
 alias py="python3"
 
@@ -304,12 +308,9 @@ ex ()
 
 #### SET DEFAULT EDITOR ####
 
-export VISUAL=/usr/bin/nvim
+export VISUAL=$HOME/local/nvim/bin/nvim
 export EDITOR="$VISUAL"
 
-eval "$(starship init zsh)"
-
-# >> To be removed <<
 #
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
@@ -326,18 +327,16 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/home/magnuscake/google-cloud-sdk/path.zsh.inc' ]; then . '/home/magnuscake/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/home/magnuscake/google-cloud-sdk/completion.zsh.inc' ]; then . '/home/magnuscake/google-cloud-sdk/completion.zsh.inc'; fi
-
 # pyenv config
 export PYENV_ROOT="$HOME/.pyenv"
 export PATH="$PYENV_ROOT/bin:$PATH"
 if command -v pyenv 1>/dev/null 2>&1; then
-  eval "$(pyenv init -)"
+  eval "$(pyenv init --path)"
 fi
 
 # To auto activate virtualenv
 eval "$(pyenv virtualenv-init -)"
+
+alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
+
+eval "$(starship init zsh)"
