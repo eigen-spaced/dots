@@ -1,7 +1,7 @@
 -- Thanks to krive001 to share the code of xmobar
 -- https://github.com/krive001/xmonad-xmobar
 
-Config { font = "xft:Roboto:size=11:style=Light"
+Config { font = "xft:TerminessTTF Nerd Font:size=13:style=Regular"
        , additionalFonts = [ "xft:Noto Sans:size=11:style=Light"
                            , "xft:FontAwesome:style=Regular:size=13"
                            ]
@@ -23,56 +23,63 @@ Config { font = "xft:Roboto:size=11:style=Light"
        , persistent       = True
        , sepChar          = "%"
        , alignSep         = "}{"
-       , template         = "<fc=white><fn=1><action=button=4><action=button=5>%UnsafeStdinReader%</action></action></fn></fc>}{<fc=white> %update% |<fn=2>  </fn></fc> %kbd% | %battery% | %multicpu% | %memory% | <action=`pavucontrol` button=3><action=`XMMute` button=1><action=button=4><action=button=5>%XVol% </action></action></action></action><action=`gsimplecal` button=1> | %date% </action>"
-   , commands         = [ Run MultiCpu          [ "--template" , "<fc=white><fn=2>  </fn></fc><fc=white></fc><total> %"
-                                                , "--Low"      , "50"        -- units: %
-                                                , "--High"     , "85"        -- units: %
-                                                , "--low"      , "#ffffff"
-                                                , "--normal"   , "#ffffff"
-                                                , "--high"     , "#fd0537"
-                                                ] 10
+       , template         = " <fc=white><fn=0><action=button=4><action=button=5>%UnsafeStdinReader%</action></action></fn></fc>}{<fc=white> %update% <fn=2>  </fn></fc> %kbd%  %multicpu%  %memory%  <action=`pavucontrol` button=3><action=`XMMute` button=1><action=button=4><action=button=5>%XVol%</action></action></action></action>  %battery%  <action=`gsimplecal` button=1> %date% </action>"
 
-                        , Run Battery           [ "--template" , "Battery: <acstatus>"
-                                                , "--Low"      , "25"        -- units: %
-                                                , "--High"     , "70"        -- units: %
-                                                , "--low"      , "#d50000"
-                                                , "--normal"   , "darkorange"
-                                                , "--high"     , "#66bb6a"
+   , commands     = [ Run MultiCpu          -- [ "--template" , "<fc=white><fn=2>  </fn></fc><fc=white></fc><total> %"
+                                            [ "--template" , "<fc=white><fn=0> CPU: </fn></fc><fc=white></fc><total> %"
+                                            , "--Low"      , "50"        -- units: %
+                                            , "--High"     , "85"        -- units: %
+                                            , "--low"      , "#ffffff"
+                                            , "--normal"   , "#ffffff"
+                                            , "--high"     , "#fd0537"
+                                            ] 10
 
-                                                , "--" -- battery specific options
-                                                   -- discharging status
-                                                , "-o"	, "<left>%"
-                                                   -- AC "on" status
-                                                , "-O"	, "<fc=#ffca28>Charging</fc>"
-                                                   -- charged status
-                                                , "-i"	, "<fc=#66bb6a>Charged</fc>"
-                                                ] 50
+                    , Run Battery           [ "--template" , "<acstatus>"
+                                            , "--Low"      , "25"        -- units: %
+                                            , "--High"     , "80"        -- units: %
+                                            , "--low"      , "#d50000"
+                                            , "--normal"   , "darkorange"
+                                            , "--high"     , "#66bb6a"
+                                            , "--" -- battery specific options
+                                                -- discharging status
+                                              , "-l"	, "#d50000"
+                                              , "-m"  , "darkorange"
+                                              , "-h"  , "#66bb6a"
+                                              , "-o"	, "<left>%"
+                                                -- AC "on" status
+                                              , "-O"	, "<left>%"
+                                                -- charged status
+                                              , "-i"  , "Charged"
+                                              , "-a", "notify-send -u critical 'Battery running out!'"
+                                              , "-A", "20"
+                                            ] 50
 
---                        , Run CoreTemp          [ "--template" , "<fc=white><fn=2>  </fn></fc><fc=green></fc><core0> °C"
---                                                , "--Low"      , "2"         -- units: °C
---                                                , "--High"     , "80"        -- units: °C
---                                                , "--low"      , "#ffffff"
---                                                , "--normal"   , "#ffffff"
---                                                , "--high"     , "#fd0537"
---                                                ] 10
+--                    , Run CoreTemp          [ "--template" , "<fc=white><fn=2>  </fn></fc><fc=green></fc><core0> °C"
+--                                            , "--Low"      , "2"         -- units: °C
+--                                            , "--High"     , "80"        -- units: °C
+--                                            , "--low"      , "#ffffff"
+--                                            , "--normal"   , "#ffffff"
+--                                            , "--high"     , "#fd0537"
+--                                            ] 10
 
-                        , Run Memory            [ "--template" ,"<fc=white><fn=2> </fn></fc><fc=white></fc><usedratio> %"
-                                                ] 10
+                    -- , Run Memory            [ "--template" ,"<fc=white><fn=2> </fn></fc><fc=white></fc><usedratio> %"
+                    , Run Memory            [ "--template" ,"<fc=white><fn=0>MEM: </fn></fc><fc=white></fc><usedratio> %"
+                                            ] 10
 
---                      , Run Wireless          "wlp0s20u2u3"        ["-t", "<fc=green>Wifi:</fc> <quality>"
---                                              ] 10
+--                  , Run Wireless          "wlp0s20u2u3"        ["-t", "<fc=green>Wifi:</fc> <quality>"
+--                                          ] 10
 
-                        , Run Com "/bin/bash"   ["-c", "XMgetvolume"]  "XVol" 10
+                    , Run Com "/bin/bash"   ["-c", "XMgetvolume"]  "XVol" 10
 
 
-                        , Run Kbd               [ ("be" , "<fc=#FFFFFF>BE</fc>")
-                                                , ("us" , "<fc=#FFFFFF>US</fc>")
-                                                ]
+                    , Run Kbd               [ ("be" , "<fc=#FFFFFF>BE</fc>")
+                                            , ("us" , "<fc=#FFFFFF>US</fc>")
+                                            ]
 
-                        , Run UnsafeStdinReader
+                    , Run UnsafeStdinReader
 
-                        , Run Com "/bin/bash"   ["-c",  "XMKupdate"] "update" 600
+                    , Run Com "/bin/bash"   ["-c",  "XMKupdate"] "update" 600
 
-                        , Run Date              "%d:%m:%Y  %I:%M %p" "date" 60]
+                    , Run Date              "%d:%m:%Y  %I:%M %p" "date" 60]
 
 }

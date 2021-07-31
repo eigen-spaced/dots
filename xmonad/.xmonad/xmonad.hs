@@ -16,7 +16,7 @@ import XMonad.Hooks.UrgencyHook
 import XMonad.Config.Desktop
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Actions.SpawnOn
-import XMonad.Util.EZConfig (additionalKeys, additionalMouseBindings)
+import XMonad.Util.EZConfig(additionalKeys, additionalMouseBindings)
 import XMonad.Actions.CycleWS
 import qualified Codec.Binary.UTF8.String as UTF8
 import qualified XMonad.Actions.DynamicWorkspaceOrder as DO
@@ -79,7 +79,8 @@ encodeCChar = map fromIntegral . B.unpack
 
 myTitleColor             = "#c91a1a" -- color of window title
 myTitleLength            = 80 -- truncate window title to this length
-myCurrentWSColor         = "#6790eb" -- color of active workspace
+-- myCurrentWSColor         = "#6790eb" -- color of active workspace
+myCurrentWSColor         = "#3cba29" -- color of active workspace
 myVisibleWSColor         = "#aaaaaa" -- color of inactive workspace
 myUrgentWSColor          = "#c91a1a" -- color of workspace with 'urgent' window
 myHiddenNoWindowsWSColor = "white"
@@ -104,10 +105,12 @@ xmobarEscape = concatMap doubleLts
 
 myWorkspaces :: [String]
 -- myWorkspaces = clickable . (map xmobarEscape) $ ["\61612","\61899","\61947","\61635","\61502","\61501","\61705","\61564","\62150","\61872"]
+-- myWorkspaces = clickable . (map xmobarEscape)
+               -- $ ["dev", "www", "sys", "file", "doc", "virt", "vid", "chat", "mus"]
 myWorkspaces = clickable . (map xmobarEscape)
-               $ ["dev", "www", "sys", "file", "doc", "virt", "vid", "chat", "mus"]
+               $ ["λ", "α", "β", "γ", "δ", "ε"]
     where clickable l = [ "<action=xdotool key super+" ++ show (n) ++ ">" ++ ws ++ "</action>"
-                        | (i, ws) <- zip [1..9] l, let n = i
+                        | (i, ws) <- zip [1..6] l, let n = i
                         ]
 
 -- window manipulations
@@ -170,9 +173,9 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
 
   -- SUPER + SHIFT KEYS
 
-  , ((modMask .|. shiftMask , xK_Return ), spawn $ "thunar")
-  , ((modMask .|. shiftMask , xK_d ), spawn $ "dmenu_run -i -nb '#191919' -nf '#fea63c' -sb '#fea63c' -sf '#191919' -fn 'NotoMonoRegular:bold:pixelsize=14'")
-  , ((modMask .|. shiftMask , xK_r ), spawn $ "xmonad --recompile && xmonad --restart")
+  , ((modMask .|. shiftMask , xK_Return ),      spawn $ "thunar")
+  , ((modMask .|. shiftMask , xK_d ),           spawn $ "dmenu_run -i -nb '#191919' -nf '#fea63c' -sb '#fea63c' -sf '#191919' -fn 'NotoMonoRegular:bold:pixelsize=14'")
+  , ((modMask .|. shiftMask , xK_r ),           spawn $ "xmonad --recompile && xmonad --restart")
   , ((modMask .|. shiftMask , xK_q ), kill)
   -- , ((modMask .|. shiftMask , xK_x ), io (exitWith ExitSuccess))
 
@@ -185,6 +188,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((controlMask .|. mod1Mask , xK_c ),        spawn $ "catfish")
   , ((controlMask .|. mod1Mask , xK_e ),        spawn $ "arcolinux-tweak-tool")
   , ((controlMask .|. mod1Mask , xK_f ),        spawn $ "firefox")
+  , ((controlMask .|. mod1Mask , xK_q ),        spawn $ "qutebrowser")
   , ((controlMask .|. mod1Mask , xK_g ),        spawn $ "chromium -no-default-browser-check")
   , ((controlMask .|. mod1Mask , xK_i ),        spawn $ "nitrogen")
   , ((controlMask .|. mod1Mask , xK_k ),        spawn $ "arcolinux-logout")
@@ -193,7 +197,6 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((controlMask .|. mod1Mask , xK_o ),        spawn $ "$HOME/.xmonad/scripts/picom-toggle.sh")
   , ((controlMask .|. mod1Mask , xK_p ),        spawn $ "pamac-manager")
   , ((controlMask .|. mod1Mask , xK_r ),        spawn $ "rofi-theme-selector")
-  , ((controlMask .|. mod1Mask , xK_s ),        spawn $ "spotify")
   , ((controlMask .|. mod1Mask , xK_t ),        spawn $ "urxvt")
   , ((controlMask .|. mod1Mask , xK_u ),        spawn $ "pavucontrol")
   , ((controlMask .|. mod1Mask , xK_w ),        spawn $ "arcolinux-welcome-app")
@@ -235,19 +238,19 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   --MULTIMEDIA KEYS
 
   -- Mute volume
-  , ((0, xF86XK_AudioMute), spawn $ "amixer -q set Master toggle")
+  , ((0, xF86XK_AudioMute),           spawn $ "amixer -q set Master toggle")
 
   -- Decrease volume
-  , ((0, xF86XK_AudioLowerVolume), spawn $ "amixer -q set Master 5%-")
+  , ((0, xF86XK_AudioLowerVolume),    spawn $ "amixer -q set Master 5%-")
 
   -- Increase volume
-  , ((0, xF86XK_AudioRaiseVolume), spawn $ "amixer -q set Master 5%+")
+  , ((0, xF86XK_AudioRaiseVolume),    spawn $ "amixer -q set Master 5%+")
 
   -- Increase brightness
-  , ((0, xF86XK_MonBrightnessUp),  spawn $ "xbacklight -inc 5")
+  , ((0, xF86XK_MonBrightnessUp),     spawn $ "xbacklight -inc 5")
 
   -- Decrease brightness
-  , ((0, xF86XK_MonBrightnessDown), spawn $ "xbacklight -dec 5")
+  , ((0, xF86XK_MonBrightnessDown),   spawn $ "xbacklight -dec 5")
 
 --  , ((0, xF86XK_AudioPlay), spawn $ "mpc toggle")
 --  , ((0, xF86XK_AudioNext), spawn $ "mpc next")
@@ -279,7 +282,7 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((modMask, xK_j), windows W.focusDown)
 
   -- Move focus to the previous window.
-  , ((modMask, xK_k), windows W.focusUp  )
+  , ((modMask, xK_k), windows W.focusUp)
 
   -- Move focus to the master window.
   , ((modMask .|. shiftMask, xK_m), windows W.focusMaster  )
@@ -291,10 +294,10 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   , ((controlMask .|. modMask, xK_Down), windows W.swapDown  )
 
   -- Swap the focused window with the previous window.
-  , ((modMask .|. shiftMask, xK_k), windows W.swapUp    )
+  , ((modMask .|. shiftMask, xK_k), windows W.swapUp)
 
   -- Swap the focused window with the previous window.
-  , ((controlMask .|. modMask, xK_Up), windows W.swapUp  )
+  , ((controlMask .|. modMask, xK_Up), windows W.swapUp)
 
   -- Shrink the master area.
   , ((controlMask .|. shiftMask , xK_h), sendMessage Shrink)
@@ -317,9 +320,6 @@ myKeys conf@(XConfig {XMonad.modMask = modMask}) = M.fromList $
   -- mod-[1..9], Switch to workspace N
   -- mod-shift-[1..9], Move client to workspace N
   [((m .|. modMask, k), windows $ f i)
-
-  --Keyboard layouts
-  --qwerty users use this line
    | (i, k) <- zip (XMonad.workspaces conf) [xK_1..xK_9]
 
       , (f, m) <- [(W.greedyView, 0), (W.shift, shiftMask)
@@ -361,11 +361,11 @@ main = do
         , ppSep = "  "
         , ppWsSep = "  "
         , ppLayout = (\ x -> case x of
-           "Spacing Tall"                 -> "<fn=1>| Tall |</fn>"
-           "Spacing Grid"                 -> "<fn=1>| Grid |</fn>"
-           "Spacing Spiral"               -> "<fn=1>| Spiral |</fn>"
-           "Spacing ThreeCol"             -> "<fn=1>| ThreeColMid |</fn>"
-           "Spacing Full"                 -> "<fn=1>| Full |</fn>"
+           "Spacing Tall"                 -> "<fn=1>[ Tall ]</fn>"
+           "Spacing Grid"                 -> "<fn=1>[ Grid ]</fn>"
+           "Spacing Spiral"               -> "<fn=1>[ Spiral ]</fn>"
+           "Spacing ThreeCol"             -> "<fn=1>[ ThreeColMid ]</fn>"
+           "Spacing Full"                 -> "<fn=1>[ Full ]</fn>"
            _                                         -> x )
  }
 }
