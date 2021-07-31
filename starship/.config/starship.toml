@@ -2,7 +2,7 @@
 add_newline = false
  
 [character]																	# The name of the module we are configuring is "character"
-success_symbol = "[λ ❯❯ ](bold fg:134)"
+success_symbol = "[λ :: ](bold fg:134)"
 error_symbol = "[λ ❯ ](bold red) "
  
 # ------------------------------------------
