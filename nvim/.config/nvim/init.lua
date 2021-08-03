@@ -1,6 +1,6 @@
 local cmd = vim.cmd -- execute vim commands
 local fn = vim.fn -- call vim functions
-local opt = vim.opt
+local set = vim.opt
 
 local execute = vim.api.nvim_command
 
@@ -101,92 +101,92 @@ U.map("v", "<leader>c", "<Plug>kommentary_visual_default")
 -----------------------------------------------------------------------------//
 -- Indentation {{{1
 -----------------------------------------------------------------------------//
-opt.expandtab = true -- Use spaces instead of tabs
-opt.shiftwidth = 2 -- Size of an indent
-opt.tabstop = 2 -- Number of spaces tabs count for
-opt.softtabstop = 2
-opt.smartindent = true -- Insert indents automatically
-opt.shiftround = true -- Round indent
-opt.joinspaces = false -- No double spaces with join after a dot
+set.expandtab = true -- Use spaces instead of tabs
+set.shiftwidth = 2 -- Size of an indent
+set.tabstop = 2 -- Number of spaces tabs count for
+set.softtabstop = 2
+set.smartindent = true -- Insert indents automatically
+set.shiftround = true -- Round indent
+set.joinspaces = false -- No double spaces with join after a dot
 
 -----------------------------------------------------------------------------//
 -- Display {{{1
 -----------------------------------------------------------------------------//
-opt.number = true -- Display line number
-opt.relativenumber = true -- Relative line numbers
-opt.numberwidth = 2
-opt.signcolumn = 'yes:1' -- 'auto:1-2'
+set.number = true -- Display line number
+set.relativenumber = true -- Relative line numbers
+set.numberwidth = 2
+set.signcolumn = 'yes:1' -- 'auto:1-2'
 
-opt.wrap = true
-opt.linebreak = true -- wrap, but on words, not randomly
--- opt.textwidth = 80
-opt.synmaxcol = 1024 -- don't syntax highlight long lines
+set.wrap = true
+set.linebreak = true -- wrap, but on words, not randomly
+-- set.textwidth = 80
+set.synmaxcol = 1024 -- don't syntax highlight long lines
 vim.g.vimsyn_embed = 'lPr' -- allow embedded syntax highlighting for lua, python, ruby
-opt.showmode = false
-opt.lazyredraw = true
-opt.emoji = false -- turn off as they are treated as double width characters
-opt.list = true -- show invisible characters
+set.showmode = false
+set.lazyredraw = true
+set.emoji = false -- turn off as they are treated as double width characters
+set.list = true -- show invisible characters
 
-opt.listchars = {
+set.listchars = {
     eol = ' ',
     tab = '→ ',
     extends = '…',
     precedes = '…',
     trail = '·',
 }
-opt.shortmess:append 'I' -- disable :intro startup screen
+set.shortmess:append 'I' -- disable :intro startup screen
 
 -----------------------------------------------------------------------------//
 -- Title {{{1
 -----------------------------------------------------------------------------//
-opt.titlestring = '❐ %t'
-opt.titleold = '%{fnamemodify(getcwd(), ":t")}'
-opt.title = true
-opt.titlelen = 70
+set.titlestring = '❐ %t'
+set.titleold = '%{fnamemodify(getcwd(), ":t")}'
+set.title = true
+set.titlelen = 70
 
 -----------------------------------------------------------------------------//
 -- Folds {{{1
 -----------------------------------------------------------------------------//
-opt.foldtext = 'folds#render()'
-opt.foldopen:append { 'search' }
-opt.foldlevelstart = 10
-opt.foldmethod = 'syntax'
--- opt.foldmethod = 'expr'
--- opt.foldexpr='nvim_treesitter#foldexpr()'
+set.foldtext = 'folds#render()'
+set.foldopen:append { 'search' }
+set.foldlevelstart = 10
+set.foldmethod = 'syntax'
+-- set.foldmethod = 'expr'
+-- set.foldexpr='nvim_treesitter#foldexpr()'
 
 -----------------------------------------------------------------------------//
 -- Backup {{{1
 -----------------------------------------------------------------------------//
-opt.swapfile = false
-opt.backup = false
-opt.writebackup = false
-opt.undofile = true -- Save undo history
-opt.confirm = true -- prompt to save before destructive actions
+set.swapfile = false
+set.backup = false
+set.writebackup = false
+set.undofile = true -- Save undo history
+set.confirm = true -- prompt to save before destructive actions
 
 -----------------------------------------------------------------------------//
 -- Search {{{1
 -----------------------------------------------------------------------------//
-opt.ignorecase = true -- Ignore case
-opt.smartcase = true -- Don't ignore case with capitals
-opt.wrapscan = true -- Search wraps at end of file
-opt.scrolloff = 5 -- Lines of context
-opt.sidescrolloff = 8 -- Columns of context
-opt.showmatch = true
+set.ignorecase = true -- Ignore case
+set.smartcase = true -- Don't ignore case with capitals
+set.wrapscan = true -- Search wraps at end of file
+set.scrolloff = 5 -- Lines of context
+set.sidescrolloff = 8 -- Columns of context
+set.showmatch = true
 
 -- Use faster grep alternatives if possible
 if executable 'rg' then
-    opt.grepprg =
+    set.grepprg =
         [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
-    opt.grepformat:prepend { '%f:%l:%c:%m' }
+    set.grepformat:prepend { '%f:%l:%c:%m' }
 end
 
 -----------------------------------------------------------------------------//
 -- window splitting and buffers {{{1
 -----------------------------------------------------------------------------//
-opt.hidden = true -- Enable modified buffers in background
-opt.splitbelow = true -- Put new windows below current
-opt.splitright = true -- Put new windows right of current
-opt.fillchars = {
+set.hidden = true -- Enable modified buffers in background
+set.splitbelow = true -- Put new windows below current
+set.splitright = true -- Put new windows right of current
+set.fillchars = {
     vert = '│',
     fold = ' ',
     diff = '-', -- alternatives: ⣿ ░
@@ -218,7 +218,7 @@ cmd [[
 -----------------------------------------------------------------------------//
 -- Mouse {{{1
 -----------------------------------------------------------------------------//
-opt.mouse = 'a'
+set.mouse = 'a'
 
 -----------------------------------------------------------------------------//
 -- Netrw {{{1
@@ -229,7 +229,7 @@ vim.g.netrw_banner = 0
 -----------------------------------------------------------------------------//
 -- Colorscheme {{{1
 -----------------------------------------------------------------------------//
-opt.termguicolors = true
+set.termguicolors = true
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1
@@ -284,11 +284,12 @@ U.map('i', '{<CR>', '{<CR>}<C-c>O')
 U.map('i', '(<CR>', '(<CR>)<C-c>O')
 
 -- Line bubbling
-U.map('n', '<Leader>j', ':move+1<CR>==')
-U.map('n', '<Leader>k', ':move-2<CR>==')
-
-U.map('x', 'K', '<cmd>move \'<-2<CR>gv-gv')
-U.map('x', 'J', '<cmd>move \'>+1<CR>gv-gv')
+U.map('x', 'J', '<cmd>move \'>+1<CR>gv=gv', { noremap = true })
+U.map('x', 'K', '<cmd>move \'<-2<CR>gv=gv', { noremap = true })
+U.map('i', '<C-j>', '<cmd>move .+1<CR>==', { noremap = true })
+U.map('i', '<C-k>', '<cmd>move ==.-2<CR>==', { noremap = true })
+U.map('n', '<leader>j', '<cmd>move .+1<CR>==', { noremap = true })
+U.map('n', '<leader>k', '<cmd>move .-2<CR>==', { noremap = true })
 
 -- Close readonly buffers with q
 U.map('n', 'q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = true })
@@ -298,7 +299,12 @@ U.map('n', 'q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = 
 U.map('', 'Q', '') -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
 -- U.map('x', 'x', '"_x') -- delete visual selection without yank
+--
+U.map('n', 'Y', 'y$', { noremap = true })
 
+U.map('i', ',', ',<C-g>u', { noremap = true })
+U.map('i', '.', '.<C-g>u', { noremap = true })
+U.map('i', '!', '!<C-g>u', { noremap = true })
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//
