@@ -36,7 +36,12 @@ packer.startup(function ()
     -- after = 'LuaSnip',
   }
 
-  use 'neovim/nvim-lspconfig'
+  use {
+    'neovim/nvim-lspconfig',
+    --[[ opt = true,
+    event = { 'BufRead' }, ]]
+    config = require('_lsp').config,
+  }
 
   use {
     'karb94/neoscroll.nvim',
@@ -85,8 +90,6 @@ local executable = function(e)
     return fn.executable(e) > 0
 end
 
-
-require 'lsp'
 
 vim.g.mapleader = ' '
 
@@ -238,7 +241,7 @@ set.termguicolors = true
 U.map('n', '<Space>', '<NOP>')
 
 -- Toggle highlighting
--- U.map('n', '<Leader>h', '<cmd>set hlsearch!<CR>')
+U.map('n', '<leader><leader>h', '<cmd>set hlsearch!<CR>')
 
 U.map('i', 'jk', '<Esc>')
 U.map('i', 'kj', '<Esc>')
@@ -284,10 +287,10 @@ U.map('i', '{<CR>', '{<CR>}<C-c>O')
 U.map('i', '(<CR>', '(<CR>)<C-c>O')
 
 -- Line bubbling
-U.map('x', 'J', '<cmd>move \'>+1<CR>gv=gv', { noremap = true })
-U.map('x', 'K', '<cmd>move \'<-2<CR>gv=gv', { noremap = true })
-U.map('i', '<C-j>', '<cmd>move .+1<CR>==', { noremap = true })
-U.map('i', '<C-k>', '<cmd>move ==.-2<CR>==', { noremap = true })
+U.map('v', 'J', '<cmd>move \'>+1<CR>gv=gv', { noremap = true })
+U.map('v', 'K', '<cmd>move \'<-2<CR>gv=gv', { noremap = true })
+U.map('i', '<C-j>', '<cmd>move .+1<CR><esc>==a', { noremap = true })
+U.map('i', '<C-k>', '<cmd>move .-2<CR><esc>==a', { noremap = true })
 U.map('n', '<leader>j', '<cmd>move .+1<CR>==', { noremap = true })
 U.map('n', '<leader>k', '<cmd>move .-2<CR>==', { noremap = true })
 
@@ -305,6 +308,7 @@ U.map('n', 'Y', 'y$', { noremap = true })
 U.map('i', ',', ',<C-g>u', { noremap = true })
 U.map('i', '.', '.<C-g>u', { noremap = true })
 U.map('i', '!', '!<C-g>u', { noremap = true })
+U.map('i', '(', '(<C-g>u', { noremap = true })
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//
