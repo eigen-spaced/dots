@@ -2,15 +2,52 @@ USER = vim.fn.expand('$USER')
 
 local M = {}
 
+function M.setup()
+end
+
 function M.config()
+  local lspconfig = require 'lspconfig'
   local HOME = os.getenv 'HOME'
   local SYSTEM_NAME
 
+  vim.cmd [[ packadd nvim-lspconfig ]]
+
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+  -- EFM LANGUAGE SERVER
+  -- 
+
+  -- TYPESCRIPT
+  -- https://github.com/theia-ide/typescript-language-server
+	--[[
+  lspconfig.tsserver.setup {
+    on_attach = function(client)
+      client.resolved_capabilities.document_formatting = false
+      on_attach(client)
+    end,
+    capabilities = capabilities,
+    flags = { debounce_text_changes = 500 },
+    commands = {
+      OrganizeImports = {
+        function()
+          local params = {
+            command = '_typescript.organizeImports',
+            arguments = { vim.api.nvim_buf_get_name(0) },
+            title = '',
+          }
+          vim.lsp.buf.execute_command(params)
+        end,
+      },
+    },
+  }
+	]]
+
   -- PYTHON
-  require'lspconfig'.pyright.setup{}
+  lspconfig.pyright.setup{}
 
   -- HASKELL
-  require'lspconfig'.hls.setup{}
+  lspconfig.hls.setup{}
 
   -- LUA
   if vim.fn.has 'mac' == 1 then
