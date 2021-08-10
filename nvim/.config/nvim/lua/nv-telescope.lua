@@ -33,6 +33,16 @@ function M.config()
         '%.svg',
         '%.otf',
         '%.ttf',
+        -- folder contents
+        '.git/*',
+        'node_modules/*',
+        'bower_components/*',
+        '.svn/*',
+        '.hg/*',
+        'CVS/*',
+        '.next/*',
+        '.docz/*',
+        '.DS_Store'
       },
     }
   }
