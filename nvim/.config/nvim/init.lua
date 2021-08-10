@@ -7,7 +7,7 @@ local execute = vim.api.nvim_command
 local U = require 'utils'
 
 -- Bootstrap packer
-local install_path = fn.stdpath 'data' ..'/site/pack/packer/start/packer.nvim'
+local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
 
 if fn.empty(fn.glob(install_path)) > 0 then
   fn.system({'git', 'clone', 'https://github.com/wbthomason/packer.nvim', install_path})
@@ -20,7 +20,7 @@ local use = packer.use
 packer.startup(function ()
   use { 'wbthomason/packer.nvim', opt = true }
 
-  use {
+ use {
     'kyazdani42/nvim-tree.lua',
     opt = true,
     cmd = { 'NvimTreeOpen', 'NvimTreeToggle' },
@@ -38,9 +38,16 @@ packer.startup(function ()
 
   use {
     'neovim/nvim-lspconfig',
-    --[[ opt = true,
-    event = { 'BufRead' }, ]]
-    config = require('_lsp').config,
+    -- opt = true,
+    event = { 'BufRead' },
+    config = require('lsp').config,
+  }
+
+  use {
+    'ray-x/navigator.lua',
+    event = { 'BufRead', 'BufWrite' },
+    config = require('nv-navigator').config,
+    requires = {'ray-x/guihua.lua', run = 'cd lua/fzy && make'}
   }
 
   use {
@@ -51,7 +58,7 @@ packer.startup(function ()
   use {
     'lewis6991/gitsigns.nvim',
     event = { 'BufReadPre', 'BufNewFile' },
-    config = require('_gitsigns').config,
+    config = require('nv-gitsigns').config,
     requires = { 'nvim-lua/plenary.nvim' }
   }
 
@@ -300,6 +307,7 @@ U.map('n', 'q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = 
 -- Sensible defaults
 -- from https://github.com/disrupted/dotfiles/blob/master/.config/nvim/init.lua
 U.map('', 'Q', '') -- disable Q for ex mode
+U.map('', 'q:', '') -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
 -- U.map('x', 'x', '"_x') -- delete visual selection without yank
 --
