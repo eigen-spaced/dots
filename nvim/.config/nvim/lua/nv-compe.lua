@@ -49,8 +49,13 @@ function M.config()
       path = true;
       buffer = true;
       calc = true;
+      vsnip = true;
       nvim_lsp = true;
       nvim_lua = true;
+      spell = true;
+      tags = true;
+      snippets_nvim = true;
+      treesitter = true;
     };
   }
 
@@ -68,13 +73,13 @@ function M.config()
   end
 
 -- Use (s-)tab to:
---- move to prev/next item in completion menuone
+  --- move to prev/next item in completion menuone
   --- jump to prev/next snippet's placeholder
   _G.tab_complete = function()
     if vim.fn.pumvisible() == 1 then
       return t "<C-n>"
---[[ elseif vim.fn.call("vsnip#available", {1}) == 1 then
-      return t "<Plug>(vsnip-expand-or-jump)" ]]
+    elseif vim.fn.call("vsnip#available", {1}) == 1 then
+      return t "<Plug>(vsnip-expand-or-jump)"
     elseif check_back_space() then
       return t "<Tab>"
     else
@@ -84,8 +89,8 @@ function M.config()
   _G.s_tab_complete = function()
     if vim.fn.pumvisible() == 1 then
       return t "<C-p>"
---[[ elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
-      return t "<Plug>(vsnip-jump-prev)" ]]
+    elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
+      return t "<Plug>(vsnip-jump-prev)"
     else
       return t "<S-Tab>"
     end

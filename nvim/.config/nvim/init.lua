@@ -45,7 +45,6 @@ packer.startup(function ()
 
   use {
     'ray-x/navigator.lua',
-    event = { 'BufRead', 'BufWrite' },
     config = require('nv-navigator').config,
     requires = {'ray-x/guihua.lua', run = 'cd lua/fzy && make'}
   }
