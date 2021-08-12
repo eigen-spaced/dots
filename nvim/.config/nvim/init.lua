@@ -50,6 +50,14 @@ packer.startup(function ()
   }
 
   use {
+    'jose-elias-alvarez/null-ls.nvim',
+  }
+
+  use {
+    'jose-elias-alvarez/nvim-lsp-ts-utils',
+  }
+
+  use {
     'hrsh7th/nvim-compe',
     event = { 'InsertEnter' },
     config = require('nv-compe').config,

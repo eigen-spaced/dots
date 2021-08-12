@@ -38,9 +38,9 @@ local on_attach = function(client, bufnr)
 
   -- https://github.com/martinsione/dotfiles/blob/master/src/.config/nvim/lua/modules/config/nvim-lspconfig
   -- Only client with format capabilities is efm
-  if client.name ~= 'efm' then
-   client.resolved_capabilities.document_formatting = false
-  end
+  --if client.name ~= 'efm' then
+   --client.resolved_capabilities.document_formatting = false
+  --end
 
   -- Set autocommands conditional on server_capabilities
   if client.resolved_capabilities.document_formatting then
