@@ -44,7 +44,7 @@ function M.config()
         '.docz/*',
         '.DS_Store'
       },
-    }
+    },
   }
 end
 

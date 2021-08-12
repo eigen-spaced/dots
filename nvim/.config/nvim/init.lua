@@ -30,6 +30,26 @@ packer.startup(function ()
   }
 
   use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate',
+    config = require('tree-sitter').config
+  }
+
+  use {
+    'nvim-telescope/telescope.nvim',
+    event = { 'VimEnter' },
+    setup = require('nv-telescope').setup,
+    config = require('nv-telescope').config,
+    requires = { {'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'} },
+  }
+
+  use {
+    "neovim/nvim-lspconfig",
+    event = { 'BufRead', 'BufAdd' },
+    config = require("lsp"),
+  }
+
+  use {
     'hrsh7th/nvim-compe',
     event = { 'InsertEnter' },
     config = require('nv-compe').config,
@@ -37,22 +57,17 @@ packer.startup(function ()
   }
 
   use {
-    'neovim/nvim-lspconfig',
-    -- opt = true,
-    event = { 'BufRead' },
-    config = require('lsp').config,
+    'folke/trouble.nvim',
+    config = require('nv-trouble').config,
+    requires = "kyazdani42/nvim-web-devicons",
   }
 
-  use {
-    'ray-x/navigator.lua',
-    config = require('nv-navigator').config,
-    requires = {'ray-x/guihua.lua', run = 'cd lua/fzy && make'}
-  }
-
+  --[[
   use {
     'karb94/neoscroll.nvim',
     config = function() require'neoscroll'.setup() end
   }
+  ]]
 
   use {
     'lewis6991/gitsigns.nvim',
@@ -68,20 +83,6 @@ packer.startup(function ()
   use {
     'shaunsingh/moonlight.nvim',
     config = require('colorscheme').config
-  }
-
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate',
-    config = require('tree-sitter').config
-  }
-
-  use {
-    'nvim-telescope/telescope.nvim',
-    event = { 'VimEnter' },
-    setup = require('nv-telescope').setup,
-    config = require('nv-telescope').config,
-    requires = { {'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'} },
   }
 
   use 'b3nj5m1n/kommentary'
@@ -125,6 +126,7 @@ set.number = true -- Display line number
 set.relativenumber = true -- Relative line numbers
 set.numberwidth = 2
 set.signcolumn = 'yes:1' -- 'auto:1-2'
+set.colorcolumn = '81'
 
 set.wrap = true
 set.linebreak = true -- wrap, but on words, not randomly
@@ -156,6 +158,7 @@ set.titlelen = 70
 -----------------------------------------------------------------------------//
 -- Folds {{{1
 -----------------------------------------------------------------------------//
+-- TODO: Understand these settings
 set.foldtext = 'folds#render()'
 set.foldopen:append { 'search' }
 set.foldlevelstart = 10
@@ -269,15 +272,15 @@ U.map('v', '>', '>gv')
 U.map('n', '<Tab>', '<cmd>bnext<CR>')
 U.map('n', '<S-Tab>', '<cmd>bprev<CR>')
 
-U.map('n', '<Leader>bk', '<cmd>Bdelete<CR>',{ silent = true })
+U.map('n', '<Leader>bk', '<cmd>Bdelete<CR>')
 
 -- Exit terminal using easier keybindings
 U.map('t', 'jk', '<C-\\><C-n>')
 
 -- Source lua.init
-U.map('n', '<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>', { silent = true })
+U.map('n', '<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
 -- Source current lua file
-U.map('n', '<leader>so', '<cmd>luafile %<CR>', { noremap = false })
+U.map('n', '<leader>so', '<cmd>luafile %<CR>')
 
 -- Auto closing brackets
 U.map('i', '(;', '(<CR>);<C-c>O')
@@ -293,18 +296,16 @@ U.map('i', '{<CR>', '{<CR>}<C-c>O')
 U.map('i', '(<CR>', '(<CR>)<C-c>O')
 
 -- Line bubbling
-U.map('v', 'J', '<cmd>move \'>+1<CR>gv=gv', { noremap = true })
-U.map('v', 'K', '<cmd>move \'<-2<CR>gv=gv', { noremap = true })
-U.map('i', '<C-j>', '<cmd>move .+1<CR><esc>==a', { noremap = true })
-U.map('i', '<C-k>', '<cmd>move .-2<CR><esc>==a', { noremap = true })
-U.map('n', '<leader>j', '<cmd>move .+1<CR>==', { noremap = true })
-U.map('n', '<leader>k', '<cmd>move .-2<CR>==', { noremap = true })
+U.map('x', 'J', ':m \'>+1<CR>gv-gv')
+U.map('x', 'K', ':m \'<-2<CR>gv-gv')
+U.map('i', '<C-j>', '<cmd>move .+1<CR><esc>==a')
+U.map('i', '<C-k>', '<cmd>move .-2<CR><esc>==a')
+U.map('n', '<leader>j', '<cmd>move .+1<CR>==')
+U.map('n', '<leader>k', '<cmd>move .-2<CR>==')
 
 -- Close readonly buffers with q
 U.map('n', 'q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = true })
 
--- Sensible defaults
--- from https://github.com/disrupted/dotfiles/blob/master/.config/nvim/init.lua
 U.map('', 'Q', '') -- disable Q for ex mode
 U.map('', 'q:', '') -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
@@ -312,10 +313,10 @@ U.map('', 'q:', '') -- disable Q for ex mode
 --
 U.map('n', 'Y', 'y$', { noremap = true })
 
-U.map('i', ',', ',<C-g>u', { noremap = true })
-U.map('i', '.', '.<C-g>u', { noremap = true })
-U.map('i', '!', '!<C-g>u', { noremap = true })
-U.map('i', '(', '(<C-g>u', { noremap = true })
+U.map('i', ',', ',<C-g>u')
+U.map('i', '.', '.<C-g>u')
+U.map('i', '!', '!<C-g>u')
+U.map('i', '(', '(<C-g>u')
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//

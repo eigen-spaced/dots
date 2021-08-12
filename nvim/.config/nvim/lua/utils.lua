@@ -1,10 +1,20 @@
 local U = {}
 
-function U.map(mode, key, result, opts)
-  -- Convienent Key mapping function
-  opts = opts or {}
+-- mappings
+function U.map(mode, key, cmd, opts)
+    local options = { noremap = true, silent = true }
+    if opts then
+        options = vim.tbl_extend('force', options, opts)
+    end
+    vim.api.nvim_set_keymap(mode, key, cmd, options)
+end
 
-  vim.api.nvim_set_keymap(mode, key, result, opts)
+function U.buf_map(mode, key, cmd, opts)
+    local options = { noremap = true, silent = true }
+    if opts then
+        options = vim.tbl_extend('force', options, opts)
+    end
+    vim.api.nvim_buf_set_keymap(0, mode, key, cmd, options)
 end
 
 function U.is_buffer_empty()
