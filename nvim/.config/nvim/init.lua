@@ -40,7 +40,7 @@ packer.startup(function ()
     event = { 'VimEnter' },
     setup = require('nv-telescope').setup,
     config = require('nv-telescope').config,
-    requires = { {'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'} },
+    requires = { {'nvim-lua/plenary.nvim'} },
   }
 
   use {

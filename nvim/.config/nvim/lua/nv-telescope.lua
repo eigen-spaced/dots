@@ -45,6 +45,13 @@ function M.config()
         '.DS_Store'
       },
     },
+    pickers = {
+      find_files = {
+        previewer = false,
+        theme = 'ivy',
+        layout_config = { height = 0.55 },
+      }
+    }
   }
 end
 
