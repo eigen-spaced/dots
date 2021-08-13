@@ -1,59 +1,61 @@
 local eslint = {
-    lintCommand = 'eslint_d -f unix --stdin --stdin-filename ${INPUT}',
-    lintSource = 'eslint_d',
-    lintIgnoreExitCode = true,
-    lintStdin = true,
-    lintFormats = { '%f:%l:%c: %m' },
-    formatCommand = 'eslint_d --fix-to-stdout --stdin --stdin-filename=${INPUT}',
-    formatStdin = true,
+  lintCommand = 'eslint_d -f vscode --stdin --stdin-filename ${INPUT}',
+  lintSource = 'eslint_d',
+  lintStdin = true,
+  lintIgnoreExitCode = true,
+  lintFormats = { '%f(%l,%c): %tarning %m', '%f(%l,%c): %rror %m' },
+  -- lintFormats = { '%f:%l:%c: %m' },
+  formatCommand = 'eslint_d --fix-to-stdout --stdin --stdin-filename=${INPUT}',
+  formatStdin = true,
 }
 
 local prettier = {
-    formatCommand = "./node_modules/.bin/prettier --stdin --stdin-filepath ${INPUT}",
-    formatStdin = true
+  formatCommand = "./node_modules/.bin/prettier --stdin --stdin-filepath ${INPUT}",
+  formatStdin = true
 }
 
 local gprettier = {
-    formatCommand = 'prettier --stdin-filepath ${INPUT}',
-    formatStdin = true,
+  formatCommand = 'prettier --stdin-filepath ${INPUT}',
+  formatStdin = true,
 }
 
-local prettier_d = {
-    formatCommand = 'prettier_d_slim --config-precedence prefer-file --stdin --stdin-filepath ${INPUT}',
-    formatStdin = true,
+local prettier_d_slim = {
+  formatCommand = 'prettier_d_slim --config-precedence prefer-file --stdin --stdin-filepath ${INPUT}',
+  formatStdin = true,
 }
 
-local format_config = {
-    css                = { prettier },
-    html               = { prettier },
-    javascript         = { prettier, eslint },
-    javascriptreact    = { prettier, eslint },
-    json               = { prettier },
-     --lua             = { stylua },
-    markdown           = { prettier },
-    scss               = { prettier },
-    typescript         = { prettier, eslint },
-    typescriptreact    = { prettier, eslint },
-    yaml               = { gprettier },
+local languages = {
+  css                = { prettier_d_slim },
+  html               = { prettier_d_slim },
+  javascript         = { prettier_d_slim, eslint },
+  javascriptreact    = { prettier_d_slim, eslint },
+  json               = { prettier_d_slim },
+  --lua             = { stylua },
+  markdown           = { prettier_d_slim },
+  scss               = { prettier_d_slim },
+  sass               = { prettier_d_slim },
+  graphql               = { prettier_d_slim },
+  typescript         = { prettier_d_slim, eslint },
+  typescriptreact    = { prettier_d_slim, eslint },
+  yaml               = { prettier_d_slim },
 }
 
 -- https://github.com/mattn/efm-langserver
-local HOME = os.getenv 'HOME'
 local util = require 'lspconfig.util'
--- local efm_config = HOME .. '/.config/efm-langserver/config.yaml'
--- local efm_log = '/tmp/efm.log'
-
-local efm_root_markers = {'package.json', '.git/', '.zshrc'}
+local on_attach = require 'lsp.on_attach'
 
 return  {
-  -- cmd = { 'efm-langserver', '-c', efm_config, '-logfile', efm_log },
-  root_dir = util.root_pattern(efm_root_markers),
+  root_dir = util.root_pattern({
+        'package.json',
+        '.git/',
+        '.'
+  }),
   -- flags = { debounce_text_changes = 150 },
-  filetypes = vim.tbl_keys(format_config),
+  on_attach = on_attach,
+  filetypes = vim.tbl_keys(languages),
   init_options = { documentFormatting = true, codeAction = true },
   settings = {
-    languages = format_config,
-    rootMarkers = efm_root_markers
+    languages = languages,
+    rootMarkers = {'package.json', '.git/'}
   },
 }
-
