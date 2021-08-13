@@ -57,6 +57,11 @@ packer.startup(function ()
   }
 
   use {
+    'windwp/nvim-ts-autotag',
+    config = function() require('nvim-ts-autotag').setup() end
+  }
+
+  use {
     'hrsh7th/nvim-compe',
     event = { 'InsertEnter' },
     config = require('nv-compe').config,
