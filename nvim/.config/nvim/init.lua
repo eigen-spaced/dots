@@ -45,7 +45,6 @@ packer.startup(function ()
 
   use {
     "neovim/nvim-lspconfig",
-    event = { 'BufRead', 'BufAdd' },
     config = require("lsp"),
   }
 
@@ -108,13 +107,12 @@ end
 
 vim.g.mapleader = ' '
 
--- kommentary defaults
-vim.g.kommentary_create_default_mappings = false
-
-U.map("n", "<leader>c", "<Plug>kommentary_motion_default")
-U.map("n", "<leader>cc", "<Plug>kommentary_line_default")
-U.map("v", "<leader>c", "<Plug>kommentary_visual_default")
-
+-- PLUGIN: b3nj5m1n / kommentary {{{
+  vim.g.kommentary_create_default_mappings = false
+  vim.api.nvim_set_keymap("n", "<leader>cc", "<Plug>kommentary_line_default", {})
+  vim.api.nvim_set_keymap("n", "<leader>c", "<Plug>kommentary_motion_default", {})
+  vim.api.nvim_set_keymap("v", "<leader>c", "<Plug>kommentary_visual_default<C-c>", {})
+-- }}}
 
 -----------------------------------------------------------------------------//
 -- Indentation {{{1
@@ -192,6 +190,7 @@ set.wrapscan = true -- Search wraps at end of file
 set.scrolloff = 5 -- Lines of context
 set.sidescrolloff = 8 -- Columns of context
 set.showmatch = true
+vim.cmd[[set nohlsearch]]
 
 -- Use faster grep alternatives if possible
 if executable 'rg' then
