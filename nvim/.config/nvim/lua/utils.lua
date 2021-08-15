@@ -9,6 +9,19 @@ function U.map(mode, key, cmd, opts)
     vim.api.nvim_set_keymap(mode, key, cmd, options)
 end
 
+function U.nmap(key, cmd, opts)
+  U.map('n', key, cmd, opts)
+end
+
+
+function U.imap(key, cmd, opts)
+  U.map('i', key, cmd, opts)
+end
+
+function U.vmap(key, cmd, opts)
+  U.map('v', key, cmd, opts)
+end
+
 function U.buf_map(mode, key, cmd, opts)
     local options = { noremap = true, silent = true }
     if opts then

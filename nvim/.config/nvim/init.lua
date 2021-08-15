@@ -1,10 +1,13 @@
 local cmd = vim.cmd -- execute vim commands
 local fn = vim.fn -- call vim functions
 local set = vim.opt
-
 local execute = vim.api.nvim_command
 
 local U = require 'utils'
+local map = U.map
+local nmap = U.nmap
+local imap = U.imap
+local vmap = U.vmap
 
 -- Bootstrap packer
 local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
@@ -63,8 +66,8 @@ packer.startup(function ()
 
   use {
     'hrsh7th/nvim-compe',
-    event = { 'InsertEnter' },
     config = require('nv-compe').config,
+    event = { 'InsertEnter' },
     -- after = 'LuaSnip',
   }
 
@@ -83,9 +86,9 @@ packer.startup(function ()
 
   use {
     'lewis6991/gitsigns.nvim',
-    event = { 'BufReadPre', 'BufNewFile' },
     config = require('nv-gitsigns').config,
-    requires = { 'nvim-lua/plenary.nvim' }
+    event = { "BufReadPre", "BufNewFile" },
+    requires = { "nvim-lua/plenary.nvim" },
   }
 
   use 'tpope/vim-eunuch'
@@ -185,6 +188,7 @@ set.backup = false
 set.writebackup = false
 set.undofile = true -- Save undo history
 set.confirm = true -- prompt to save before destructive actions
+-- set.updatetime = 1000 -- cursor update and swapfile write time. Do not set to 0
 
 -----------------------------------------------------------------------------//
 -- Search {{{1
@@ -195,7 +199,7 @@ set.wrapscan = true -- Search wraps at end of file
 set.scrolloff = 5 -- Lines of context
 set.sidescrolloff = 8 -- Columns of context
 set.showmatch = true
-vim.cmd[[set nohlsearch]]
+cmd [[set nohlsearch]]
 
 -- Use faster grep alternatives if possible
 if executable 'rg' then
@@ -259,76 +263,76 @@ set.termguicolors = true
 -- Keymaps {{{1
 -----------------------------------------------------------------------------//
 -- unmap any functionality tied to space
-U.map('n', '<Space>', '<NOP>')
+nmap('<Space>', '<NOP>')
 
 -- Toggle highlighting
-U.map('n', '<leader><leader>h', '<cmd>set hlsearch!<CR>')
+nmap('<leader><leader>h', '<cmd>set hlsearch!<CR>')
 
-U.map('i', 'jk', '<Esc>')
-U.map('i', 'kj', '<Esc>')
+imap('jk', '<Esc>')
+imap('kj', '<Esc>')
 
 -- Better split navigation
-U.map('n', '<C-h>', '<C-w>h')
-U.map('n', '<C-j>', '<C-w>j')
-U.map('n', '<C-k>', '<C-w>k')
-U.map('n', '<C-l>', '<C-w>l')
+nmap('<C-h>', '<C-w>h')
+nmap('<C-j>', '<C-w>j')
+nmap('<C-k>', '<C-w>k')
+nmap('<C-l>', '<C-w>l')
 
-U.map('n', '<Leader>o', 'o<Esc>k')
-U.map('n', '<Leader>O', 'O<Esc>j')
+nmap('<Leader>o', 'o<Esc>k')
+nmap('<Leader>O', 'O<Esc>j')
 
 -- Better indenting
-U.map('v', '<', '<gv')
-U.map('v', '>', '>gv')
+vmap('<', '<gv')
+vmap('>', '>gv')
 
 -- Buffer management
-U.map('n', '<Tab>', '<cmd>bnext<CR>')
-U.map('n', '<S-Tab>', '<cmd>bprev<CR>')
+nmap('<Tab>', '<cmd>bnext<CR>')
+nmap('<S-Tab>', '<cmd>bprev<CR>')
 
-U.map('n', '<Leader>bk', '<cmd>Bdelete<CR>')
+nmap('<Leader>bk', '<cmd>Bdelete<CR>')
 
 -- Exit terminal using easier keybindings
 U.map('t', 'jk', '<C-\\><C-n>')
 
 -- Source lua.init
-U.map('n', '<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
+nmap('<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
 -- Source current lua file
-U.map('n', '<leader>so', '<cmd>luafile %<CR>')
+nmap('<leader>so', '<cmd>luafile %<CR>')
 
 -- Auto closing brackets
-U.map('i', '(;', '(<CR>);<C-c>O')
-U.map('i', '{;', '{<CR>};<C-c>O')
-U.map('i', '{;', '{<CR>};<C-c>O')
-U.map('i', '[;', '[<CR>];<C-c>O')
-U.map('i', '[;', '[<CR>];<C-c>O')
+imap('(;', '(<CR>);<C-c>O')
+imap('{;', '{<CR>};<C-c>O')
+imap('{;', '{<CR>};<C-c>O')
+imap('[;', '[<CR>];<C-c>O')
+imap('[;', '[<CR>];<C-c>O')
 
-U.map('i', '{<Space>', '{<Space><Space>}<C-c>hi')
-U.map('i', '[<Space>', '[<Space><Space>]<C-c>hi')
+imap('{<Space>', '{<Space><Space>}<C-c>hi')
+imap('[<Space>', '[<Space><Space>]<C-c>hi')
 
-U.map('i', '{<CR>', '{<CR>}<C-c>O')
-U.map('i', '(<CR>', '(<CR>)<C-c>O')
+imap('{<CR>', '{<CR>}<C-c>O')
+imap('(<CR>', '(<CR>)<C-c>O')
 
 -- Line bubbling
 U.map('x', 'J', ':m \'>+1<CR>gv-gv')
 U.map('x', 'K', ':m \'<-2<CR>gv-gv')
-U.map('i', '<C-j>', '<cmd>move .+1<CR><esc>==a')
-U.map('i', '<C-k>', '<cmd>move .-2<CR><esc>==a')
-U.map('n', '<leader>j', '<cmd>move .+1<CR>==')
-U.map('n', '<leader>k', '<cmd>move .-2<CR>==')
+imap('<C-j>', '<cmd>move .+1<CR><esc>==a')
+imap('<C-k>', '<cmd>move .-2<CR><esc>==a')
+nmap('<leader>j', '<cmd>move .+1<CR>==')
+nmap('<leader>k', '<cmd>move .-2<CR>==')
 
 -- Close readonly buffers with q
-U.map('n', 'q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = true })
+nmap('q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = true })
 
-U.map('', 'Q', '') -- disable Q for ex mode
-U.map('', 'q:', '') -- disable Q for ex mode
+map('', 'Q', '') -- disable Q for ex mode
+map('', 'q:', '') -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
 -- U.map('x', 'x', '"_x') -- delete visual selection without yank
 --
-U.map('n', 'Y', 'y$', { noremap = true })
+nmap('Y', 'y$', { noremap = true })
 
-U.map('i', ',', ',<C-g>u')
-U.map('i', '.', '.<C-g>u')
-U.map('i', '!', '!<C-g>u')
-U.map('i', '(', '(<C-g>u')
+imap(',', ',<C-g>u')
+imap('.', '.<C-g>u')
+imap('!', '!<C-g>u')
+imap('(', '(<C-g>u')
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//
