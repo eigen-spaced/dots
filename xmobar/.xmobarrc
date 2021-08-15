@@ -1,9 +1,6 @@
--- Thanks to krive001 to share the code of xmobar
--- https://github.com/krive001/xmonad-xmobar
-
-Config { font = "xft:TerminessTTF Nerd Font:size=13:style=Regular"
+Config { font = "xft:knxt:size=13"
        , additionalFonts = [ "xft:Noto Sans:size=11:style=Light"
-                           , "xft:FontAwesome:style=Regular:size=13"
+                           , "xft:3270Medium Nerd Font:size=13"
                            ]
 
        , bgColor          = "#282c34"
@@ -23,10 +20,10 @@ Config { font = "xft:TerminessTTF Nerd Font:size=13:style=Regular"
        , persistent       = True
        , sepChar          = "%"
        , alignSep         = "}{"
-       , template         = " <fc=white><fn=0><action=button=4><action=button=5>%UnsafeStdinReader%</action></action></fn></fc>}{<fc=white> %update% <fn=2>  </fn></fc> %kbd%  %multicpu%  %memory%  <action=`pavucontrol` button=3><action=`XMMute` button=1><action=button=4><action=button=5>%XVol%</action></action></action></action>  %battery%  <action=`gsimplecal` button=1> %date% </action>"
+       , template         = " <action=button=4><action=button=5>%UnsafeStdinReader%</action></action> }{ %update% | %multicpu% | %memory% | <action=`pavucontrol` button=3><action=`XMMute` button=1><action=button=4><action=button=5>%XVol%</action></action></action></action> | %battery% | <action=`gsimplecal` button=1>%date%</action>"
 
-   , commands     = [ Run MultiCpu          -- [ "--template" , "<fc=white><fn=2>  </fn></fc><fc=white></fc><total> %"
-                                            [ "--template" , "<fc=white><fn=0> CPU: </fn></fc><fc=white></fc><total> %"
+   , commands     = [ Run MultiCpu          -- [ "--template" ,"<fc=white><fn=2>  </fn></fc><fc=white></fc><total> %"
+                                            [ "--template" , "<fc=white><fn=0> CPU: </fn></fc><fc=white></fc><total>%"
                                             , "--Low"      , "50"        -- units: %
                                             , "--High"     , "85"        -- units: %
                                             , "--low"      , "#ffffff"
@@ -62,8 +59,7 @@ Config { font = "xft:TerminessTTF Nerd Font:size=13:style=Regular"
 --                                            , "--high"     , "#fd0537"
 --                                            ] 10
 
-                    -- , Run Memory            [ "--template" ,"<fc=white><fn=2> </fn></fc><fc=white></fc><usedratio> %"
-                    , Run Memory            [ "--template" ,"<fc=white><fn=0>MEM: </fn></fc><fc=white></fc><usedratio> %"
+                    , Run Memory            [ "--template" ,"<fc=white><fn=0>MEM: </fn></fc><fc=white></fc><usedratio>%"
                                             ] 10
 
 --                  , Run Wireless          "wlp0s20u2u3"        ["-t", "<fc=green>Wifi:</fc> <quality>"
