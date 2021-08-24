@@ -39,6 +39,12 @@ packer.startup(function ()
   }
 
   use {
+    'windwp/nvim-autopairs',
+    event = { 'InsertEnter' },
+    config = require('_autopairs').config
+  }
+
+  use {
     'nvim-telescope/telescope.nvim',
     event = { 'VimEnter' },
     setup = require('nv-telescope').setup,
@@ -77,13 +83,6 @@ packer.startup(function ()
     requires = "kyazdani42/nvim-web-devicons",
   }
 
-  --[[
-  use {
-    'karb94/neoscroll.nvim',
-    config = function() require'neoscroll'.setup() end
-  }
-  ]]
-
   use {
     'lewis6991/gitsigns.nvim',
     config = require('nv-gitsigns').config,
@@ -95,10 +94,9 @@ packer.startup(function ()
   use 'tpope/vim-surround'
   use 'tpope/vim-fugitive'
 
-  use {
-    'shaunsingh/moonlight.nvim',
-    config = require('colorscheme').config
-  }
+  use 'shaunsingh/moonlight.nvim'
+
+  use 'bluz71/vim-moonfly-colors'
 
   use 'b3nj5m1n/kommentary'
 
@@ -258,6 +256,7 @@ vim.g.netrw_banner = 0
 -- Colorscheme {{{1
 -----------------------------------------------------------------------------//
 set.termguicolors = true
+vim.cmd [[ colorscheme moonfly ]]
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1
@@ -299,6 +298,7 @@ nmap('<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
 nmap('<leader>so', '<cmd>luafile %<CR>')
 
 -- Auto closing brackets
+--[[
 imap('(;', '(<CR>);<C-c>O')
 imap('{;', '{<CR>};<C-c>O')
 imap('{;', '{<CR>};<C-c>O')
@@ -310,6 +310,7 @@ imap('[<Space>', '[<Space><Space>]<C-c>hi')
 
 imap('{<CR>', '{<CR>}<C-c>O')
 imap('(<CR>', '(<CR>)<C-c>O')
+]]
 
 -- Line bubbling
 U.map('x', 'J', ':m \'>+1<CR>gv-gv')
