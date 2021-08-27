@@ -29,7 +29,7 @@ packer.startup(function ()
     cmd = { 'NvimTreeOpen', 'NvimTreeToggle' },
     setup = require('nv-tree').setup,
     config = require('nv-tree').config,
-    requires = { 'kyazdani42/nvim-web-devicons', opt = true },
+    requires = { 'kyazdani42/nvim-web-devicons' },
   }
 
   use {
