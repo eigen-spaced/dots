@@ -1,5 +1,5 @@
 local eslint = {
-  lintCommand = 'eslint_d -f vscode --stdin --stdin-filename ${INPUT}',
+  lintCommand = 'eslint_d -f unix --stdin --stdin-filename ${INPUT}',
   lintSource = 'eslint_d',
   lintStdin = true,
   lintIgnoreExitCode = true,
@@ -37,12 +37,12 @@ local languages = {
   graphql               = { prettier_d_slim },
   typescript         = { prettier_d_slim, eslint },
   typescriptreact    = { prettier_d_slim, eslint },
-  yaml               = { prettier_d_slim },
+  yaml               = { prettier },
 }
 
 -- https://github.com/mattn/efm-langserver
 local util = require 'lspconfig.util'
-local on_attach = require 'lsp.on_attach'
+local custom_attach = require 'lsp.custom_attach'
 
 return  {
   root_dir = util.root_pattern({
@@ -50,8 +50,8 @@ return  {
         '.git/',
         '.'
   }),
-  -- flags = { debounce_text_changes = 150 },
-  on_attach = on_attach,
+  flags = { debounce_text_changes = 150 },
+  on_attach = custom_attach,
   filetypes = vim.tbl_keys(languages),
   init_options = { documentFormatting = true, codeAction = true },
   settings = {

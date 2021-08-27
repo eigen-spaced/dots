@@ -57,9 +57,11 @@ packer.startup(function ()
     config = require("lsp"),
   }
 
-  use {
+  --[[ use {
     'jose-elias-alvarez/null-ls.nvim',
-  }
+    requires = { {'nvim-lua/plenary.nvim'} },
+  } ]]
+
 
   use {
     'jose-elias-alvarez/nvim-lsp-ts-utils',
@@ -80,7 +82,7 @@ packer.startup(function ()
   use {
     'folke/trouble.nvim',
     config = require('nv-trouble').config,
-    requires = "kyazdani42/nvim-web-devicons",
+    requires = { "kyazdani42/nvim-web-devicons" },
   }
 
   use {
@@ -90,8 +92,23 @@ packer.startup(function ()
     requires = { "nvim-lua/plenary.nvim" },
   }
 
+  use {
+    "lukas-reineke/indent-blankline.nvim",
+    config = function()
+      require("indent_blankline").setup {
+        show_current_context = true,
+        buftype_exclude = { "terminal", "readonly" }
+      }
+    end
+  }
+
   use 'tpope/vim-eunuch'
-  use 'tpope/vim-surround'
+
+  use {
+    'tpope/vim-surround',
+    event = { "InsertEnter" },
+  }
+
   use 'tpope/vim-fugitive'
 
   use 'shaunsingh/moonlight.nvim'

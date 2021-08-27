@@ -1,12 +1,17 @@
 return function()
   local lspconfig = require 'lspconfig'
-  local on_attach = require 'lsp.on_attach'
+  local custom_attach = require 'lsp.custom_attach'
 
   USER = vim.fn.expand('$USER')
   local HOME = os.getenv 'HOME'
   local SYSTEM_NAME
 
-  -- vim.cmd [[packadd nvim-lspconfig]]
+  -- Find out what this does
+  local capabilities = vim.lsp.protocol.make_client_capabilities()
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+  capabilities.textDocument.completion.completionItem.resolveSupport = {
+    properties = { 'documentation', 'detail', 'additionalTextEdits' },
+  }
 
   -- LUA
   if vim.fn.has 'mac' == 1 then
@@ -21,9 +26,9 @@ return function()
     .. SYSTEM_NAME
     .. '/lua-language-server'
 
-  require'lspconfig'.sumneko_lua.setup {
+  lspconfig.sumneko_lua.setup {
     cmd = { sumneko_binary, "-E", sumneko_root_path .. "/main.lua" },
-    on_attach = on_attach,
+    on_attach = custom_attach,
     settings = {
       Lua = {
         runtime = {
@@ -48,36 +53,33 @@ return function()
     }
   }
 
-  local servers = {}
-
-  servers.bashls = {
+  lspconfig.tsserver.setup {
     on_attach = function(client)
-      on_attach(client)
-    end
-  }
-
-  servers.vimls = {
-    on_attach = function(client)
-      on_attach(client)
+      client.resolved_capabilities.document_formatting = false
+      custom_attach(client)
     end,
+    capabilities,
+    filetypes = {
+      "javascript",
+      "javascriptreact",
+      "javascript.jsx",
+      "typescript",
+      "typescriptreact",
+      "typescript.tsx"
+    },
   }
-
   -- TYPESCRIPT
   -- https://github.com/theia-ide/typescript-language-server
-  servers.tsserver = {
-    on_attach = function(client)
-      client.resolved_capabilities.document_formatting = false
-      on_attach(client)
-    end,
-  }
+  -- FIXME: ts-utils requires null-ls
   --[[
-  require("null-ls").config {}
-  require("lspconfig")["null-ls"].setup {}
   lspconfig.tsserver.setup {
+    filetypes = { "javascript", "javascriptreact", "javascript.jsx", "typescript", "typescriptreact", "typescript.tsx" },
 
     on_attach = function(client, bufnr)
-      local ts_utils = require("nvim-lsp-ts-utils")
       client.resolved_capabilities.document_formatting = false
+      -- client.resolved_capabilities.document_range_formatting = false
+
+      local ts_utils = require("nvim-lsp-ts-utils")
 
       -- defaults
       ts_utils.setup {
@@ -100,7 +102,12 @@ return function()
         -- formatting
         enable_formatting = true,
         formatter = "prettier",
-        formatter_args = {"--stdin-filepath", "$FILENAME"},
+        formatter_args = {
+          -- "--config-precedence",
+          "--stdin",
+          "--stdin-filepath",
+          "$FILENAME"
+        },
         format_on_save = true,
         no_save_after_format = false,
 
@@ -118,50 +125,57 @@ return function()
       ts_utils.setup_client(client)
 
       -- no default maps, so you may want to define some here
-      vim.api.nvim_buf_set_keymap(bufnr, "n", "gs", ":TSLspOrganize<CR>", {silent = true})
-      vim.api.nvim_buf_set_keymap(bufnr, "n", "qq", ":TSLspFixCurrent<CR>", {silent = true})
-      vim.api.nvim_buf_set_keymap(bufnr, "n", "gr", ":TSLspRenameFile<CR>", {silent = true})
-      vim.api.nvim_buf_set_keymap(bufnr, "n", "gi", ":TSLspImportAll<CR>", {silent = true})
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "ts", ":TSLspOrganize<CR>", {silent = true})
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "tq", ":TSLspFixCurrent<CR>", {silent = true})
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "tr", ":TSLspRenameFile<CR>", {silent = true})
+      vim.api.nvim_buf_set_keymap(bufnr, "n", "ti", ":TSLspImportAll<CR>", {silent = true})
+    end,
+  }
+  ]]
+
+  local servers = {}
+
+  servers.bashls = {
+    on_attach = function(client)
+      custom_attach(client)
     end
   }
-    ]]
 
-  -- CSS
+  servers.vimls = {
+    on_attach = function(client)
+      custom_attach(client)
+    end,
+  }
+
   servers.cssls = {
     on_attach = function(client)
-      on_attach(client)
+      custom_attach(client)
     end,
   }
 
   -- HTML
   servers.html = {
     on_attach = function(client)
-      on_attach(client)
+      custom_attach(client)
     end,
   }
 
   -- PYTHON
   servers.pyright = {
     on_attach = function(client)
-      on_attach(client)
+      custom_attach(client)
     end,
   }
 
   -- HASKELL
   servers.hls = {
     on_attach = function(client)
-      on_attach(client)
+      custom_attach(client)
     end,
   }
 
   local efm = require 'lsp.efm'
   servers.efm = efm
-
-  local capabilities = vim.lsp.protocol.make_client_capabilities()
-  capabilities.textDocument.completion.completionItem.snippetSupport = true
-  capabilities.textDocument.completion.completionItem.resolveSupport = {
-    properties = { 'documentation', 'detail', 'additionalTextEdits' },
-  }
 
   for server, config in pairs(servers) do
     lspconfig[server].setup(vim.tbl_deep_extend("force", { capabilities = capabilities }, config))
