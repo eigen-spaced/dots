@@ -47,7 +47,6 @@ Config { font = "xft:knxt:size=13"
                                               , "-O"	, "<left>%"
                                                 -- charged status
                                               , "-i"  , "Charged"
-                                              , "-a", "notify-send -u critical 'Battery running out!'"
                                               , "-A", "20"
                                             ] 50
 
