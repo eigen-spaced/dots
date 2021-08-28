@@ -1,0 +1,12 @@
+# Mac OS files
+.DS_Store
+
+# Xmonad build files
+xmonad/.config/xmonad/stack.yaml
+xmonad/.config/xmonad/stack.yaml.lock
+xmonad/.config/xmonad/.stack-work
+xmonad/.config/xmonad/build/
+xmonad/.config/xmonad/xmonad/
+xmonad/.config/xmonad/xmonad-contrib/
+
+nvim/.config/nvim/plugin
