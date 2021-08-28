@@ -23,13 +23,14 @@ local use = packer.use
 packer.startup(function ()
   use { 'wbthomason/packer.nvim', opt = true }
 
- use {
+  use { 'kyazdani42/nvim-web-devicons' }
+
+  use {
     'kyazdani42/nvim-tree.lua',
     opt = true,
     cmd = { 'NvimTreeOpen', 'NvimTreeToggle' },
     setup = require('nv-tree').setup,
     config = require('nv-tree').config,
-    requires = { 'kyazdani42/nvim-web-devicons' },
   }
 
   use {
@@ -58,10 +59,15 @@ packer.startup(function ()
   }
 
   --[[ use {
-    'jose-elias-alvarez/null-ls.nvim',
-    requires = { {'nvim-lua/plenary.nvim'} },
-  } ]]
+  'jose-elias-alvarez/null-ls.nvim',
+  requires = { {'nvim-lua/plenary.nvim'} },
+    } ]]
 
+  use {
+    'hoob3rt/lualine.nvim',
+    config = require('_lualine').config
+
+  }
 
   use {
     'jose-elias-alvarez/nvim-lsp-ts-utils',
@@ -111,7 +117,7 @@ packer.startup(function ()
 
   use 'tpope/vim-fugitive'
 
-  use 'shaunsingh/moonlight.nvim'
+  use 'folke/tokyonight.nvim'
 
   use 'bluz71/vim-moonfly-colors'
 
@@ -273,7 +279,10 @@ vim.g.netrw_banner = 0
 -- Colorscheme {{{1
 -----------------------------------------------------------------------------//
 set.termguicolors = true
-vim.cmd [[ colorscheme moonfly ]]
+
+-- tokyonight config
+vim.g.tokyonight_style = "night"
+vim.cmd [[ colorscheme tokyonight ]]
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1
