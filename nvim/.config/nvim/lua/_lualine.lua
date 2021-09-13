@@ -8,6 +8,12 @@ function M.config ()
       component_separators = '',
     },
     sections = {
+      lualine_c = {
+        {
+          'filename',
+          path = 1,
+        }
+      },
       lualine_x = {'encoding', 'filetype'},
     }
   }

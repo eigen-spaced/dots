@@ -36,7 +36,7 @@ packer.startup(function ()
   use {
     'nvim-treesitter/nvim-treesitter',
     run = ':TSUpdate',
-    config = require('tree-sitter').config
+    config = require('_treesitter').config
   }
 
   use {
@@ -93,7 +93,11 @@ packer.startup(function ()
 
   use {
     'lewis6991/gitsigns.nvim',
-    config = require('nv-gitsigns').config,
+    -- FIXME: config file does not work for some reason
+    -- config = require('_signs').config,
+    config = function()
+      require('gitsigns').setup()
+    end,
     event = { "BufReadPre", "BufNewFile" },
     requires = { "nvim-lua/plenary.nvim" },
   }
@@ -132,7 +136,6 @@ end)
 local executable = function(e)
     return fn.executable(e) > 0
 end
-
 
 vim.g.mapleader = ' '
 
@@ -321,7 +324,7 @@ U.map('t', 'jk', '<C-\\><C-n>')
 -- Source lua.init
 nmap('<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
 -- Source current lua file
-nmap('<leader>so', '<cmd>luafile %<CR>')
+nmap('<leader>so', '<cmd>source %<CR>')
 
 -- Auto closing brackets
 --[[

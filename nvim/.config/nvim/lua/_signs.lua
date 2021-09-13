@@ -37,6 +37,7 @@ function M.config()
         linehl = 'GitSignsChangeLn',
       },
     },
+    attach_to_untracked = false,
     count_chars = {
       [1] = '',
       [2] = '₂',

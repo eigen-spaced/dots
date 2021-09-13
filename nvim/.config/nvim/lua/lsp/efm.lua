@@ -20,23 +20,23 @@ local gprettier = {
 }
 
 local prettier_d_slim = {
-  formatCommand = 'prettier_d_slim --config-precedence prefer-file --stdin --stdin-filepath ${INPUT}',
+  formatCommand = 'prettier_d_slim --stdin --stdin-filepath ${INPUT}',
   formatStdin = true,
 }
 
 local languages = {
-  css                = { prettier_d_slim },
-  html               = { prettier_d_slim },
-  javascript         = { prettier_d_slim, eslint },
-  javascriptreact    = { prettier_d_slim, eslint },
-  json               = { prettier_d_slim },
+  css                = { gprettier },
+  html               = { gprettier },
+  javascript         = { gprettier, eslint },
+  javascriptreact    = { gprettier, eslint },
+  json               = { gprettier },
   --lua             = { stylua },
-  markdown           = { prettier_d_slim },
-  scss               = { prettier_d_slim },
-  sass               = { prettier_d_slim },
-  graphql               = { prettier_d_slim },
-  typescript         = { prettier_d_slim, eslint },
-  typescriptreact    = { prettier_d_slim, eslint },
+  markdown           = { gprettier },
+  scss               = { gprettier },
+  sass               = { gprettier },
+  graphql               = { gprettier },
+  typescript         = { gprettier, eslint },
+  typescriptreact    = { gprettier, eslint },
   yaml               = { prettier },
 }
 
