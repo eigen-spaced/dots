@@ -65,6 +65,7 @@ function U.err(msg)
 end
 
 -- sudo write and execute within neovim
+-- directly stolen from https://github.com/ibhagwan/nvim-lua/blob/main/lua/utils.lua#L307
 U.sudo_exec = function(cmd, print_output)
   local password = vim.fn.inputsecret("Password: ")
   if not password or #password == 0 then
