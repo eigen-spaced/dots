@@ -37,7 +37,6 @@ function M.config()
         linehl = 'GitSignsChangeLn',
       },
     },
-    attach_to_untracked = false,
     count_chars = {
       [1] = '',
       [2] = '₂',
@@ -50,20 +49,18 @@ function M.config()
       [9] = '₉',
       ['+'] = '₊',
     },
-    numhl = false,
-    linehl = false,
     keymaps = {
       -- Default keymap options
       noremap = true,
-      buffer = true,
-
+      -- buffer = true,
+      --
       ['n ]c'] = {
         expr = true,
-        '&diff ? \']c\' : \'<cmd>lua require"gitsigns".next_hunk()<CR>\'',
+        "&diff ? ']c' : '<cmd>lua require\"gitsigns.actions\".next_hunk()<CR>'"
       },
       ['n [c'] = {
         expr = true,
-        '&diff ? \'[c\' : \'<cmd>lua require"gitsigns".prev_hunk()<CR>\'',
+        "&diff ? '[c' : '<cmd>lua require\"gitsigns.actions\".prev_hunk()<CR>'"
       },
 
       ['n <leader>hs'] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
@@ -73,14 +70,19 @@ function M.config()
       ['n <leader>hp'] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
       ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line()<CR>',
     },
+
     watch_index = { interval = 1000 },
-    current_line_blame = false,
-    sign_priority = 6,
+    attach_to_untracked = false,
     update_debounce = 100,
-    status_formatter = nil, -- Use default
-    use_decoration_api = true,
-    use_internal_diff = true,
-    yadm = { enable = true },
+    -- use_decoration_api = true,
+    preview_config = {
+      -- Options passed to nvim_open_win
+      border = 'single',
+      style = 'minimal',
+      relative = 'cursor',
+      row = 0,
+      col = 1
+    },
   }
 
   -- vim.cmd [[autocmd User FormatterPost lua require'gitsigns'.refresh()]]

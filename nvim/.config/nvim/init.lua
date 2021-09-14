@@ -93,11 +93,7 @@ packer.startup(function ()
 
   use {
     'lewis6991/gitsigns.nvim',
-    -- FIXME: config file does not work for some reason
-    -- config = require('_signs').config,
-    config = function()
-      require('gitsigns').setup()
-    end,
+    config = require('_signs').config,
     event = { "BufReadPre", "BufNewFile" },
     requires = { "nvim-lua/plenary.nvim" },
   }
@@ -326,21 +322,6 @@ nmap('<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
 -- Source current lua file
 nmap('<leader>so', '<cmd>source %<CR>')
 
--- Auto closing brackets
---[[
-imap('(;', '(<CR>);<C-c>O')
-imap('{;', '{<CR>};<C-c>O')
-imap('{;', '{<CR>};<C-c>O')
-imap('[;', '[<CR>];<C-c>O')
-imap('[;', '[<CR>];<C-c>O')
-
-imap('{<Space>', '{<Space><Space>}<C-c>hi')
-imap('[<Space>', '[<Space><Space>]<C-c>hi')
-
-imap('{<CR>', '{<CR>}<C-c>O')
-imap('(<CR>', '(<CR>)<C-c>O')
-]]
-
 -- Line bubbling
 U.map('x', 'J', ':m \'>+1<CR>gv-gv')
 U.map('x', 'K', ':m \'<-2<CR>gv-gv')
@@ -363,6 +344,8 @@ imap(',', ',<C-g>u')
 imap('.', '.<C-g>u')
 imap('!', '!<C-g>u')
 imap('(', '(<C-g>u')
+
+U.map('c', 'w!!', "<esc>:lua require 'utils'.sudo_write()<CR>", { silent = true })
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//
