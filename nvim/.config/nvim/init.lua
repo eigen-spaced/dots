@@ -34,6 +34,13 @@ packer.startup(function ()
   }
 
   use {
+    'akinsho/bufferline.nvim',
+    opt = true,
+    cmd = { 'TabeNew', 'TabEnter' },
+    config = require('_bufferline').config,
+  }
+
+  use {
     'nvim-treesitter/nvim-treesitter',
     run = ':TSUpdate',
     config = require('_treesitter').config
@@ -64,9 +71,9 @@ packer.startup(function ()
     } ]]
 
   use {
-    'hoob3rt/lualine.nvim',
-    config = require('_lualine').config
-
+    'folke/trouble.nvim',
+    config = require('nv-trouble').config,
+    requires = { "kyazdani42/nvim-web-devicons" },
   }
 
   use {
@@ -86,9 +93,20 @@ packer.startup(function ()
   }
 
   use {
-    'folke/trouble.nvim',
-    config = require('nv-trouble').config,
-    requires = { "kyazdani42/nvim-web-devicons" },
+    'hoob3rt/lualine.nvim',
+    config = require('_lualine').config
+
+  }
+
+  use {
+    "projekt0n/github-nvim-theme",
+    after = "lualine.nvim",
+    config = function()
+      require("github-theme").setup({
+        theme_style = "dark"
+        -- your github config
+      })
+    end
   }
 
   use {
@@ -280,8 +298,8 @@ vim.g.netrw_banner = 0
 set.termguicolors = true
 
 -- tokyonight config
-vim.g.tokyonight_style = "night"
-vim.cmd [[ colorscheme tokyonight ]]
+-- vim.g.tokyonight_style = "night"
+-- vim.cmd [[ colorscheme tokyonight ]]
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1

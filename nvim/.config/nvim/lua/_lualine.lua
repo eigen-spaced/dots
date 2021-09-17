@@ -3,7 +3,7 @@ local M = {}
 function M.config ()
   require('lualine').setup {
     options = {
-      theme = 'palenight',
+      theme = 'github',
       section_separators = '',
       component_separators = '',
     },
