@@ -1,6 +1,11 @@
 local M = {}
 
 function M.config()
+  local status_luasnip_ok, luasnip = pcall(require, "luasnip")
+  if not status_luasnip_ok then
+    return
+  end
+
   vim.lsp.protocol.CompletionItemKind = {
     'ﮜ [text]',
     ' [method]',
@@ -49,7 +54,7 @@ function M.config()
       path = true;
       buffer = true;
       calc = true;
-      vsnip = true;
+      luasnip = true;
       nvim_lsp = true;
       nvim_lua = true;
       spell = true;
@@ -63,7 +68,7 @@ function M.config()
     return vim.api.nvim_replace_termcodes(str, true, true, true)
   end
 
-  local check_back_space = function()
+  local check_backspace = function()
     local col = vim.fn.col('.') - 1
     if col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') then
       return true
@@ -72,27 +77,30 @@ function M.config()
     end
   end
 
--- Use (s-)tab to:
+  -- Use (s-)tab to:
   --- move to prev/next item in completion menuone
   --- jump to prev/next snippet's placeholder
   _G.tab_complete = function()
     if vim.fn.pumvisible() == 1 then
-      return t "<C-n>"
-    --[[ elseif vim.fn.call("vsnip#available", {1}) == 1 then
-      return t "<Plug>(vsnip-expand-or-jump)" ]]
-    elseif check_back_space() then
-      return t "<Tab>"
+      vim.fn.feedkeys(t "<down>", "n")
+    elseif luasnip.expand_or_jumpable() then
+      vim.fn.feedkeys(t "<Plug>luasnip-expand-or-jump", "")
+    elseif check_backspace() then
+      vim.fn.feedkeys(t "<Tab>", "n")
+    --[[ else
+      return vim.fn['compe#complete']() ]]
     else
-      return vim.fn['compe#complete']()
+      return t '<Tab>'
     end
   end
+
   _G.s_tab_complete = function()
     if vim.fn.pumvisible() == 1 then
-      return t "<C-p>"
-    --[[ elseif vim.fn.call("vsnip#jumpable", {-1}) == 1 then
-      return t "<Plug>(vsnip-jump-prev)" ]]
+      vim.fn.feedkeys(t "<up>", "n")
+    elseif luasnip.jumpable(-1) then
+      vim.fn.feedkeys(t "<Plug>luasnip-jump-prev", "")
     else
-      return t "<S-Tab>"
+      return t '<S-Tab>'
     end
   end
 
@@ -104,12 +112,15 @@ function M.config()
   end
 
   local U = require 'utils'
+  local imap = U.imap
+
   local opts = { expr = true, silent = true }
-  U.map("i", "<Tab>", "v:lua.tab_complete()", opts)
+
+  imap("<Tab>", "v:lua.tab_complete()", opts)
   U.map("s", "<Tab>", "v:lua.tab_complete()", opts)
-  U.map("i", "<S-Tab>", "v:lua.s_tab_complete()", opts)
+  imap("<S-Tab>", "v:lua.s_tab_complete()", opts)
   U.map("s", "<S-Tab>", "v:lua.s_tab_complete()", opts)
-  U.map('i', '<CR>', 'v:lua.enter_complete()', opts)
+  imap('<CR>', 'v:lua.enter_complete()', opts)
 end
 
 return M
