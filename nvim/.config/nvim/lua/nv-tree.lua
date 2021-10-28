@@ -6,23 +6,16 @@ function M.setup()
 end
 
 function M.config()
-  vim.g.nvim_tree_width = 28
   vim.g.nvim_tree_ignore = { '.git', 'node_modules', '.cache' }
   vim.g.nvim_tree_auto_close = 1 -- 0 by default, closes the tree when it's the last window
   vim.g.nvim_tree_follow = 1 -- 0 by default, this option allows the cursor to be updated when entering a buffer
 
-  --  Modify some of the key mappings
-  local tree_cb = require('nvim-tree.config').nvim_tree_callback
-  vim.g.nvim_tree_bindings = {
-    { key = '<CR>',     cb = tree_cb 'edit' },
-    { key = 'o',        cb = tree_cb('edit') },
-    { key = 'l',        cb = tree_cb('edit') },
-    { key = '<C-v>',    cb = tree_cb('vsplit') },
-    { key = '<C-s>',    cb = tree_cb('split') },
-    { key = '<C-t>',    cb = tree_cb('tabnew') },
-    { key = 'R',        cb = tree_cb('refresh') },
-    { key = 'r',        cb = tree_cb('rename') },
-    { key = '-',        cb = tree_cb('dir_up') },
+
+  vim.g.nvim_tree_show_icons = {
+    git = 1,
+    folders = 1,
+    files = 1,
+    folder_arrows = 0,
   }
 
   vim.g.nvim_tree_icons = {
@@ -45,11 +38,63 @@ function M.config()
       symlink = "",
       symlink_open = "",
     },
-    lsp = {
-      hint = "",
-      info = "",
-      warning = "",
-      error = "",
+  }
+
+  --  To modify key mappings
+  local tree_cb = require('nvim-tree.config').nvim_tree_callback
+
+  require('nvim-tree').setup {
+    disable_netrw = true,
+    hijack_netrw = true,
+    open_on_setup = false,
+    ignore_ft_on_setup = {},
+    auto_close = true,
+    open_on_tab = false,
+    hijack_cursor = false,
+    update_cwd = true,
+    diagnostics = {
+      enable = true,
+      icons = {
+        hint = '',
+        info = '',
+        warning = '',
+        error = '',
+      },
+    },
+    update_focused_file = {
+      enable = true,
+      update_cwd = false,
+      ignore_list = {},
+    },
+
+    system_open = {
+      cmd = nil,
+      args = {
+        {
+          key = { '<CR>', 'o', '<2-LeftMouse>', 'l' },
+          cb = tree_cb 'edit',
+        },
+
+        { key = '<CR>',     cb = tree_cb 'edit' },
+        { key = 'o',        cb = tree_cb('edit') },
+        { key = 'l',        cb = tree_cb('edit') },
+        { key = '<C-v>',    cb = tree_cb('vsplit') },
+        { key = '<C-s>',    cb = tree_cb('split') },
+        { key = '<C-t>',    cb = tree_cb('tabnew') },
+        { key = 'R',        cb = tree_cb('refresh') },
+        { key = 'r',        cb = tree_cb('rename') },
+        { key = '-',        cb = tree_cb('dir_up') },
+      },
+    },
+
+    view = {
+      width = 28,
+      side = 'left',
+      auto_resize = false,
+      mappings = {
+        custom_only = false,
+        list = {},
+      },
     },
   }
 

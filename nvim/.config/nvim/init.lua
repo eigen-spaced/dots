@@ -47,6 +47,11 @@ packer.startup(function ()
   }
 
   use {
+    'is0n/fm-nvim',
+    config = require('_fm').config
+  }
+
+  use {
     'nvim-treesitter/nvim-treesitter',
     run = ':TSUpdate',
     config = require('_treesitter').config
@@ -125,7 +130,6 @@ packer.startup(function ()
     config = function()
       require("github-theme").setup({
         theme_style = "dark"
-        -- your github config
       })
     end
   }
@@ -354,7 +358,7 @@ nmap('<S-Tab>', '<cmd>bprev<CR>')
 nmap('<Leader>bk', '<cmd>Bdelete<CR>')
 
 -- Exit terminal using easier keybindings
-U.map('t', 'jk', '<C-\\><C-n>')
+-- U.map('t', 'jk', '<C-\\><C-n>')
 
 -- Source lua.init
 nmap('<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
@@ -385,6 +389,8 @@ imap('!', '!<C-g>u')
 imap('(', '(<C-g>u')
 
 U.map('c', 'w!!', "<esc>:lua require 'utils'.sudo_write()<CR>", { silent = true })
+
+nmap('<leader>.', '<cmd>Xplr<CR>')
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//

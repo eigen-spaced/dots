@@ -36,16 +36,6 @@ function M.config()
     },
   }
 
-
-  local t = function(str)
-    return vim.api.nvim_replace_termcodes(str, true, true, true)
-  end
-
-  local check_back_space = function()
-    local col = vim.fn.col '.' - 1
-    return col == 0 or vim.fn.getline('.'):sub(col, col):match '%s' ~= nil
-  end
-
   local function prequire(...)
     local status, lib = pcall(require, ...)
     if status then
@@ -53,40 +43,54 @@ function M.config()
     end
     return nil
   end
+
   local luasnip = prequire 'luasnip'
+  local tabout = prequire 'tabout'
 
   -- supertab-like mapping
   local mapping = {
     ['<Tab>'] = cmp.mapping(function(fallback)
-      if vim.fn.pumvisible() == 1 then
-        vim.fn.feedkeys(t '<C-n>', 'n')
+      if cmp.visible() then
+        cmp.select_next_item()
       elseif luasnip and luasnip.expand_or_jumpable() then
-        vim.fn.feedkeys(t '<Plug>luasnip-expand-or-jump', '')
-      elseif check_back_space() then
-        vim.fn.feedkeys(t '<Tab>', 'n')
+        luasnip.expand_or_jump()
+      elseif tabout then
+        tabout.tabout()
       else
-        vim.fn.feedkeys(t '<Plug>(Tabout)', '')
+        fallback()
       end
     end, {
         'i',
         's',
       }),
     ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if vim.fn.pumvisible() == 1 then
-        vim.fn.feedkeys(t '<C-p>', 'n')
+      if cmp.visible() then
+        cmp.select_prev_item()
       elseif luasnip and luasnip.jumpable(-1) then
-        vim.fn.feedkeys(t '<Plug>luasnip-jump-prev', '')
+        luasnip.jump(-1)
+      elseif tabout then
+        tabout.taboutBack()
       else
-        vim.fn.feedkeys(t '<Plug>(TaboutBack)', '')
+        fallback()
       end
     end, {
         'i',
         's',
       }),
+    ['<C-n>'] = cmp.mapping.select_next_item {
+      behavior = cmp.SelectBehavior.Insert,
+    },
+    ['<C-p>'] = cmp.mapping.select_prev_item {
+      behavior = cmp.SelectBehavior.Insert,
+    },
     ['<CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
+    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-Space>'] = cmp.mapping.complete(),
+    ['<C-e>'] = cmp.mapping.close(),
   }
 
   cmp.setup {
@@ -113,6 +117,7 @@ function M.config()
         return vim_item
       end,
     },
+    experimental = { ghost_text = true },
   }
 end
 
