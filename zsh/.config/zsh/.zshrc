@@ -288,7 +288,7 @@ ex ()
 [[ -f ~/.zshrc-personal ]] && . ~/.zshrc-personal
 
 export PATH="$PATH:/usr/local/go/bin"
-export PATH="$HOME/go/bin:$PATH"
+export PATH="$PATH:$HOME/go/bin"
 
 alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
 
@@ -299,5 +299,7 @@ export PYENV_ROOT=$HOME/.pyenv
 export PATH=$PYENV_ROOT/bin:$PATH
 export PATH="$PYENV_ROOT/shims:${PATH}"
 
- eval "$(pyenv init --path)"
- eval "$(pyenv virtualenv-init -)"
+eval "$(pyenv init --path)"
+eval "$(pyenv virtualenv-init -)"
+
+ufetch-arco | lolcat

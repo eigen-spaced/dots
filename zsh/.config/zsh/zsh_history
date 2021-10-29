@@ -7177,3 +7177,710 @@ git pull
 man rg
 rg 'var' ./pages/api
 vi pages/api/educator/course/create.js
+cd ~/.config/zsh/
+ls
+vi zsh_history
+vi zsh-functions
+ls -la
+sudo chown -R magnuscake:magnuscake .
+ls
+ls -la
+cd ..
+ls
+ls -la
+cd ..
+vi starship.toml
+vi ~/.config/starship.toml
+exec $SHELL
+fg
+vi ~/.config/starship.toml
+exec $SHELL
+fg
+vi ~/.config/starship.toml
+exec $SHELL
+fg
+exec $SHELL
+pacman -S luakit
+luakit
+cd ~/dotfiles
+ls
+stow -vSt ~ tmux
+nconf
+ls
+cd ..
+ls -la
+cd nvim
+ls
+ls -la
+chown magnuscake:magnuscake *
+sudo chown -R magnuscake:magnuscake .
+nconf
+nconf
+nconf
+nconf
+nconf
+nconf
+rm -rf lua/nv-compe.lua
+fg
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+vi lua/_cmp.lua
+npm run dev
+npm install
+npm run dev
+vi pages/api/educator/course/\[id\].js
+vi pages/educator/courses/\[id\].js
+vi pages/educator/courses/\[id\].js
+vi pages/educator/courses/\[id\].js
+vi pages/educator/courses/\[id\].js
+vi pages/educator/courses/index.js
+vi pages/educator/courses/index.js
+vi components/LoginContent/PasswordField.js
+git status
+git add components/LoginContent/
+git commit -m "code clean up; remove unecessary units"
+git add components/Navbar/
+git commit -m "rename displayed items variable"
+git add -A
+git commit -m "[fix] cache issue"
+git push origin course-cache-refresh
+ssh-keygen -t rsa -b 4096 -C "saneyar.k@gmail.com" 
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_rsa
+cat ~/.ssh/id_rsa.pub
+git push origin course-cache-refresh
+cd ~/Downloads
+ls
+rm -rf vieb-5.3.0 reinforcement* tor-browser-linux64-10.5.6_en-US.tar.xz nixos-minimal-21.05.2132.733682c3292-x86_64-linux.iso tails-amd64-4.22.img multiagent.zip 
+ls
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.2.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.2.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.2.linux-amd64.tar.gz
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.17.2.linux-amd64.tar.gz
+zconf
+go install github.com/mattn/efm-langserver@latest
+cd ~/Doc
+cd ~/Documents/projects/CivitaSE
+ls
+git checkout course-cache-refresh
+git checkout -b course-cache-refresh
+ls
+tmux
+ls -la
+ls la ~
+ls -la ~
+tmux
+vi ~/.config/starship.toml
+pacman -S lazy
+pacman -S lazygit
+pacman -S npm
+npm i -g typescript typescript-language-server eslint eslint_d_slim prettier vscode-css-languageserver-bin
+sudo npm i -g typescript typescript-language-server eslint eslint_d prettier prettier_d_slim vscode-css-languageserver-bin neovim
+npm install -g npm@8.1.1
+sudo npm install -g npm@8.1.1
+mkdir dev
+cd dev
+git clone https://github.com/sumneko/lua-language-server
+cd lua-language-server
+git submodule update --init --recursive
+cd 3rd/luamake
+./compile/install.sh
+pacman -S ninja
+./compile/install.sh
+cd ../..
+./3rd/luamake/luamake rebuild
+./bin/Linux/lua-language-server
+nconf
+nconf
+nconf
+cd ~/Documents/projects/pacman-contest-agent-wiki
+vi AI-Method-2.md
+git add AI-Method-2.md
+git commit -m "initial writeup on AI Method 2"
+fg
+xfwm4-tweaks-settings
+exec xfwm4 --compositor=on
+update
+pacman -Rsc xmobar
+vi AI-Method-2.md
+git add AI-Method-2.md
+git commit -m "expand applications of QAgent"
+git push origin main
+git push origin main
+git push -u origin main
+git pull
+git config pull.rebase false
+git pull
+git push -u origin main
+ssh -T git@github.com
+ssh -T Magnuscake@github.com
+git remote -v
+git push -u origin main
+ssh-add -l -E sha256
+ssh-add -l
+git push -u origin main
+cd ../contest-pacmen2
+vi myTeam.py
+python capture.py -r myTeam -b baselineTeam
+pacman -S tk
+python capture.py -r myTeam -b baselineTeam
+fg
+python capture.py -r myTeam -b baselineTeam
+fg
+python capture.py -r myTeam -b baselineTeam
+fg
+python capture.py -r myTeam -b baselineTeam
+fg
+python capture.py -r myTeam -b baselineTeam
+fg
+python capture.py -r myTeam -b baselineTeam
+fg
+pyenv init
+cd ~/Documents/projects/pacman-contest-agent-wiki
+ls
+vi AI-Method-2.md
+tmux
+git push -u origin main
+ssh-add ~/.ssh/id_rsa
+git push -u origin main
+cd ~/Documents/projects/pacman-contest-agent-wiki
+git push -u origin main
+git config credential.helper 
+sudo git config credential.helper 
+sudo git push -u origin main
+ssh -vT git@github.com
+git remote set-url git@github.com:Magnuscake/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git remote set-url origin git@github.com:Magnuscake/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+git remote set-url origin git@github.com:RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+git remote -v
+git config --global --unset credential.helper
+git push -u origin main
+echo "url=$(git remote get-url origin)" | git credential reject
+git push -u origin main
+cd ..
+mv pacman-contest-agent-wiki pacman-contest-agent-wiki-1
+git clone git@github.com:RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+cd pacman-contest-agent-wiki
+ls
+vi Design-Choices.md
+git add Design-Choices.md
+git commit -m "add some headings"
+git push -u origin main
+cd ..
+rm -rf pacman-contest-agent-wiki
+mv pacman-contest-agent-wiki-1 pacman-contest-agent-wiki
+cd pacman-contest-agent-wiki
+ls
+ls ~/.gitconfig 
+git config --local --unset credential.helper
+git config --unset credential.helper
+git push -u origin main
+unset GIT_ASKPASS
+unset SSH_ASKPASS
+git push -u origin main
+echo $SSH_ASKPASS
+git config --global core.askpass ""
+git push -u origin main
+ssh-keygen -t ed25519 -C "saneyar.k@gmail.com"
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub
+git push -u origin main
+rm -rf ~/.ssh/id_e*
+libsecret
+rm -rf ~/.local/share/keyrings/*
+cd ~/Documents/projects/pacman-contest-agent-wiki
+git push -u origin main
+git push -u origin main
+pacman -Rsc kwallet
+git push -u origin main
+pacman -Rsc libsecret
+whereis libsecret
+which libsecret
+pacman -S seahorse
+echo $GIT_ASKPASS
+echo $SSH_ASKPASS
+pacman -S openssh-askpass\
+
+pacman -Ss openssh-askpass\
+
+pacman -Ss ssh-askpass-gnome
+pacman -Ss ssh-askpass
+pacman -Ss askpass
+pacman -Ss pass
+rm -rf gnome-keyring
+pacman -Rsc gnome-keyring
+cd ~/Documents/projects/pacman-contest-agent-wiki
+git push -u origin main
+rm -rf ~/.ssh/id_rsa*
+ssh-keygen -t ed25519 -C "saneyar.k@gmail.com"
+ssh-add ~/.ssh/id_ed25519
+cat ~/.ssh/id_ed25519.pub
+git push -u origin main
+cd ~/Documents/projects/CivitaSE
+ls
+npm i typescript
+git add -A
+git commit -m "testing out package"
+git push -u origin course-cache-refresh
+npm uninstall typescript
+cd ../pacman-contest-agent-wiki
+cp AI-Method-2.md ../
+cd ..
+ls
+rm -rf pacman-contest-agent-wiki
+git clone git@github.com:RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+rm pacman-contest-agent-wiki/AI-Method-2.md
+mv AI-Method-2.md pacman-contest-agent-wiki
+cd pacman-contest-agent-wiki
+git add -A
+git commit -m "expand technique 2 applications"
+git push -u origin main
+su sudo
+su
+ git config --global user.email "saneyar.k@gmail.com"
+ git config --global user.name "Magnuscake"
+git push -u origin main
+it remote set-url origin https://magnuscake:c@tofMordor11@github.com/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git remote set-url origin https://magnuscake:c@tofMordor11@github.com/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+git remote set-url origin git@github.com/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+git remote set-url origin github.com/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+git remote set-url origin git@github.com:RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+ssh -T git@github.com
+git remote rm origin
+git remote add origin https://github.com/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+git push -u origin main
+git push -u origin main
+cp AI-Method-2.md ../
+cd ..
+rm -rf pacman-contest-agent-wiki
+git clone https://github.com/RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+rm pacman-contest-agent-wiki/AI-Method-2.md
+cp AI-Method-2.md pacman-contest-agent-wiki
+cd pacman-contest-agent-wiki
+ls
+git add -A
+git commit -m "expand technique 2 applications"
+git push -u origin main
+git config --global --unset credential.helper
+git config --global --unset credential.helper
+git config --global --unset credential.helper
+git config --global --unset credential.helper
+git push -u origin main
+git push -u origin main
+cd ..
+rm -rf pacman-contest-agent-wiki
+ls
+git clone 
+git clone git@github.com:RMIT-COSC1127-1125-AI21/pacman-contest-agent-wiki.git
+cp AI-Method-2.md pacman-contest-agent-wiki
+cd pacman-contest-agent-wiki
+ls
+vi AI-Method-2.md
+rm -rf git*
+cd ..
+cp pacman-contest-agent-wiki contest-pacmen2
+cp -r pacman-contest-agent-wiki contest-pacmen2
+cd contest-pacmen2
+git status
+rm -rf pacman-contest-agent-wiki
+git add -A
+git commit -m "tiny improvements to QAgent"
+git checkout main
+git checkout maseter
+git pull
+git remote set-url origin git@github.com:RMIT-COSC1127-1125-AI21/contest-pacmen2.git
+git pull
+git checkout master
+git pull
+cd ..
+ls
+cp -r pacman-contest-agent-wiki contest-pacmen2
+cd contest-pacmen2
+ls
+cd pacman-contest-agent-wiki
+cd ..
+git add -A
+git rm pacman-contest-agent-wiki
+git rm -r pacman-contest-agent-wiki
+cd pacman-contest-agent-wiki
+ls
+ls -la
+rm -rf git*
+cd ..
+git add -A
+git commit -m "add wiki; expand technique 2 applications"
+git push -u origin master
+git status
+git add -A
+git status
+cd pacman-contest-agent-wiki
+git status
+ls
+ls -la
+rm -rf .git*
+cd ..
+ls
+git add -A
+git commit -m "remove git files from submodules"
+git push -u origin master
+cd ~/Documents
+ls
+git clone git@github.com:RMIT-COSC1127-1125-AI21/contest-pacmen2.git
+cd contest-pacmen2
+ls
+cd pacman-contest-agent-wiki
+ls
+cd ..
+cd ..
+rm contest-pacmen2
+rm -rf rm contest-pacmen2
+cd ~/Documents/projects/contest-pacmen2
+rm -rf pacman-contest-agent-wiki
+git add -A
+git commit -m "remove wiki submodule"
+git push -u origin master
+cd ..
+ls
+cd pacman-contest-agent-wiki
+rm -rf .git*
+ls
+ls -la
+vi AI-Method-2.md
+cd ..
+cp -r pacman-contest-agent-wiki contest-pacmen2
+cd contest-pacmen2
+git checkout -b wiki
+git status
+git add -A
+git commit -m "add pacman wiki; expand technique 2 applications"
+git push -u origin wiki
+kill | ps xfwm4
+top
+ps xfwm4
+xfwm4 --replace --vblank=glx &
+cd ../CivitaSE
+ls
+vi components/LoginContent/PasswordField.js
+vi components/LoginContent/PasswordField.js
+rg 'TextDivider'
+fg
+nvim
+ranger
+xplr
+xplr
+nconf
+nconf
+nconf
+nconf
+nvim
+nconf
+nconf
+pacman -Ss retro
+pacman -S cool-retro-term
+pacman -Rsc cool-retro-term
+cd ~/Documents
+ls
+cd CML
+ls
+cd ..
+mkdir prac
+cd prac
+touch file1.txt file2.txt file3.txt
+mkdir subprac1 subprac2
+xplr
+xplr
+ufetch
+vi ~/.bashrc
+ufetch-arco
+zconf
+exec $SHELL
+nconf
+rg 'vscode-html'
+nconf
+pacman -Ss awesome
+pacman -S awesome arcolinux-awesome-git
+mirrors
+update
+pacman -Ss xmonad
+pacman -Rsc arcolinux-xmonad-polybar-git xmonad-log
+nconf
+nconf
+nconf
+update
+npm start
+npm start
+npm start
+npm i esbuild-wasm@latest
+npm start
+npm i --save-exact esbuild-wasm@0.8.27
+npm start
+vi src/index.js
+npm i -g vscode-html-language-server
+sudo npm i -g vscode-html-language-server
+fg
+npm i -g vscode-langservers-extracted
+sudo npm i -g vscode-langservers-extracted
+fg
+vi src/index.js
+fg
+vi src/index.js
+rg 'index.js'
+fg
+ls
+fg
+git add -A
+git commit -m "initialize project; testing out esbuild transpiler"
+stack -h
+stack list
+cd ~/.config/xmonad
+ls
+chown magnuscake:magnuscake *
+sudo chown magnuscake:magnuscake *
+cd ..
+chown magnuscake:magnuscake xmonad
+sudo chown magnuscake:magnuscake xmonad
+cd xmonad
+ls
+rm -rf xmonad xmonad-contrib
+sudo rm -rf xmonad xmonad-contrib
+cd ..
+ls
+ls -la
+cd ..
+ls -la
+cd ~/dotfiles
+stow -nvDt ~ xmonad
+stow -vDt ~ xmonad
+cd ~/.config/xmonad
+pacman -Ss awesome
+pacman -Ss leftwm
+pacman -Rsc arcolinux-leftwm-git
+cd ../
+ls
+cd Documents/projects
+l
+pacman -S mpv
+npx create-react-app dev-cli --template typescript
+cd dev-cli
+ls
+rm src/{reportWebVitals.ts,index.css,logo.svg}
+ls -la
+npm install @reduxjs/toolkit
+ls
+vi src/App.tsx
+cd ..
+mkdir bundler
+cd bundler
+npm init -y
+npm i --save-exact webpack@5.11.1 webpack-cli@4.3.0
+mkdir src
+touch src/{index.js,message.js}
+ls 
+ls src
+vi src/index.js
+npm run build
+fg
+vi src/index.js
+npm run build
+vi dist
+cd ..
+ls
+cd dev-cli
+npm i --save-exact esbuild-wasm@0.8.27
+rm src/*
+vi src/index.js
+fg
+fg
+tmux
+poweroff
+npm run dev
+npm run dev
+npm run dev
+cd ..
+ls
+vi pages/educator/courses/create/index.js
+ls
+git status
+git add -A
+git commit -m "[refactor] modify topic and category of module creation section"
+git push -u course-cache-refresh
+git push -u origin course-cache-refresh
+unset GIT_ASKPASS
+unset SSH_ASKPASS
+git push -u origin course-cache-refresh
+git config --global core.askpass ""
+git push -u origin course-cache-refresh
+git push -u origin course-cache-refresh
+seahorse
+sudo gconftool-2 --set -t bool /apps/gnome-keyring/daemon-components/ssh false
+git push -u origin course-cache-refresh
+grep -rnw . -e 'ua-parser-js' --include={yarn.lock,package-lock.json,package.json}
+npm start
+npm i esbuild-wasm@latest
+npm start
+npm i --save-exact esbuild-wasm@0.8.27
+npm i --save-exact esbuild-wasm@0.8.27
+npm start
+cd /etc/skel
+ls
+ls -la
+vi .config/xfce4/xfconf/xfce-perchannel-xml/
+ls
+vi .config/xfce4/panel/whiskermenu-7.rc
+cp .config/awesome ~/.config/
+sudo cp -r .config/awesome ~/.config/
+cd ~/.config
+cd awesome
+ls
+chown magnuscake:magnuscake .
+sudo chown magnuscake:magnuscake .
+ls
+vi src/index.js
+vi src/index.tsx
+fg
+skel -h
+skel --help
+pacman -Ss awesome
+awesome --help
+skel
+vi ~/.config-backup-2021.10.25-11.5
+xplr
+pacman -Ss awesome
+pacman -Rsc arcolinux-awesome-git
+pacman -S arcolinux-awesome-git
+cd ~/Documents/projects/dev-cli
+ls
+vi src/index.tsx
+c
+tmux
+cd ~/Documents/projects/CivitaSE
+ls
+tmux
+cd ..
+ls
+cd ..
+ls
+vi SSL.md
+vi SSL.md
+vi SSL.org
+xconf
+vi ~/dotfiles/xmonad/.config/xmonad/xmonad.hs
+cd ~/.config/awesome
+ls
+vi rc.lua
+chown magnuscake:magnuscake *
+sudo chown magnuscake:magnuscake *
+vi rc.lua
+xplr
+vi /usr/share/X11/xorg.conf.d/40-libinput.conf
+update
+ls /sys/class/backlight
+sudo echo 6 > /sys/class/backlight/intel_backlight/max_brightness
+vi /sys/class/backlight/intel_backlight/max_brightness
+ls vi /sys/class/backlight/intel_backlight/
+ls /sys/class/backlight/intel_backlight/
+vi /sys/class/backlight/intel_backlight/actual_brightness
+git clone https://gitlab.com/wavexx/acpilight
+cd acpilight
+ls
+sudo make install
+vi ~/.config/awesome/rc.lua
+vi ~/dotfiles/xmonad/.config/xmonad/xmonad.hs
+vi ~/dotfiles/xmonad/.config/xmonad/scripts/picom-toggle.sh
+vi ~/dotfiles/xmonad/.config/xmonad/scripts/picom.conf
+cd ~/dotfiles
+cd xmonad/.config/xmonad/
+ls
+ls
+cd scripts
+ls
+vi _picom.conf
+rm _picom.conf
+cp ~/.config/awesome/picom.conf ./_picom.conf
+ls
+paru -S picom-jonaburg-git
+cp picom.conf ~/.config/awesome/
+vi picom-toggle.sh
+vi autostart.sh
+vi ~/.config/awesome/rc.lua
+sudo cp /etc/skel/.config/xfce4/ ~/.config/xfce4
+sudo cp -r /etc/skel/.config/xfce4/ ~/.config/xfce4
+cd ~/.config
+ls xfce4
+mv xfce4 ../
+mv ../xfce4 .
+ls
+ls xfce4
+rm -rf xfce4
+sudo rm -rf xfce4
+cp /etc/skel/.config/xfce4 ~/.config
+sudo cp -r /etc/skel/.config/xfce4 ~/.config
+chown magnuscake:magnuscake xfce4
+sudo chown magnuscake:magnuscake xfce4
+sudo chown magnuscake:magnuscake xfce4/*
+cd awesome
+ls
+awesome --help
+ls freedesktop/init.lua
+vi freedesktop/menu.lua
+vi lain/util/init.lua
+cd ..
+ls
+cd rofi
+ls
+vi config.rasi
+vi ~/.config/awesome/rc.lua
+cd ~/.config/awesome
+ls
+vi autostart.sh
+pacman -Rsc feh
+vi rc.lua
+chown magnuscake:magnuscake themes/*
+sudo chown magnuscake:magnuscake themes/*
+fg
+sudo chown magnuscake:magnuscake themes/*.lua
+sudo chown -R magnuscake:magnuscake themes/*
+fg
+fg
+fg
+vi themes/blackburn/theme.lua 
+vi picom.conf
+ls
+rm picom.conf
+vi scripts/picom-toggle.sh
+sudo chown -R magnuscake:magnuscake *
+vi scripts/picom-toggle.sh
+vi autostart.sh
+cd ~/.config/awesome
+vi picom.conf
+vi lain/widget/alsabar.lua
+vi lain/init.lua
+vi lain/widget/contrib/init.lua 
+rg 'time'
+vi lain/widget/cal.lua
+vi lain/helpers.lua
+vi ~/.config/awesome/rc.lua
+paru -S pyenv-virtualenv
+vi ~/.config/awesome/system-overview
+vi ~/.config/awesome/lain/widget/cal.lua
+rg 'time'
+ls
+cd ~/.config/awesome
+rg 'time'
+rg '%H'
+vi themes/blackburn/theme.lua 
