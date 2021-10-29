@@ -2,8 +2,8 @@
 add_newline = false
  
 [character]																	# The name of the module we are configuring is "character"
-success_symbol = "[λ » ](bold fg:134)"
-error_symbol = "[λ » ](bold red) "
+success_symbol = "[\\[ λ \\] » ](bold fg:134)"
+error_symbol = "[\\[ λ \\] » ](bold red) "
  
 # ------------------------------------------
 # All disabled configs go here
