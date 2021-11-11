@@ -31,7 +31,6 @@ local naughty       = require("naughty")
 naughty.config.defaults['icon_size'] = 100
 
 --local menubar       = require("menubar")
-
 local lain          = require("lain")
 local freedesktop   = require("freedesktop")
 
@@ -42,7 +41,6 @@ require("awful.hotkeys_popup.keys")
 local my_table      = awful.util.table or gears.table -- 4.{0,1} compatibility
 local dpi           = require("beautiful.xresources").apply_dpi
 -- }}}
-
 
 
 -- {{{ Error handling
@@ -556,7 +554,7 @@ globalkeys = my_table.join(
   -- On the fly useless gaps change
   awful.key({ altkey, "Control" }, "j", function () lain.util.useless_gaps_resize(1) end,
     {description = "increment useless gaps", group = "tag"}),
-  awful.key({ altkey, "Control" }, "h", function () lain.util.useless_gaps_resize(-1) end,
+  awful.key({ altkey, "Control" }, "k", function () lain.util.useless_gaps_resize(-1) end,
     {description = "decrement useless gaps", group = "tag"}),
 
   -- Dynamic tagging
@@ -926,23 +924,11 @@ awful.rules.rules = {
   { rule = { class = "Gnome-disks" },
     properties = { maximized = true } },
 
-  { rule = { class = "inkscape" },
-    properties = { maximized = true } },
-
-  { rule = { class = mediaplayer },
-    properties = { maximized = true } },
+  --[[ { rule = { class = mediaplayer },
+    properties = { maximized = true } }, ]]
 
   { rule = { class = "Vlc" },
     properties = { maximized = true } },
-
-  { rule = { class = "VirtualBox Manager" },
-    properties = { maximized = true } },
-
-  { rule = { class = "VirtualBox Machine" },
-    properties = { maximized = true } },
-
-  { rule = { class = "Vivaldi-stable" },
-    properties = { maximized = false, floating = false } },
 
   { rule = { class = "Xfce4-settings-manager" },
     properties = { floating = false } },
@@ -1070,4 +1056,4 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 
 -- Autostart applications
 awful.spawn.with_shell("~/.config/awesome/autostart.sh")
-awful.spawn.with_shell("picom -b --experimental-backends --config", os.getenv("HOME"), "/.config/picom/picom.conf")
+awful.spawn.with_shell("picom -b --experimental-backends --config ~/.config/picom/picom.conf")
