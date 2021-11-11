@@ -44,16 +44,15 @@ source "$ZDOTDIR/zsh-functions"
 # zsh_add_file "zsh-exports"
 # zsh_add_file "zsh-vim-mode"
 # zsh_add_file "zsh-aliases"
-# zsh_add_file "zsh-prompt"
+zsh_add_file "zsh-prompt"
 
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
 zsh_add_plugin "zsh-users/zsh-history-substring-search"
 zsh_add_plugin "hlissner/zsh-autopair"
-zsh_add_completion "esc/conda-zsh-completion" false
+# zsh_add_completion "esc/conda-zsh-completion" false
 # For more plugins: https://github.com/unixorn/awesome-zsh-plugins
 # More completions https://github.com/zsh-users/zsh-completions
-
 
 
 # Preferred editor for local and remote sessions
@@ -68,8 +67,6 @@ fi
 
 
 ####   ARCOLINUX SETTINGS   ####
-
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
 setopt GLOB_DOTS
 
@@ -210,9 +207,6 @@ alias ytv-best="youtube-dl -f bestvideo+bestaudio "
 alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl"
 alias riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | nl"
 
-#iso and version used to install ArcoLinux
-#alias iso="cat /etc/dev-rel | awk -F '=' '/ISO/ {print $2}'"
-
 #Cleanup orphaned packages
 alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
 
@@ -291,15 +285,14 @@ export PATH="$PATH:/usr/local/go/bin"
 export PATH="$PATH:$HOME/go/bin"
 
 alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
-
 eval "$(starship init zsh)"
+
+export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
 # pyenv config
 export PYENV_ROOT=$HOME/.pyenv
 export PATH=$PYENV_ROOT/bin:$PATH
-export PATH="$PYENV_ROOT/shims:${PATH}"
+export PATH=$PYENV_ROOT/shims:$PATH
 
 eval "$(pyenv init --path)"
 eval "$(pyenv virtualenv-init -)"
-
-ufetch-arco | lolcat
