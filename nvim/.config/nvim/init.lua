@@ -3,7 +3,7 @@ local fn = vim.fn -- call vim functions
 local set = vim.opt
 local execute = vim.api.nvim_command
 
-local U = require 'utils'
+local U = require 'core.utils'
 local map = U.map
 local nmap = U.nmap
 local imap = U.imap
@@ -33,12 +33,49 @@ packer.startup(function ()
     config = require('nv-tree').config,
   }
 
-  --[[ use {
-    'akinsho/bufferline.nvim',
-    opt = true,
-    event = { 'BufEnter' },
-    config = require('_bufferline').config,
-  } ]]
+  use {
+    'nvim-treesitter/nvim-treesitter',
+    run = ':TSUpdate',
+    config = require('_treesitter').config
+  }
+
+  use 'nvim-lua/plenary.nvim'
+
+  use {
+    'nvim-telescope/telescope.nvim',
+    event = { 'VimEnter' },
+    setup = require('nv-telescope').setup,
+    config = require('nv-telescope').config,
+  }
+
+  use {
+    "neovim/nvim-lspconfig",
+    config = require("core.lsp"),
+  }
+
+  use {
+    'williamboman/nvim-lsp-installer',
+  }
+
+  use {
+    'jose-elias-alvarez/null-ls.nvim',
+    -- config = require('_null.lua').config,
+  }
+
+  use {
+    'jose-elias-alvarez/nvim-lsp-ts-utils',
+  }
+
+  use {
+    'folke/trouble.nvim',
+    config = require('nv-trouble').config,
+    requires = { "kyazdani42/nvim-web-devicons" },
+  }
+
+  use {
+    'windwp/nvim-ts-autotag',
+    config = function() require('nvim-ts-autotag').setup() end
+  }
 
   use {
     "nanozuki/tabby.nvim",
@@ -51,59 +88,12 @@ packer.startup(function ()
     config = require('_fm').config
   }
 
-  use {
-    'nvim-treesitter/nvim-treesitter',
-    run = ':TSUpdate',
-    config = require('_treesitter').config
-  }
 
   use {
     'windwp/nvim-autopairs',
     event = { 'InsertEnter' },
-    config = require('_autopairs').config
+    config = require('core.autopairs').config
   }
-
-  use {
-    'nvim-telescope/telescope.nvim',
-    event = { 'VimEnter' },
-    setup = require('nv-telescope').setup,
-    config = require('nv-telescope').config,
-    requires = { {'nvim-lua/plenary.nvim'} },
-  }
-
-  use {
-    "neovim/nvim-lspconfig",
-    config = require("lsp"),
-  }
-
-  --[[ use {
-  'jose-elias-alvarez/null-ls.nvim',
-  requires = { {'nvim-lua/plenary.nvim'} },
-    } ]]
-
-  use {
-    'folke/trouble.nvim',
-    config = require('nv-trouble').config,
-    requires = { "kyazdani42/nvim-web-devicons" },
-  }
-
-  use {
-    'jose-elias-alvarez/nvim-lsp-ts-utils',
-  }
-
-  use {
-    'windwp/nvim-ts-autotag',
-    config = function() require('nvim-ts-autotag').setup() end
-  }
-
-  --[[ use {
-    'hrsh7th/nvim-compe',
-    config = require('nv-compe').config,
-    event = { 'InsertEnter' },
-    requires = {
-      "L3MON4D3/LuaSnip"
-    }
-  } ]]
 
   use {
     "hrsh7th/nvim-cmp",
@@ -118,27 +108,15 @@ packer.startup(function ()
     }
   }
 
-  use {
+  --[[ use {
     'hoob3rt/lualine.nvim',
     config = require('_lualine').config
-
-  }
-
-  use {
-    "projekt0n/github-nvim-theme",
-    after = "lualine.nvim",
-    config = function()
-      require("github-theme").setup({
-        theme_style = "dark"
-      })
-    end
-  }
+  } ]]
 
   use {
     'lewis6991/gitsigns.nvim',
     config = require('_signs').config,
     event = { "BufReadPre", "BufNewFile" },
-    requires = { "nvim-lua/plenary.nvim" },
   }
 
   use {
@@ -156,6 +134,15 @@ packer.startup(function ()
   use {
     'tpope/vim-surround',
     event = { "InsertEnter" },
+  }
+
+  use {
+    "projekt0n/github-nvim-theme",
+    --[[ config = function()
+      require("github-theme").setup({
+        theme_style = "dark"
+      })
+    end ]]
   }
 
   use 'tpope/vim-fugitive'
@@ -323,8 +310,8 @@ vim.g.netrw_banner = 0
 set.termguicolors = true
 
 -- tokyonight config
--- vim.g.tokyonight_style = "night"
--- vim.cmd [[ colorscheme tokyonight ]]
+vim.g.tokyonight_style = "night"
+vim.cmd [[ colorscheme tokyonight ]]
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1
@@ -388,7 +375,7 @@ imap('.', '.<C-g>u')
 imap('!', '!<C-g>u')
 imap('(', '(<C-g>u')
 
-U.map('c', 'w!!', "<esc>:lua require 'utils'.sudo_write()<CR>", { silent = true })
+U.map('c', 'w!!', "<esc>:lua require 'core.utils'.sudo_write()<CR>", { silent = true })
 
 nmap('<leader>.', '<cmd>Xplr<CR>')
 -----------------------------------------------------------------------------//

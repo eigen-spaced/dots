@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup()
-  local U = require 'utils'
+  local U = require 'core.utils'
   U.map('n', '<leader>e', '<cmd>NvimTreeToggle<CR>', { silent = true, noremap = true })
 end
 

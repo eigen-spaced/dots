@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup()
-  local U = require 'utils'
+  local U = require 'core.utils'
 
   U.map('n', '<C-p>', '<cmd>Telescope find_files<CR>', { silent = true, noremap = true })
   U.map('n', '<Leader>bb', '<cmd>Telescope buffers<CR>', { silent = true, noremap = true })
@@ -48,8 +48,6 @@ function M.config()
     pickers = {
       find_files = {
         previewer = false,
-        theme = 'ivy',
-        layout_config = { height = 0.55 },
       }
     }
   }
