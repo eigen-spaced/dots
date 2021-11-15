@@ -1,7 +1,8 @@
 local M = {}
 
 function M.config()
-  local status_cmp_ok, cmp = pcall(require, "cmp")
+  local status_cmp_ok, cmp = pcall(require, 'cmp')
+
   if not status_cmp_ok then
     return
   end
@@ -60,9 +61,9 @@ function M.config()
         fallback()
       end
     end, {
-        'i',
-        's',
-      }),
+      'i',
+      's',
+    }),
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
@@ -74,9 +75,9 @@ function M.config()
         fallback()
       end
     end, {
-        'i',
-        's',
-      }),
+      'i',
+      's',
+    }),
     ['<C-n>'] = cmp.mapping.select_next_item {
       behavior = cmp.SelectBehavior.Insert,
     },

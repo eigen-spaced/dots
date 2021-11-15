@@ -6,7 +6,9 @@ local nmap = U.nmap
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local custom_attach = function(client, bufnr)
-  local function buf_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+  local function buf_option(...)
+    vim.api.nvim_buf_set_option(bufnr, ...)
+  end
 
   --Enable completion triggered by <c-x><c-o>
   buf_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
@@ -44,7 +46,6 @@ local custom_attach = function(client, bufnr)
   -- vim.cmd [[autocmd User DiagnosticsChanged lua show_diagnostics()]]
   -- vim.cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
-
   -- Set autocommands conditional on server_capabilities
   if client.resolved_capabilities.document_formatting then
     vim.cmd [[
@@ -64,7 +65,8 @@ local custom_attach = function(client, bufnr)
           augroup END
         ]]
   end
-
 end
+
+local my_str = "fish"
 
 return custom_attach

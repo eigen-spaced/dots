@@ -3,24 +3,28 @@ local fn = vim.fn -- call vim functions
 local set = vim.opt
 local execute = vim.api.nvim_command
 
-local U = require 'core.utils'
-local map = U.map
-local nmap = U.nmap
-local imap = U.imap
-local vmap = U.vmap
+local map = require('core.utils').map
+local nmap = require('core.utils').nmap
+local vmap = require('core.utils').vmap
+local imap = require('core.utils').imap
 
 -- Bootstrap packer
-local install_path = fn.stdpath('data')..'/site/pack/packer/start/packer.nvim'
+local install_path = fn.stdpath 'data' .. '/site/pack/packer/start/packer.nvim'
 
 if fn.empty(fn.glob(install_path)) > 0 then
-  fn.system({'git', 'clone', 'https://github.com/wbthomason/packer.nvim', install_path})
+  fn.system {
+    'git',
+    'clone',
+    'https://github.com/wbthomason/packer.nvim',
+    install_path,
+  }
   execute 'packadd packer.nvim'
 end
 
 local packer = require 'packer'
 local use = packer.use
 
-packer.startup(function ()
+packer.startup(function()
   use { 'wbthomason/packer.nvim', opt = true }
 
   use { 'kyazdani42/nvim-web-devicons' }
@@ -29,115 +33,144 @@ packer.startup(function ()
     'kyazdani42/nvim-tree.lua',
     opt = true,
     cmd = { 'NvimTreeOpen', 'NvimTreeToggle' },
-    setup = require('nv-tree').setup,
-    config = require('nv-tree').config,
+    setup = function()
+      require('modules.nvim-tree').setup()
+    end,
+    config = function()
+      require('modules.nvim-tree').config()
+    end,
   }
 
   use {
     'nvim-treesitter/nvim-treesitter',
     run = ':TSUpdate',
-    config = require('_treesitter').config
+    config = function()
+      require('modules.treesitter').config()
+    end,
   }
 
   use 'nvim-lua/plenary.nvim'
 
   use {
     'nvim-telescope/telescope.nvim',
-    event = { 'VimEnter' },
-    setup = require('nv-telescope').setup,
-    config = require('nv-telescope').config,
+    module = 'telescope',
+    setup = function()
+      require('modules.telescope').setup()
+    end,
+    config = function()
+      require('modules.telescope').config()
+    end,
   }
 
   use {
-    "neovim/nvim-lspconfig",
-    config = require("core.lsp"),
+    'neovim/nvim-lspconfig',
+    config = require 'core.lsp',
   }
 
-  use {
-    'williamboman/nvim-lsp-installer',
-  }
+  use { 'williamboman/nvim-lsp-installer' }
 
   use {
     'jose-elias-alvarez/null-ls.nvim',
-    -- config = require('_null.lua').config,
-  }
-
-  use {
     'jose-elias-alvarez/nvim-lsp-ts-utils',
   }
 
   use {
     'folke/trouble.nvim',
-    config = require('nv-trouble').config,
-    requires = { "kyazdani42/nvim-web-devicons" },
+    config = function()
+      require('modules.trouble').config()
+    end,
+    requires = { 'kyazdani42/nvim-web-devicons' },
   }
 
   use {
     'windwp/nvim-ts-autotag',
-    config = function() require('nvim-ts-autotag').setup() end
+    config = function()
+      require('nvim-ts-autotag').setup()
+    end,
   }
 
   use {
-    "nanozuki/tabby.nvim",
-    requires = "kyazdani42/nvim-web-devicons",
-    config = function() require("tabby").setup() end,
+    'nanozuki/tabby.nvim',
+    requires = 'kyazdani42/nvim-web-devicons',
+    config = function()
+      require('tabby').setup()
+    end,
   }
 
   use {
     'is0n/fm-nvim',
-    config = require('_fm').config
+    config = function()
+      require('modules.fm').config()
+    end,
   }
 
+  use {
+    'AckslD/nvim-neoclip.lua',
+    module = 'neoclip',
+    event = { 'TextYankPost' },
+    setup = function()
+      require('modules.neoclip').setup()
+    end,
+    config = function()
+      require('modules.neoclip').config()
+    end,
+  }
 
   use {
     'windwp/nvim-autopairs',
     event = { 'InsertEnter' },
-    config = require('core.autopairs').config
+    config = function()
+      require('modules.autopairs').config()
+    end,
   }
 
   use {
-    "hrsh7th/nvim-cmp",
-    config = require("_cmp").config,
+    'hrsh7th/nvim-cmp',
+    config = function()
+      require('core.cmp').config()
+    end,
     requires = {
-      "L3MON4D3/LuaSnip",
-      "saadparwaiz1/cmp_luasnip",
-      "hrsh7th/cmp-buffer",
-      "hrsh7th/cmp-nvim-lsp",
-      "hrsh7th/cmp-path",
-      "hrsh7th/cmp-nvim-lua",
-    }
+      'L3MON4D3/LuaSnip',
+      'saadparwaiz1/cmp_luasnip',
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-path',
+      'hrsh7th/cmp-nvim-lua',
+    },
   }
 
   --[[ use {
     'hoob3rt/lualine.nvim',
-    config = require('_lualine').config
+    config = require('modules.lualine').config
   } ]]
 
   use {
     'lewis6991/gitsigns.nvim',
-    config = require('_signs').config,
-    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require('modules.gitsigns').config()
+    end,
+    event = { 'BufReadPre', 'BufNewFile' },
   }
 
   use {
-    "lukas-reineke/indent-blankline.nvim",
+    'lukas-reineke/indent-blankline.nvim',
     config = function()
-      require("indent_blankline").setup {
+      require('indent_blankline').setup {
         show_current_context = true,
-        buftype_exclude = { "terminal", "readonly" }
+        buftype_exclude = { 'terminal', 'readonly' },
       }
-    end
+    end,
   }
 
   use 'tpope/vim-eunuch'
 
   use {
     'tpope/vim-surround',
-    event = { "InsertEnter" },
+    event = { 'InsertEnter' },
   }
 
   use {
-    "projekt0n/github-nvim-theme",
+    'projekt0n/github-nvim-theme',
     --[[ config = function()
       require("github-theme").setup({
         theme_style = "dark"
@@ -160,16 +193,17 @@ packer.startup(function ()
 end)
 
 local executable = function(e)
-    return fn.executable(e) > 0
+  return fn.executable(e) > 0
 end
 
 vim.g.mapleader = ' '
 
 -- PLUGIN: b3nj5m1n / kommentary {{{
-  vim.g.kommentary_create_default_mappings = false
-  vim.api.nvim_set_keymap("n", "<leader>cc", "<Plug>kommentary_line_default", {})
-  vim.api.nvim_set_keymap("n", "<leader>c", "<Plug>kommentary_motion_default", {})
-  vim.api.nvim_set_keymap("v", "<leader>c", "<Plug>kommentary_visual_default<C-c>", {})
+vim.g.kommentary_create_default_mappings = false
+nmap('<leader>cc', '<Plug>kommentary_line_default', {})
+nmap('<leader>c', '<Plug>kommentary_motion_default', {})
+vmap('<leader>c', '<Plug>kommentary_visual_default<C-c>', {})
+
 -- }}}
 
 -----------------------------------------------------------------------------//
@@ -203,11 +237,11 @@ set.emoji = false -- turn off as they are treated as double width characters
 set.list = true -- show invisible characters
 
 set.listchars = {
-    eol = ' ',
-    tab = '→ ',
-    extends = '…',
-    precedes = '…',
-    trail = '·',
+  eol = ' ',
+  tab = '→ ',
+  extends = '…',
+  precedes = '…',
+  trail = '·',
 }
 set.shortmess:append 'I' -- disable :intro startup screen
 
@@ -253,9 +287,9 @@ cmd [[set nohlsearch]]
 
 -- Use faster grep alternatives if possible
 if executable 'rg' then
-    set.grepprg =
-        [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
-    set.grepformat:prepend { '%f:%l:%c:%m' }
+  set.grepprg =
+    [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
+  set.grepformat:prepend { '%f:%l:%c:%m' }
 end
 
 -----------------------------------------------------------------------------//
@@ -265,13 +299,13 @@ set.hidden = true -- Enable modified buffers in background
 set.splitbelow = true -- Put new windows below current
 set.splitright = true -- Put new windows right of current
 set.fillchars = {
-    vert = '│',
-    fold = ' ',
-    diff = '-', -- alternatives: ⣿ ░
-    msgsep = '‾',
-    foldopen = '▾',
-    foldsep = '│',
-    foldclose = '▸',
+  vert = '│',
+  fold = ' ',
+  diff = '-', -- alternatives: ⣿ ░
+  msgsep = '‾',
+  foldopen = '▾',
+  foldsep = '│',
+  foldclose = '▸',
 }
 
 -----------------------------------------------------------------------------//
@@ -292,7 +326,6 @@ cmd [[
     autocmd TermClose * call feedkeys("i")
 ]]
 
-
 -----------------------------------------------------------------------------//
 -- Mouse {{{1
 -----------------------------------------------------------------------------//
@@ -310,7 +343,7 @@ vim.g.netrw_banner = 0
 set.termguicolors = true
 
 -- tokyonight config
-vim.g.tokyonight_style = "night"
+vim.g.tokyonight_style = 'night'
 vim.cmd [[ colorscheme tokyonight ]]
 
 -----------------------------------------------------------------------------//
@@ -353,15 +386,18 @@ nmap('<leader>si', '<cmd>luafile ~/.config/nvim/init.lua<CR>')
 nmap('<leader>so', '<cmd>source %<CR>')
 
 -- Line bubbling
-U.map('x', 'J', ':m \'>+1<CR>gv-gv')
-U.map('x', 'K', ':m \'<-2<CR>gv-gv')
+map('x', 'J', ':m \'>+1<CR>gv-gv')
+map('x', 'K', ':m \'<-2<CR>gv-gv')
 imap('<C-j>', '<cmd>move .+1<CR><esc>==a')
 imap('<C-k>', '<cmd>move .-2<CR><esc>==a')
 nmap('<leader>j', '<cmd>move .+1<CR>==')
 nmap('<leader>k', '<cmd>move .-2<CR>==')
 
 -- Close readonly buffers with q
-nmap('q', '&readonly ? \':close!<CR>\' : \'q\'', { expr = true, noremap = true })
+nmap('q', '&readonly ? \':close!<CR>\' : \'q\'', {
+  expr = true,
+  noremap = true,
+})
 
 map('', 'Q', '') -- disable Q for ex mode
 map('', 'q:', '') -- disable Q for ex mode
@@ -375,9 +411,14 @@ imap('.', '.<C-g>u')
 imap('!', '!<C-g>u')
 imap('(', '(<C-g>u')
 
-U.map('c', 'w!!', "<esc>:lua require 'core.utils'.sudo_write()<CR>", { silent = true })
+map(
+  'c',
+  'w!!',
+  '<esc>:lua require \'core.utils\'.sudo_write()<CR>',
+  { silent = true }
+)
 
-nmap('<leader>.', '<cmd>Xplr<CR>')
+nmap('<leader>.', '<cmd>Nnn<CR>')
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//

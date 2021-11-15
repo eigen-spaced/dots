@@ -3,6 +3,15 @@ return function()
   local servers = require 'core.lsp.servers'
   local custom_attach = require 'core.lsp.custom_attach'
 
+  vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
+    vim.lsp.diagnostic.on_publish_diagnostics,
+    {
+      virtual_text = {
+        prefix = '▎', -- Could be '●', '▎', 'x'
+      },
+    }
+  )
+
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   -- compe config
   require('cmp_nvim_lsp').update_capabilities(capabilities)
@@ -13,18 +22,15 @@ return function()
   lspconfig['null-ls'].setup {
     on_attach = custom_attach,
     -- Fallback to .bashrc as a project root to enable LSP on loose files
+    -- stylua: ignore
     root_dir = function(fname)
-      return lspconfig.util.root_pattern(
-        'tsconfig.json',
-        'pyproject.toml'
-      )(fname) or lspconfig.util.root_pattern(
-          '.eslintrc.js',
-          '.git'
-        )(fname) or lspconfig.util.root_pattern(
-          'package.json',
-          '.git/',
-          '.zshrc'
-        )(fname)
+      return lspconfig.util.root_pattern('tsconfig.json', 'pyproject.toml')(
+        fname
+      ) or lspconfig.util.root_pattern('.eslintrc.js', '.git')(fname) or lspconfig.util.root_pattern(
+        'package.json',
+        '.git/',
+        '.zshrc'
+      )(fname)
     end,
   }
 
@@ -36,9 +42,8 @@ return function()
   } ]]
 
   for server, config in pairs(servers) do
-    lspconfig[server].setup(vim.tbl_deep_extend(
-      "force",
-      { capabilities = capabilities },
-      config))
+    lspconfig[server].setup(
+      vim.tbl_deep_extend('force', { capabilities = capabilities }, config)
+    )
   end
 end
