@@ -1,4 +1,5 @@
 local cmd = vim.cmd -- execute vim commands
+local exec = vim.api.nvim_exec
 local fn = vim.fn -- call vim functions
 local set = vim.opt
 local execute = vim.api.nvim_command
@@ -184,7 +185,26 @@ packer.startup(function()
 
   use 'bluz71/vim-moonfly-colors'
 
-  use 'b3nj5m1n/kommentary'
+  use {
+    'numToStr/Comment.nvim',
+    config = function()
+      require('Comment').setup {
+        toggler = {
+          ---line-comment keymap
+          line = '<leader>cc',
+          ---block-comment keymap
+          block = '<leader>bc',
+        },
+
+        opleader = {
+          ---line-comment keymap
+          line = '<leader>c',
+          ---block-comment keymap
+          block = '<leader>b',
+        },
+      }
+    end,
+  }
 
   use {
     'famiu/bufdelete.nvim',
@@ -195,16 +215,6 @@ end)
 local executable = function(e)
   return fn.executable(e) > 0
 end
-
-vim.g.mapleader = ' '
-
--- PLUGIN: b3nj5m1n / kommentary {{{
-vim.g.kommentary_create_default_mappings = false
-nmap('<leader>cc', '<Plug>kommentary_line_default', {})
-nmap('<leader>c', '<Plug>kommentary_motion_default', {})
-vmap('<leader>c', '<Plug>kommentary_visual_default<C-c>', {})
-
--- }}}
 
 -----------------------------------------------------------------------------//
 -- Indentation {{{1
@@ -349,6 +359,8 @@ vim.cmd [[ colorscheme tokyonight ]]
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1
 -----------------------------------------------------------------------------//
+vim.g.mapleader = ' '
+
 -- unmap any functionality tied to space
 nmap('<Space>', '<NOP>')
 
@@ -422,3 +434,12 @@ nmap('<leader>.', '<cmd>Nnn<CR>')
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//
+-- prevent auto commenting of new lines
+exec([[au BufEnter * set fo-=c fo-=r fo-=o]], false)
+
+-- git commit window
+exec(
+  [[au BufNewFile,BufRead COMMIT_EDITMSG set spell nonumber wrap linebreak]],
+  false
+)
+exec([[au filetype gitcommit let b:EditorConfig_disable=1]], false)
