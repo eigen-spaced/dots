@@ -9,16 +9,16 @@ function U.map(mode, key, cmd, opts)
   vim.api.nvim_set_keymap(mode, key, cmd, options)
 end
 
-function U.nmap(key, cmd, opts)
-  U.map('n', key, cmd, opts)
+function U.nmap(...)
+  U.map('n', ...)
 end
 
-function U.imap(key, cmd, opts)
-  U.map('i', key, cmd, opts)
+function U.vmap(...)
+  U.map('v', ...)
 end
 
-function U.vmap(key, cmd, opts)
-  U.map('v', key, cmd, opts)
+function U.imap(...)
+  U.map('i', ...)
 end
 
 function U.buf_map(mode, key, cmd, opts)
