@@ -25,8 +25,8 @@ function M.config()
           'graphql',
         },
       },
-      null_ls.builtins.diagnostics.shellcheck,
-      null_ls.builtins.code_actions.refactoring,
+      -- null_ls.builtins.diagnostics.shellcheck,
+      -- null_ls.builtins.code_actions.refactoring,
     },
   })
 end

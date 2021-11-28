@@ -49,7 +49,7 @@ servers.sumneko_lua = {
 }
 
 servers.tsserver = {
-  on_attach = function(client, _)
+  on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
 
     local ts_utils = require 'nvim-lsp-ts-utils'
@@ -85,47 +85,50 @@ servers.tsserver = {
     -- required to fix code action ranges
     ts_utils.setup_client(client)
 
-    custom_attach(client)
+    custom_attach(client, bufnr)
   end,
 }
 
 servers.bashls = {
-  on_attach = function(client, _)
-    custom_attach(client)
+  on_attach = function(client, bufnr)
+    custom_attach(client, bufnr)
   end,
 }
 
 servers.vimls = {
-  on_attach = function(client, _)
-    custom_attach(client)
+  on_attach = function(client, bufnr)
+    custom_attach(client, bufnr)
   end,
 }
 
 servers.cssls = {
-  on_attach = function(client, _)
-    custom_attach(client)
+  on_attach = function(client, bufnr)
+    client.resolved_capabilities.document_formatting = false
+    custom_attach(client, bufnr)
   end,
 }
 
 -- HTML
 servers.html = {
-  on_attach = function(client, _)
-    custom_attach(client)
+  -- cmd = { 'html languageserver', '--stdio' },
+  on_attach = function(client, bufnr)
+    client.resolved_capabilities.document_formatting = false
+    custom_attach(client, bufnr)
   end,
 }
 
 -- PYTHON
 servers.pyright = {
-  on_attach = function(client, _)
-    custom_attach(client)
+  on_attach = function(client, bufnr)
+    custom_attach(client, bufnr)
   end,
 }
 
 -- HASKELL
 servers.hls = {
-  on_attach = function(client, _)
+  on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
-    custom_attach(client)
+    custom_attach(client, bufnr)
   end,
 }
 
