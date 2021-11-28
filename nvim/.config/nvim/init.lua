@@ -146,6 +146,10 @@ packer.startup(function()
   } ]]
 
   use {
+    'mattn/emmet-vim',
+  }
+
+  use {
     'lewis6991/gitsigns.nvim',
     config = function()
       require('modules.gitsigns').config()
@@ -179,7 +183,16 @@ packer.startup(function()
     end ]]
   }
 
-  use 'tpope/vim-fugitive'
+  use {
+    'TimUntersberger/neogit',
+    module = 'neogit',
+    setup = function()
+      require('modules.neogit').setup()
+    end,
+    config = function()
+      require('modules.neogit').config()
+    end,
+  }
 
   use 'folke/tokyonight.nvim'
 
@@ -406,7 +419,7 @@ nmap('<leader>j', '<cmd>move .+1<CR>==')
 nmap('<leader>k', '<cmd>move .-2<CR>==')
 
 -- Close readonly buffers with q
-nmap('q', '&readonly ? \':close!<CR>\' : \'q\'', {
+nmap('gq', '&readonly ? \':close!<CR>\' : \'q\'', {
   expr = true,
   noremap = true,
 })
