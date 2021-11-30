@@ -455,4 +455,6 @@ exec(
   [[au BufNewFile,BufRead COMMIT_EDITMSG set spell nonumber wrap linebreak]],
   false
 )
+exec([[au BufEnter,BufWinEnter,WinEnter COMMIT_EDITMSG startinsert]], false)
+
 exec([[au filetype gitcommit let b:EditorConfig_disable=1]], false)

@@ -42,17 +42,17 @@ local custom_attach = function(client, bufnr)
   -- cmd [[autocmd CursorHoldI * silent! lua vim.lsp.buf.signature_help()]]
 
   -- Set autocommands conditional on server_capabilities
-  -- if client.resolved_capabilities.document_formatting then
-  --   cmd [[
-  --     augroup format_on_save
-  --     autocmd! * <buffer>
-  --     autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting()
-  --     augroup END
-  --   ]]
-  -- end
+  if client.resolved_capabilities.document_formatting then
+    cmd [[
+          augroup format_on_save
+          autocmd! * <buffer>
+          autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting()
+          augroup END
+        ]]
+  end
 
   if client.resolved_capabilities.document_highlight then
-    vim.cmd [[
+    cmd [[
           augroup lsp_document_highlight
           autocmd! * <buffer>
           autocmd CursorHold <buffer> lua vim.lsp.buf.document_highlight()

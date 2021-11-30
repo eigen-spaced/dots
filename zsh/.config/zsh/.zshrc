@@ -9,6 +9,7 @@ setopt interactive_comments
 zle_highlight=('paste:none')
 
 unsetopt BEEP
+unsetopt nomatch
 
 HISTFILE="$HOME"/.config/zsh/zsh_history
 HISTSIZE=10000

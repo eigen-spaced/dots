@@ -11,4 +11,5 @@ xmonad/.config/xmonad/xmonad-contrib/
 
 nvim/.config/nvim/plugin
 
+zsh/.config/zsh/plugins
 zsh/.config/zsh/zsh_history
