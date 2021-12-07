@@ -1,5 +1,4 @@
-column_width = 81
+column_width = 80
 no_call_parentheses = true
-indent_type = "Spaces"
 indent_width = 2
-quote_style = "ForceSingle"
+indent_type = "Spaces"

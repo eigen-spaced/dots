@@ -1,46 +1,46 @@
-local custom_attach = require 'core.lsp.custom_attach'
+local custom_attach = require "core.lsp.custom_attach"
 
 local servers = {}
-local HOME = os.getenv 'HOME'
+local HOME = os.getenv "HOME"
 local SYSTEM_NAME
 
-if vim.fn.has 'mac' == 1 then
-  SYSTEM_NAME = 'macOS'
-elseif vim.fn.has 'unix' == 1 then
-  SYSTEM_NAME = 'Linux'
+if vim.fn.has "mac" == 1 then
+  SYSTEM_NAME = "macOS"
+elseif vim.fn.has "unix" == 1 then
+  SYSTEM_NAME = "Linux"
 end
 
 -- LUA
 local sumneko_binary = HOME
-  .. '/dev/lua-language-server'
-  .. '/bin/'
+  .. "/dev/lua-language-server"
+  .. "/bin/"
   .. SYSTEM_NAME
-  .. '/lua-language-server'
+  .. "/lua-language-server"
 
 servers.sumneko_lua = {
   cmd = {
     sumneko_binary,
-    '-E',
-    HOME .. '/dev/lua-language-server' .. '/main.lua',
+    "-E",
+    HOME .. "/dev/lua-language-server" .. "/main.lua",
   },
   on_attach = custom_attach,
   settings = {
     Lua = {
       runtime = {
         -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT',
+        version = "LuaJIT",
         -- Setup your lua path
-        path = vim.split(package.path, ';'),
+        path = vim.split(package.path, ";"),
       },
       diagnostics = {
         -- Get the language server to recognize the `vim` global
-        globals = { 'vim', 'describe', 'root', 'screen', 'mouse' },
+        globals = { "vim", "describe", "root", "screen", "mouse" },
       },
       workspace = {
         -- Make the server aware of Neovim runtime files
         library = {
-          [vim.fn.expand '$VIMRUNTIME/lua'] = true,
-          [vim.fn.expand '$VIMRUNTIME/lua/vim/lsp'] = true,
+          [vim.fn.expand "$VIMRUNTIME/lua"] = true,
+          [vim.fn.expand "$VIMRUNTIME/lua/vim/lsp"] = true,
         },
       },
       telemetry = { enable = false },
@@ -52,7 +52,7 @@ servers.tsserver = {
   on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
 
-    local ts_utils = require 'nvim-lsp-ts-utils'
+    local ts_utils = require "nvim-lsp-ts-utils"
 
     -- defaults
     ts_utils.setup {
@@ -63,13 +63,13 @@ servers.tsserver = {
       -- eslint
       eslint_enable_code_actions = true,
       eslint_enable_disable_comments = true,
-      eslint_bin = 'eslint_d',
+      eslint_bin = "eslint_d",
       eslint_config_fallback = nil,
       eslint_enable_diagnostics = true,
 
       -- formatting
       enable_formatting = true,
-      formatter = 'prettierd',
+      formatter = "prettierd",
       formatter_config_fallback = nil,
 
       -- parentheses completion

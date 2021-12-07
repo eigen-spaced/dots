@@ -285,6 +285,8 @@ ex ()
 export PATH="$PATH:/usr/local/go/bin"
 export PATH="$PATH:$HOME/go/bin"
 
+export PATH="$PATH:$HOME/.cargo/bin"
+
 alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
 eval "$(starship init zsh)"
 

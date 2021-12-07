@@ -2,14 +2,18 @@ local M = {}
 
 function M.setup()
   local U = require 'core.utils'
-  U.map('n', '<leader>e', '<cmd>NvimTreeToggle<CR>', { silent = true, noremap = true })
+  U.map(
+    'n',
+    '<leader>e',
+    '<cmd>NvimTreeToggle<CR>',
+    { silent = true, noremap = true }
+  )
 end
 
 function M.config()
   vim.g.nvim_tree_ignore = { '.git', 'node_modules', '.cache' }
   vim.g.nvim_tree_auto_close = 1 -- 0 by default, closes the tree when it's the last window
   vim.g.nvim_tree_follow = 1 -- 0 by default, this option allows the cursor to be updated when entering a buffer
-
 
   vim.g.nvim_tree_show_icons = {
     git = 1,
@@ -29,14 +33,14 @@ function M.config()
       untracked = '★',
     },
     folder = {
-      arrow_open = "",
-      arrow_closed = "",
-      default = "",
-      open = "",
-      empty = "",
-      empty_open = "",
-      symlink = "",
-      symlink_open = "",
+      arrow_open = '',
+      arrow_closed = '',
+      default = '',
+      open = '',
+      empty = '',
+      empty_open = '',
+      symlink = '',
+      symlink_open = '',
     },
   }
 
@@ -75,15 +79,15 @@ function M.config()
           cb = tree_cb 'edit',
         },
 
-        { key = '<CR>',     cb = tree_cb 'edit' },
-        { key = 'o',        cb = tree_cb('edit') },
-        { key = 'l',        cb = tree_cb('edit') },
-        { key = '<C-v>',    cb = tree_cb('vsplit') },
-        { key = '<C-s>',    cb = tree_cb('split') },
-        { key = '<C-t>',    cb = tree_cb('tabnew') },
-        { key = 'R',        cb = tree_cb('refresh') },
-        { key = 'r',        cb = tree_cb('rename') },
-        { key = '-',        cb = tree_cb('dir_up') },
+        { key = '<CR>', cb = tree_cb 'edit' },
+        { key = 'o', cb = tree_cb 'edit' },
+        { key = 'l', cb = tree_cb 'edit' },
+        { key = '<C-v>', cb = tree_cb 'vsplit' },
+        { key = '<C-s>', cb = tree_cb 'split' },
+        { key = '<C-t>', cb = tree_cb 'tabnew' },
+        { key = 'R', cb = tree_cb 'refresh' },
+        { key = 'r', cb = tree_cb 'rename' },
+        { key = '-', cb = tree_cb 'dir_up' },
       },
     },
 

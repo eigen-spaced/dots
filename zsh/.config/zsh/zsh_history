@@ -1783,3 +1783,177 @@ live-server index.html
 cd ..
 live-server css-grid
 reboot
+pacman -S starship pyenv
+nv
+pacman -S dmenu rofi
+pacman -S nitrogen
+nitrogen
+pacman -S lxappearance
+killall awesome
+pacman -Ss ibm
+pacman -Ss ibm plex
+yay -Ss ibm plex
+yay -S otf-ibm-plex
+pacman -Ss gnome font
+pacman -Ss gnome-font-viewer
+pacman -S gnome-font-viewer
+exit
+cd ~/Downloads
+ls
+mkdir ~/.local/share/gnome-shell/extensions | mv rrc@ogarcia.me ~/.local/share/gnome-shell/
+ls ~/.local/share/gnome-shell/extensions
+cd ~/.local/share/gnome-shell
+ls
+mv rrc@ogarcia.me extensions
+cd ~
+exit
+exit
+vi ~/.config/awesome/rc.lua
+pacman -S xdotool
+xkill
+mkdir /dev
+ls
+mkdir dev
+cd dev
+git clone https://github.com/sumneko/lua-language-server
+cd lua-language-server
+git submodule update --init --recursive
+pacman -S nonja
+pacman -S ninja
+cd 3rd\luamake
+cd 3rd/luamake
+./compile/install.sh
+cd ../..
+./3rd/luamake/luamake rebuild
+cd ~/dotfiles
+stow -vSt ~ starship
+vi ~/.config/starship.toml
+fg
+cd ..
+cd ~/dotfiles
+vi ~/.config/starship.toml
+pacman -S mpv
+nconf
+stylua
+cargo install stylua
+zconf
+fg4
+fg
+exec $SHELL
+fg
+fg
+zconf
+pacman -Ss cargo
+pacman -S rust
+cargo install stylua
+vi ~/.zshenv
+exec $SHELL
+nconf
+nconf
+nconf
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+vi init.lua
+update
+reboot
+pacman -S p7zip
+7z x CS.7z
+7z x CS.7z
+pacman -S tmux
+sudo pacman -S haskell-language-server ghc
+vi Gold.hs
+vi Gold.hs
+haskell-language-server
+cd ~/Documents/Haskell/
+ls
+vi chp11/ConDecon.hs
+pacman -Rsc haskell-language-server
+yay -S haskell-language-server-static
+vi chp11/ConDecon.hs
+vi chp11/ConDecon.hs
+cd ~/dotfiles/xmonad/.config/xmonad/
+vi xmonad.hs
+ls
+cd ~
+touch stack.yaml
+vi xmonad.hs
+vi Gold.hs
+nconf
+rm -rf stylua.toml
+vi stylua.toml
+git status
+cd ~
+rm -rf stack.yaml
+cd ~/Documents/Haskell/
+ls
+stack init
+ls
+vi stack.yaml
+vi dbProcessing.hs
+vi dbProcessing.hs
+nconf
+cd ~/Documents/Haskell/
+vi dbProcessing.hs
+nconf
+cd ~/Documents/Haskell/
+vi dbProcessing.hs
+nconf
+cd ~/Documents/Haskell/
+rm -rf stack.yaml
+touch hie.yaml
+vi dbProcessing.hs
+cd ~/Documents/Haskell/
+vi Gold.hs
+vi Pass.hs
+update
+pacman -Ss nvim
+pacman -Ss neovim
+nconf
+nconf
+cd ~/Documents/projects/js-book
+ls
+vi pages/index.tsx
+sudo npm i -g eslint_d @fsouza/prettierd\
+
+update
+cd ~/Documents/Haskell
+vi Collatz.hs
+fg
+stack
+stack ghci
+stack ghci
+cd ~/Documents/Haskell
+ls
+stack ghci
+stack runhaskell Gold.hs
+pacman -Rsc ghc
+vi Gold.hs
+vi Gold.hs
+rm hie.yaml
+touch cabal.project
+vi Gold.hs
+rm -rf cabal.project
+stack ghci
+vi Gold.hs
+ls
+touch hie.yaml
+vi Gold.hs
+stack ghci
+vi Collatz.hs
+stack ghci
+fg
+vi Collatz.hs
+fg
+reboot
