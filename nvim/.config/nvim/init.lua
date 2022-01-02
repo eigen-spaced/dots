@@ -190,6 +190,10 @@ packer.startup(function()
     end ]]
   }
 
+  use "folke/tokyonight.nvim"
+
+  use "rebelot/kanagawa.nvim"
+
   use {
     "TimUntersberger/neogit",
     module = "neogit",
@@ -200,10 +204,6 @@ packer.startup(function()
       require("modules.neogit").config()
     end,
   }
-
-  use "folke/tokyonight.nvim"
-
-  use "bluz71/vim-moonfly-colors"
 
   use {
     "numToStr/Comment.nvim",
@@ -375,7 +375,7 @@ set.termguicolors = true
 
 -- tokyonight config
 vim.g.tokyonight_style = "night"
-vim.cmd [[ colorscheme tokyonight ]]
+vim.cmd [[ colorscheme kanagawa ]]
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1
