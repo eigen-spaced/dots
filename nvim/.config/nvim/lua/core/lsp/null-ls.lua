@@ -3,7 +3,7 @@ local null_ls = require('null-ls')
 local M = {}
 
 function M.config()
-  null_ls.config({
+  null_ls.setup{
     sources = {
       null_ls.builtins.formatting.stylua.with {
         condition = function(utils)
@@ -28,7 +28,8 @@ function M.config()
       -- null_ls.builtins.diagnostics.shellcheck,
       -- null_ls.builtins.code_actions.refactoring,
     },
-  })
+    debug = true,
+  }
 end
 
 return M

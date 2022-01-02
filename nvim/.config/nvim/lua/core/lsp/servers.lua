@@ -18,11 +18,6 @@ local sumneko_binary = HOME
   .. "/lua-language-server"
 
 servers.sumneko_lua = {
-  cmd = {
-    sumneko_binary,
-    "-E",
-    HOME .. "/dev/lua-language-server" .. "/main.lua",
-  },
   on_attach = custom_attach,
   settings = {
     Lua = {
@@ -34,7 +29,7 @@ servers.sumneko_lua = {
       },
       diagnostics = {
         -- Get the language server to recognize the `vim` global
-        globals = { "vim", "describe", "root", "screen", "mouse" },
+        globals = { "vim" },
       },
       workspace = {
         -- Make the server aware of Neovim runtime files
