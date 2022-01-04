@@ -55,6 +55,10 @@ zsh_add_plugin "hlissner/zsh-autopair"
 # For more plugins: https://github.com/unixorn/awesome-zsh-plugins
 # More completions https://github.com/zsh-users/zsh-completions
 
+# disable underlining in syntax highlighting
+(( ${+ZSH_HIGHLIGHT_STYLES} )) || typeset -A ZSH_HIGHLIGHT_STYLES
+ZSH_HIGHLIGHT_STYLES[path]=none
+ZSH_HIGHLIGHT_STYLES[path_prefix]=none
 
 # Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
@@ -241,8 +245,9 @@ alias nv="nvim"
 
 alias luamake="/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake"
 
-alias zconf="nvim ~/.config/zsh/.zshrc"
+alias zconf="cd ~/.config/zsh && nvim ~/.config/zsh/.zshrc"
 alias nconf="cd ~/.config/nvim && nvim init.lua"
+
 alias xconf="nvim ~/.config/xmonad/xmonad.hs"
 
 alias csi="chicken-csi"
@@ -287,15 +292,17 @@ export PATH="$PATH:$HOME/go/bin"
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
-alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
-eval "$(starship init zsh)"
+export npm_config_prefix="$HOME/.local"
 
-export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
+alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
+export PATH="$PATH:$HOME/dev/lua-language-server/bin"
+
+# export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
 # pyenv config
-export PYENV_ROOT=$HOME/.pyenv
-export PATH=$PYENV_ROOT/bin:$PATH
-export PATH=$PYENV_ROOT/shims:$PATH
+# export PYENV_ROOT=$HOME/.pyenv
+# export PATH=$PYENV_ROOT/bin:$PATH
+# export PATH=$PYENV_ROOT/shims:$PATH
 
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"
+# eval "$(pyenv init --path)"
+# eval "$(pyenv virtualenv-init -)"
