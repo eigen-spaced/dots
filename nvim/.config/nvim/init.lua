@@ -109,9 +109,10 @@ packer.startup(function()
   }
 
   use {
-    "is0n/fm-nvim",
-    config = function()
-      require("modules.fm").config()
+    'kwkarlwang/bufresize.nvim',
+    module = 'bufresize',
+    setup = function()
+      vim.cmd [[autocmd VimResized * lua require('bufresize').resize()]]
     end,
   }
 
