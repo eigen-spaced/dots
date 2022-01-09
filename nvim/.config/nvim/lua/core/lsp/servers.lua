@@ -119,6 +119,14 @@ servers.pyright = {
   end,
 }
 
+-- GOPLS
+servers.gopls = {
+  on_attach = function(client, bufnr)
+    custom_attach(client, bufnr)
+  end,
+  flags = { debounce_text_changes = 150 },
+}
+
 -- HASKELL
 servers.hls = {
   on_attach = function(client, bufnr)

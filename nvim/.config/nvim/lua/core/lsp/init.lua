@@ -1,7 +1,6 @@
 return function()
   local lspconfig = require 'lspconfig'
   local servers = require 'core.lsp.servers'
-  local custom_attach = require 'core.lsp.custom_attach'
 
   vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
     vim.lsp.diagnostic.on_publish_diagnostics,
@@ -17,24 +16,8 @@ return function()
   require('cmp_nvim_lsp').update_capabilities(capabilities)
 
   --------------------- custom config servers ---------------------
-  -- null-ls
-  require('core.lsp.null-ls').config()
-  lspconfig['null-ls'].setup {
-    on_attach = custom_attach,
-    -- Fallback to .bashrc as a project root to enable LSP on loose files
-    -- stylua: ignore
-    root_dir = function(fname)
-      return lspconfig.util.root_pattern('tsconfig.json', 'pyproject.toml')(
-        fname
-      ) or lspconfig.util.root_pattern('.eslintrc.js', '.git')(fname) or lspconfig.util.root_pattern(
-        'package.json',
-        '.git/',
-        '.zshrc'
-      )(fname)
-    end,
-  }
+  require('modules.null-ls').config()
 
-  -- efm langserver
   --[[ local efm = require 'core.lsp.efm'
   lspconfig[efm].setup {
     on_attach = custom_attach,
