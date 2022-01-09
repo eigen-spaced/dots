@@ -13,10 +13,12 @@ function M.config()
   require('neoclip').setup {
     history = 1000,
     keys = {
-      i = {
-        paste = '<c-a>',
-        paste_behind = '<c-b>',
-      },
+      telescope = {
+        i = {
+          paste = '<c-a>',
+          paste_behind = '<c-b>',
+        },
+      }
     },
   }
 end
