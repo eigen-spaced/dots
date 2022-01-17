@@ -33,8 +33,8 @@ local custom_attach = function(client, bufnr)
   nmap(']d', 'vim.lsp.diagnostic.goto_next()<CR>')
 
   nmap('<leader>gr', '<cmd>Trouble lsp_references<CR>')
-  nmap('<leader>wd', '<cmd>Trouble lsp_workspace_diagnostics<CR>')
-  nmap('<leader>dd', '<cmd>Trouble lsp_document_diagnostics<CR>')
+  nmap('<leader>wd', '<cmd>Trouble workspace_diagnostics<CR>')
+  nmap('<leader>dd', '<cmd>Trouble document_diagnostics<CR>')
 
   -- cmd [[autocmd CursorHold,CursorHoldI * lua show_diagnostics()]]
   -- cmd [[autocmd CursorHold * lua vim.lsp.diagnostic.show_line_diagnostics()]]
