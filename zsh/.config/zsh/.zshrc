@@ -28,6 +28,13 @@ bindkey "^[[3~" delete-char
 
 WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
+my-backward-delete-word() {
+    local WORDCHARS=${WORDCHARS/\//}
+    zle backward-delete-word
+}
+zle -N my-backward-delete-word
+bindkey '^W' my-backward-delete-word
+
 # completions
 autoload -U compinit && compinit -u
 zstyle ':completion:*' menu select
@@ -43,7 +50,7 @@ source "$ZDOTDIR/zsh-functions"
 
 # Normal files to source
 # zsh_add_file "zsh-exports"
-# zsh_add_file "zsh-vim-mode"
+zsh_add_file "zsh-vim"
 # zsh_add_file "zsh-aliases"
 zsh_add_file "zsh-prompt"
 
@@ -91,7 +98,7 @@ if [ -d "$HOME/.local/bin" ] ;
 fi
 
 #list
-alias ls='ls --color=auto'
+# alias ls='ls --color=auto'
 alias la='ls -a'
 alias ll='ls -la'
 alias l='ls'
@@ -288,7 +295,8 @@ ex ()
 [[ -f ~/.zshrc-personal ]] && . ~/.zshrc-personal
 
 export PATH="$PATH:/usr/local/go/bin"
-export PATH="$PATH:$HOME/go/bin"
+export GOPATH="$HOME/go"
+export PATH="$PATH:$GOPATH/bin"
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
