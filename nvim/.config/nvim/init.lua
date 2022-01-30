@@ -31,24 +31,32 @@ packer.startup(function()
   use { "kyazdani42/nvim-web-devicons" }
 
   use {
-    "kyazdani42/nvim-tree.lua",
-    opt = true,
-    cmd = { "NvimTreeOpen", "NvimTreeToggle" },
+    "nvim-neo-tree/neo-tree.nvim",
+    cmd = {
+      "NeoTreeFloat",
+      "NeoTreeFloatToggle",
+      "NeoTreeReveal",
+      "NeoTreeRevealToggle",
+    },
+    branch = "v1.x",
+    requires = {
+      "MunifTanjim/nui.nvim",
+    },
     setup = function()
-      require("modules.nvim-tree").setup()
+      require("modules.neo-tree").setup()
     end,
     config = function()
-      require("modules.nvim-tree").config()
+      require("modules.neo-tree").config()
     end,
   }
 
   use {
     "nvim-treesitter/nvim-treesitter",
     requires = {
-      {
-        "nvim-treesitter/nvim-treesitter-textobjects",
-        after = "nvim-treesitter",
-      },
+      -- {
+      --   "nvim-treesitter/nvim-treesitter-textobjects",
+      --   after = "nvim-treesitter",
+      -- },
       {
         "nvim-treesitter/playground",
         cmd = "TSPlaygroundToggle",
@@ -68,6 +76,7 @@ packer.startup(function()
     setup = function()
       require("modules.telescope").setup()
     end,
+    
     config = function()
       require("modules.telescope").config()
     end,
@@ -87,6 +96,7 @@ packer.startup(function()
 
   use {
     "folke/trouble.nvim",
+    cmd = "Trouble",
     config = function()
       require("modules.trouble").config()
     end,
@@ -101,18 +111,17 @@ packer.startup(function()
   }
 
   use {
+    "startup-nvim/startup.nvim",
+    config = function()
+      require"startup".setup({theme = "dashboard"})
+    end
+  }
+
+  use {
     "nanozuki/tabby.nvim",
     requires = "kyazdani42/nvim-web-devicons",
     config = function()
       require("tabby").setup()
-    end,
-  }
-
-  use {
-    'kwkarlwang/bufresize.nvim',
-    module = 'bufresize',
-    setup = function()
-      vim.cmd [[autocmd VimResized * lua require('bufresize').resize()]]
     end,
   }
 
@@ -137,12 +146,22 @@ packer.startup(function()
   }
 
   use {
+    'L3MON4D3/LuaSnip',
+    event = { 'InsertEnter' },
+    module = 'luasnip',
+    config = function()
+    --   require 'conf.snippets'
+    require("luasnip/loaders/from_vscode").lazy_load()
+    end,
+    requires = { { 'rafamadriz/friendly-snippets' } },
+  }
+
+  use {
     "hrsh7th/nvim-cmp",
     config = function()
       require("core.cmp").config()
     end,
     requires = {
-      "L3MON4D3/LuaSnip",
       { "hrsh7th/cmp-nvim-lsp" },
       { "saadparwaiz1/cmp_luasnip", after = "nvim-cmp" },
       { "hrsh7th/cmp-buffer", after = "nvim-cmp" },
@@ -152,10 +171,6 @@ packer.startup(function()
   }
 
   use { "michaelb/sniprun", run = "bash ./install.sh" }
-
-  use {
-    "mattn/emmet-vim",
-  }
 
   use {
     "lewis6991/gitsigns.nvim",
@@ -274,7 +289,7 @@ set.listchars = {
   precedes = "…",
   trail = "·",
 }
-set.shortmess:append "I" -- disable :intro startup screen
+-- set.shortmess:append "I" -- disable :intro startup screen
 
 -----------------------------------------------------------------------------//
 -- Title {{{1
@@ -340,6 +355,9 @@ set.fillchars = {
   foldclose = "▸",
 }
 
+-- resize splits when Vim is resized
+cmd [[autocmd VimResized * wincmd =]]
+
 -----------------------------------------------------------------------------//
 -- Terminal {{{1
 -----------------------------------------------------------------------------//
@@ -376,7 +394,7 @@ set.termguicolors = true
 
 -- tokyonight config
 vim.g.tokyonight_style = "night"
-vim.cmd [[ colorscheme kanagawa ]]
+cmd [[ colorscheme kanagawa ]]
 
 -----------------------------------------------------------------------------//
 -- Keymaps {{{1

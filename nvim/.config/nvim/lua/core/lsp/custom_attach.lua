@@ -1,6 +1,6 @@
 local cmd = vim.cmd -- execute vim commands
 
-local U = require 'core.utils'
+local U = require "core.utils"
 local nmap = U.nmap
 
 -- Use an on_attach function to only map the following keys
@@ -11,27 +11,28 @@ local custom_attach = function(client, bufnr)
   end
 
   --Enable completion triggered by <c-x><c-o>
-  buf_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+  buf_option("omnifunc", "v:lua.vim.lsp.omnifunc")
 
   ----------- Mappings -----------
-  nmap('K', '<cmd>lua vim.lsp.buf.hover()<CR>')
+  nmap("K", "<cmd>lua vim.lsp.buf.hover()<CR>")
 
-  nmap('<leader>gd', '<cmd>lua vim.lsp.buf.definition()<CR>')
+  nmap("<leader>gd", "<cmd>lua vim.lsp.buf.definition()<CR>")
 
-  nmap('<leader>gD', '<cmd>lua vim.lsp.buf.declaration()<CR>')
+  nmap("<leader>gD", "<cmd>lua vim.lsp.buf.declaration()<CR>")
 
-  nmap('<leader>gi', '<cmd>lua vim.lsp.buf.implementation()<CR>')
+  nmap("<leader>gi", "<cmd>lua vim.lsp.buf.implementation()<CR>")
 
-  nmap('<leader>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>')
+  nmap("<leader>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>")
 
-  nmap('<leader>gh', '<cmd>lua vim.lsp.buf.signature_help()<CR>')
+  nmap("<leader>gh", "<cmd>lua vim.lsp.buf.signature_help()<CR>")
 
   -- RENAME
-  nmap('<leader>rn', '<cmd>lua vim.lsp.buf.rename()<CR>')
+  nmap("<leader>rn", "<cmd>lua vim.lsp.buf.rename()<CR>")
 
-  nmap('[d', 'vim.lsp.diagnostic.goto_prev()<CR>')
-  nmap(']d', 'vim.lsp.diagnostic.goto_next()<CR>')
+  nmap("[d", "vim.lsp.diagnostic.goto_prev()<CR>")
+  nmap("]d", "vim.lsp.diagnostic.goto_next()<CR>")
 
+  nmap("<leader>xx", '<cmd>Trouble<CR>')
   nmap('<leader>gr', '<cmd>Trouble lsp_references<CR>')
   nmap('<leader>wd', '<cmd>Trouble workspace_diagnostics<CR>')
   nmap('<leader>dd', '<cmd>Trouble document_diagnostics<CR>')
@@ -44,9 +45,9 @@ local custom_attach = function(client, bufnr)
   -- Set autocommands conditional on server_capabilities
   if client.resolved_capabilities.document_formatting then
     cmd [[
-          augroup format_on_save
+          augroup Format
           autocmd! * <buffer>
-          autocmd BufWritePost <buffer> lua vim.lsp.buf.formatting()
+          autocmd BufWritePre <buffer> lua vim.lsp.buf.formatting_sync(nil, 1000)
           augroup END
         ]]
   end

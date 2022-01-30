@@ -1,10 +1,9 @@
 local M = {}
 
 function M.config()
-  require('trouble').setup {
+  require("trouble").setup {
     open_split = { "<c-x>" },
   }
 end
 
 return M
-

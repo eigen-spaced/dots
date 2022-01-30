@@ -1,21 +1,21 @@
 local M = {}
 
-function M.config ()
-  require('lualine').setup {
+function M.config()
+  require("lualine").setup {
     options = {
-      theme = 'tokyonight',
-      section_separators = {'', ''},
-      component_separators = {'', ''}
+      theme = "tokyonight",
+      section_separators = { "", "" },
+      component_separators = { "", "" },
     },
     sections = {
       lualine_c = {
         {
-          'filename',
+          "filename",
           path = 1,
-        }
+        },
       },
-      lualine_x = {'encoding', 'filetype'},
-    }
+      lualine_x = { "encoding", "filetype" },
+    },
   }
 end
 

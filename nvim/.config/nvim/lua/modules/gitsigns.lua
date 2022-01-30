@@ -1,74 +1,74 @@
 local M = {}
 
 function M.config()
-  require('gitsigns').setup {
+  require("gitsigns").setup {
     signs = {
       add = {
-        hl = 'GitSignsAdd',
-        text = '+',
-        numhl = 'GitSignsAddNr',
-        linehl = 'GitSignsAddLn',
+        hl = "GitSignsAdd",
+        text = "+",
+        numhl = "GitSignsAddNr",
+        linehl = "GitSignsAddLn",
       },
       change = {
-        hl = 'GitSignsChange',
-        text = '~',
-        numhl = 'GitSignsChangeNr',
-        linehl = 'GitSignsChangeLn',
+        hl = "GitSignsChange",
+        text = "~",
+        numhl = "GitSignsChangeNr",
+        linehl = "GitSignsChangeLn",
       },
       delete = {
-        hl = 'GitSignsDelete',
-        text = '_',
+        hl = "GitSignsDelete",
+        text = "_",
         show_count = true,
-        numhl = 'GitSignsDeleteNr',
-        linehl = 'GitSignsDeleteLn',
+        numhl = "GitSignsDeleteNr",
+        linehl = "GitSignsDeleteLn",
       },
       topdelete = {
-        hl = 'GitSignsDelete',
-        text = '‾',
+        hl = "GitSignsDelete",
+        text = "‾",
         show_count = true,
-        numhl = 'GitSignsDeleteNr',
-        linehl = 'GitSignsDeleteLn',
+        numhl = "GitSignsDeleteNr",
+        linehl = "GitSignsDeleteLn",
       },
       changedelete = {
-        hl = 'GitSignsChange',
-        text = '~',
+        hl = "GitSignsChange",
+        text = "~",
         show_count = true,
-        numhl = 'GitSignsChangeNr',
-        linehl = 'GitSignsChangeLn',
+        numhl = "GitSignsChangeNr",
+        linehl = "GitSignsChangeLn",
       },
     },
     count_chars = {
-      [1] = '',
-      [2] = '₂',
-      [3] = '₃',
-      [4] = '₄',
-      [5] = '₅',
-      [6] = '₆',
-      [7] = '₇',
-      [8] = '₈',
-      [9] = '₉',
-      ['+'] = '₊',
+      [1] = "",
+      [2] = "₂",
+      [3] = "₃",
+      [4] = "₄",
+      [5] = "₅",
+      [6] = "₆",
+      [7] = "₇",
+      [8] = "₈",
+      [9] = "₉",
+      ["+"] = "₊",
     },
     keymaps = {
       -- Default keymap options
       noremap = true,
       -- buffer = true,
       --
-      ['n ]c'] = {
+      ["n ]c"] = {
         expr = true,
-        "&diff ? ']c' : '<cmd>lua require\"gitsigns.actions\".next_hunk()<CR>'"
+        "&diff ? ']c' : '<cmd>lua require\"gitsigns.actions\".next_hunk()<CR>'",
       },
-      ['n [c'] = {
+      ["n [c"] = {
         expr = true,
-        "&diff ? '[c' : '<cmd>lua require\"gitsigns.actions\".prev_hunk()<CR>'"
+        "&diff ? '[c' : '<cmd>lua require\"gitsigns.actions\".prev_hunk()<CR>'",
       },
 
-      ['n <leader>hs'] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
-      ['n <leader>hu'] = '<cmd>lua require"gitsigns".undo_stage_hunk()<CR>',
-      ['n <leader>hr'] = '<cmd>lua require"gitsigns".reset_hunk()<CR>',
-      ['n <leader>hR'] = '<cmd>lua require"gitsigns".reset_buffer()<CR>',
-      ['n <leader>hp'] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
-      ['n <leader>hb'] = '<cmd>lua require"gitsigns".blame_line()<CR>',
+      ["n <leader>hs"] = '<cmd>lua require"gitsigns".stage_hunk()<CR>',
+      ["n <leader>hu"] = '<cmd>lua require"gitsigns".undo_stage_hunk()<CR>',
+      ["n <leader>hr"] = '<cmd>lua require"gitsigns".reset_hunk()<CR>',
+      ["n <leader>hR"] = '<cmd>lua require"gitsigns".reset_buffer()<CR>',
+      ["n <leader>hp"] = '<cmd>lua require"gitsigns".preview_hunk()<CR>',
+      ["n <leader>hb"] = '<cmd>lua require"gitsigns".blame_line()<CR>',
     },
 
     watch_index = { interval = 1000 },
@@ -77,11 +77,11 @@ function M.config()
     -- use_decoration_api = true,
     preview_config = {
       -- Options passed to nvim_open_win
-      border = 'single',
-      style = 'minimal',
-      relative = 'cursor',
+      border = "single",
+      style = "minimal",
+      relative = "cursor",
       row = 0,
-      col = 1
+      col = 1,
     },
   }
 

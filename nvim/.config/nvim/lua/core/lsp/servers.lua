@@ -1,21 +1,6 @@
 local custom_attach = require "core.lsp.custom_attach"
 
 local servers = {}
-local HOME = os.getenv "HOME"
-local SYSTEM_NAME
-
-if vim.fn.has "mac" == 1 then
-  SYSTEM_NAME = "macOS"
-elseif vim.fn.has "unix" == 1 then
-  SYSTEM_NAME = "Linux"
-end
-
--- LUA
-local sumneko_binary = HOME
-  .. "/dev/lua-language-server"
-  .. "/bin/"
-  .. SYSTEM_NAME
-  .. "/lua-language-server"
 
 servers.sumneko_lua = {
   on_attach = custom_attach,
@@ -124,6 +109,7 @@ servers.gopls = {
   on_attach = function(client, bufnr)
     custom_attach(client, bufnr)
   end,
+  cmd = {'gopls', '--remote=auto'},
   flags = { debounce_text_changes = 150 },
 }
 

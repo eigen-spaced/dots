@@ -1,32 +1,47 @@
 return function()
-  local lspconfig = require 'lspconfig'
-  local servers = require 'core.lsp.servers'
+  local status_ok, lspconfig = pcall(require, "lspconfig")
+  local servers = require "core.lsp.servers"
 
-  vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
+  if not status_ok then
+    return
+  end
+
+  vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     vim.lsp.diagnostic.on_publish_diagnostics,
     {
       virtual_text = {
-        prefix = '▎', -- Could be '●', '▎', 'x'
+        prefix = "▎", -- Could be '●', '▎', 'x'
       },
+      update_in_insert = true,
     }
   )
 
+  vim.fn.sign_define("LspDiagnosticsSignError", {
+    text = "✖",
+    numhl = "LspDiagnosticsDefaultError",
+    })
+  vim.fn.sign_define("LspDiagnosticsSignWarning", {
+    text = "▲",
+    numhl = "LspDiagnosticsDefaultWarning",
+    })
+  vim.fn.sign_define("LspDiagnosticsSignInformation", {
+    text = "●",
+    numhl = "LspDiagnosticsDefaultInformation",
+    })
+  vim.fn.sign_define("LspDiagnosticsSignHint", {
+    text = "✱",
+    numhl = "LspDiagnosticsDefaultHint",
+    })
+
   local capabilities = vim.lsp.protocol.make_client_capabilities()
   -- compe config
-  require('cmp_nvim_lsp').update_capabilities(capabilities)
+  require("cmp_nvim_lsp").update_capabilities(capabilities)
 
-  --------------------- custom config servers ---------------------
-  require('modules.null-ls').config()
-
-  --[[ local efm = require 'core.lsp.efm'
-  lspconfig[efm].setup {
-    on_attach = custom_attach,
-    capabilities = capabilities
-  } ]]
+  require("modules.null_ls").config()
 
   for server, config in pairs(servers) do
     lspconfig[server].setup(
-      vim.tbl_deep_extend('force', { capabilities = capabilities }, config)
+      vim.tbl_deep_extend("force", { capabilities = capabilities }, config)
     )
   end
 end
