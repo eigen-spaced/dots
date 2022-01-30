@@ -1,14 +1,14 @@
-local lsp_installer = require("nvim-lsp-installer")
+local lsp_installer = require "nvim-lsp-installer"
 
 local M = {}
 
 function M.config()
-  lsp_installer.settings({
+  lsp_installer.settings {
     ui = {
       icons = {
         server_installed = "✓",
         server_pending = "➜",
-        server_uninstalled = "✗"
+        server_uninstalled = "✗",
       },
       keymaps = {
         -- Keymap to expand a server in the UI
@@ -32,7 +32,7 @@ function M.config()
     -- Limit for the maximum amount of servers to be installed at the same time. Once this limit is reached, any further
     -- servers that are requested to be installed will be put in a queue.
     max_concurrent_installers = 4,
-  })
+  }
 end
 
 return M
