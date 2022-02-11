@@ -405,7 +405,7 @@ vim.g.mapleader = " "
 nmap("<Space>", "<NOP>")
 
 -- Toggle highlighting
-nmap("<leader><leader>h", "<cmd>set hlsearch!<CR>")
+nmap("<leader>hs", "<cmd>set hlsearch!<CR>")
 
 imap("jk", "<Esc>")
 imap("kj", "<Esc>")
