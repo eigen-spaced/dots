@@ -21,10 +21,26 @@ function M.setup()
     )
   end
 
-  nmap("<C-p>", '<cmd>lua require "telescope.builtin".find_files()<CR>')
-  -- nmap("<Leader>bb", '<cmd>lua require "telescope.builtin".buffers()<CR>')
+  function _G.__telescope_find_files()
+    require('telescope.builtin').find_files {
+      previewer = false,
+      layout_config = { width = 0.6 },
+      color_devicons = true,
+    }
+  end
+
+  function _G.__telescope_grep()
+    require('telescope.builtin').live_grep {
+      -- path_display = {},
+      layout_strategy = 'horizontal',
+      layout_config = { preview_width = 0.6 },
+    }
+  end
+
+  nmap("<C-p>", '<cmd>lua __telescope_find_files()<CR>')
   nmap("<Leader>bb", '<cmd>lua __telescope_buffers()<CR>')
-  nmap("<Leader>h", '<cmd>lua require "telescope.builtin".help_tags()<CR>')
+  nmap("<Leader>fw", '<cmd>lua __telescope_grep()<CR>')
+  nmap("<Leader><leader>h", '<cmd>lua require "telescope.builtin".help_tags()<CR>')
 end
 
 function M.config()
@@ -70,11 +86,6 @@ function M.config()
       set_env = { COLORTERM = 'truecolor' },
       color_devicons = true,
       scroll_strategy = 'limit',
-    },
-    pickers = {
-      find_files = {
-        previewer = false,
-      },
     },
   }
 end
