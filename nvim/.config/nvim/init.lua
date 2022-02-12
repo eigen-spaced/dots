@@ -1,6 +1,6 @@
-local cmd = vim.cmd -- execute vim commands
+local cmd = vim.cmd
 local exec = vim.api.nvim_exec
-local fn = vim.fn -- call vim functions
+local fn = vim.fn
 local set = vim.opt
 local execute = vim.api.nvim_command
 
@@ -28,6 +28,8 @@ local use = packer.use
 packer.startup(function()
   use { "wbthomason/packer.nvim", opt = true }
 
+  use { "nvim-lua/plenary.nvim" }
+
   use { "kyazdani42/nvim-web-devicons" }
 
   use {
@@ -43,20 +45,20 @@ packer.startup(function()
       "MunifTanjim/nui.nvim",
     },
     setup = function()
-      require("modules.neo-tree").setup()
+      require("modules.neo-tree-nvim").setup()
     end,
     config = function()
-      require("modules.neo-tree").config()
+      require("modules.neo-tree-nvim").config()
     end,
   }
 
   use {
     "nvim-treesitter/nvim-treesitter",
     requires = {
-      -- {
-      --   "nvim-treesitter/nvim-treesitter-textobjects",
-      --   after = "nvim-treesitter",
-      -- },
+      {
+        "nvim-treesitter/nvim-treesitter-textobjects",
+        after = "nvim-treesitter",
+      },
       {
         "nvim-treesitter/playground",
         cmd = "TSPlaygroundToggle",
@@ -68,17 +70,15 @@ packer.startup(function()
     end,
   }
 
-  use "nvim-lua/plenary.nvim"
-
   use {
     "nvim-telescope/telescope.nvim",
     module = "telescope",
+    cmd = "Telescope",
     setup = function()
-      require("modules.telescope").setup()
+      require("modules.telescope-nvim").setup()
     end,
-    
     config = function()
-      require("modules.telescope").config()
+      require("modules.telescope-nvim").config()
     end,
   }
 
@@ -111,13 +111,6 @@ packer.startup(function()
   }
 
   use {
-    "startup-nvim/startup.nvim",
-    config = function()
-      require"startup".setup({theme = "dashboard"})
-    end
-  }
-
-  use {
     "nanozuki/tabby.nvim",
     requires = "kyazdani42/nvim-web-devicons",
     config = function()
@@ -146,14 +139,29 @@ packer.startup(function()
   }
 
   use {
-    'L3MON4D3/LuaSnip',
-    event = { 'InsertEnter' },
-    module = 'luasnip',
+    "L3MON4D3/LuaSnip",
+    after = "nvim-cmp",
     config = function()
-    --   require 'conf.snippets'
-    require("luasnip/loaders/from_vscode").lazy_load()
+      --   require 'conf.snippets'
+      require("luasnip/loaders/from_vscode").lazy_load()
     end,
-    requires = { { 'rafamadriz/friendly-snippets' } },
+    wants = "rafamadriz/friendly-snippets"
+  }
+
+  use {
+    "rafamadriz/friendly-snippets",
+    event = "InsertCharPre"
+  }
+
+  use {
+    "simrat39/symbols-outline.nvim",
+    event = "VimEnter",
+    setup = function()
+      require("modules.symbols-outline").setup()
+    end,
+    config = function()
+      require("modules.symbols-outline").config()
+    end,
   }
 
   use {
@@ -185,7 +193,8 @@ packer.startup(function()
     config = function()
       require("indent_blankline").setup {
         show_current_context = true,
-        buftype_exclude = { "terminal", "readonly" },
+        buftype_exclude = { "terminal", "readonly", "nofile" },
+        filetype_exclude = { "help", "packer", "neo-tree" },
       }
     end,
   }
@@ -194,7 +203,7 @@ packer.startup(function()
 
   use {
     "tpope/vim-surround",
-    event = { "InsertEnter" },
+    event = "InsertEnter",
   }
 
   use {
@@ -207,7 +216,6 @@ packer.startup(function()
   }
 
   use "folke/tokyonight.nvim"
-
   use "rebelot/kanagawa.nvim"
 
   use {
@@ -242,10 +250,9 @@ packer.startup(function()
     end,
   }
 
-  use {
-    "famiu/bufdelete.nvim",
-    cmd = { "Bdelete", "Bwipeout" },
-  }
+  use { "famiu/bufdelete.nvim", cmd = { "Bdelete", "Bwipeout" } }
+
+  use { "ellisonleao/glow.nvim", cmd = "Glow" }
 end)
 
 local executable = function(e)
@@ -455,8 +462,6 @@ map("", "Q", "") -- disable Q for ex mode
 map("", "q:", "") -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
 -- U.map('x', 'x', '"_x') -- delete visual selection without yank
---
-nmap("Y", "y$", { noremap = true })
 
 imap(",", ",<C-g>u")
 imap(".", ".<C-g>u")
@@ -470,7 +475,6 @@ map(
   { silent = true }
 )
 
-nmap("<leader>.", "<cmd>Nnn<CR>")
 -----------------------------------------------------------------------------//
 -- }}}1
 -----------------------------------------------------------------------------//
@@ -485,3 +489,5 @@ exec(
 exec([[au BufEnter,BufWinEnter,WinEnter COMMIT_EDITMSG startinsert]], false)
 
 exec([[au filetype gitcommit let b:EditorConfig_disable=1]], false)
+
+cmd [[au FileType startup setlocal colorcolumn=]]
