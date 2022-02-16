@@ -24,7 +24,8 @@ function M.config()
     filesystem = {
       use_libuv_file_watcher = false, -- This will use the OS level file watchers
       window = {
-        width = 30,
+        position = "right",
+        width = 35,
         mappings = {
           ["o"] = "open",
           ["<c-s>"] = "open_split",
