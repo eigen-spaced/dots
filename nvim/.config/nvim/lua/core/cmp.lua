@@ -1,9 +1,9 @@
 local M = {}
 
 function M.config()
-  local status_cmp_ok, cmp = pcall(require, "cmp")
+  local status_ok, cmp = pcall(require, "cmp")
 
-  if not status_cmp_ok then
+  if not status_ok then
     return
   end
 
