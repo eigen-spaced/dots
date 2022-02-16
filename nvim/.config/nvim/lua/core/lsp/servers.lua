@@ -1,9 +1,16 @@
-local custom_attach = require "core.lsp.custom_attach"
+local custom_attach = require("core.lsp.custom_attach")
 
 local servers = {}
 
 servers.sumneko_lua = {
-  on_attach = custom_attach,
+  on_attach = function(client, bufnr)
+    client.resolved_capabilities.document_formatting = false
+    client.resolved_capabilities.document_range_formatting = false
+
+    custom_attach(client, bufnr)
+  end,
+  flags = { debounce_text_changes = 150 },
+
   settings = {
     Lua = {
       runtime = {
@@ -19,8 +26,8 @@ servers.sumneko_lua = {
       workspace = {
         -- Make the server aware of Neovim runtime files
         library = {
-          [vim.fn.expand "$VIMRUNTIME/lua"] = true,
-          [vim.fn.expand "$VIMRUNTIME/lua/vim/lsp"] = true,
+          [vim.fn.expand("$VIMRUNTIME/lua")] = true,
+          [vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true,
         },
       },
       telemetry = { enable = false },
@@ -32,7 +39,7 @@ servers.tsserver = {
   on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
 
-    local ts_utils = require "nvim-lsp-ts-utils"
+    local ts_utils = require("nvim-lsp-ts-utils")
 
     -- defaults
     ts_utils.setup {
@@ -109,7 +116,7 @@ servers.gopls = {
   on_attach = function(client, bufnr)
     custom_attach(client, bufnr)
   end,
-  cmd = {'gopls', '--remote=auto'},
+  cmd = { "gopls", "--remote=auto" },
   flags = { debounce_text_changes = 150 },
 }
 
