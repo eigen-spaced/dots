@@ -4,16 +4,16 @@ function M.setup()
   local nmap = require("core.utils").nmap
 
   function _G.__telescope_buffers()
-    require('telescope.builtin').buffers(
-      require('telescope.themes').get_dropdown {
+    require("telescope.builtin").buffers(
+      require("telescope.themes").get_dropdown {
         previewer = false,
         only_cwd = vim.fn.haslocaldir() == 1,
         show_all_buffers = false,
         sort_mru = true,
         ignore_current_buffer = true,
-        sorter = require('telescope.sorters').get_substr_matcher(),
-        selection_strategy = 'closest',
-        layout_strategy = 'center',
+        sorter = require("telescope.sorters").get_substr_matcher(),
+        selection_strategy = "closest",
+        layout_strategy = "center",
         winblend = 0,
         layout_config = { width = 70 },
         color_devicons = true,
@@ -22,7 +22,7 @@ function M.setup()
   end
 
   function _G.__telescope_find_files()
-    require('telescope.builtin').find_files {
+    require("telescope.builtin").find_files {
       previewer = false,
       layout_config = { width = 0.6 },
       color_devicons = true,
@@ -30,17 +30,20 @@ function M.setup()
   end
 
   function _G.__telescope_grep()
-    require('telescope.builtin').live_grep {
+    require("telescope.builtin").live_grep {
       -- path_display = {},
-      layout_strategy = 'horizontal',
+      layout_strategy = "horizontal",
       layout_config = { preview_width = 0.6 },
     }
   end
 
-  nmap("<C-p>", '<cmd>lua __telescope_find_files()<CR>')
-  nmap("<Leader>bb", '<cmd>lua __telescope_buffers()<CR>')
-  nmap("<Leader>fw", '<cmd>lua __telescope_grep()<CR>')
-  nmap("<Leader><leader>h", '<cmd>lua require "telescope.builtin".help_tags()<CR>')
+  nmap("<C-p>", "<cmd>lua __telescope_find_files()<CR>")
+  nmap("<Leader>bb", "<cmd>lua __telescope_buffers()<CR>")
+  nmap("<Leader>fw", "<cmd>lua __telescope_grep()<CR>")
+  nmap(
+    "<Leader><leader>h",
+    '<cmd>lua require "telescope.builtin".help_tags()<CR>'
+  )
 end
 
 function M.config()
@@ -83,9 +86,9 @@ function M.config()
         ".docz/*",
         ".DS_Store",
       },
-      set_env = { COLORTERM = 'truecolor' },
+      set_env = { COLORTERM = "truecolor" },
       color_devicons = true,
-      scroll_strategy = 'limit',
+      scroll_strategy = "limit",
     },
   }
 end
