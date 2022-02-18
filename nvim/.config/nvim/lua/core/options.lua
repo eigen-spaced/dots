@@ -84,10 +84,10 @@ set.scrolloff = 5 -- Lines of context
 set.sidescrolloff = 8 -- Columns of context
 set.showmatch = true
 set.inccommand = "nosplit"
-cmd 'set nohlsearch'
+cmd("set nohlsearch")
 
 -- Use faster grep alternatives if possible
-if executable "rg" then
+if executable("rg") then
   set.grepprg =
     [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
   set.grepformat:prepend { "%f:%l:%c:%m" }
@@ -110,7 +110,7 @@ set.fillchars = {
 }
 
 -- resize splits when Vim is resized
-cmd 'autocmd VimResized * wincmd ='
+cmd("autocmd VimResized * wincmd =")
 
 -----------------------------------------------------------------------------//
 -- Terminal {{{1
@@ -121,14 +121,14 @@ cmd 'autocmd VimResized * wincmd ='
 -- Terminal visual tweaks
 -- Enter insert mode when switching to terminal
 -- Close terminal buffer on process exit
-cmd [[
-    autocmd TermOpen * setlocal listchars= nonumber norelativenumber nocursorline
-    autocmd TermOpen * startinsert
-    autocmd BufEnter,BufWinEnter,WinEnter term://* startinsert
-    autocmd BufLeave term://* stopinsert
-    autocmd TermClose term://* call nvim_input('<CR>')
-    autocmd TermClose * call feedkeys("i")
-]]
+cmd([[
+      autocmd TermOpen * setlocal listchars= nonumber norelativenumber nocursorline
+      autocmd TermOpen * startinsert
+      autocmd BufEnter,BufWinEnter,WinEnter term://* startinsert
+      autocmd BufLeave term://* stopinsert
+      autocmd TermClose term://* call nvim_input('<CR>')
+      autocmd TermClose * call feedkeys("i")
+    ]])
 
 -----------------------------------------------------------------------------//
 -- Mouse {{{1
@@ -148,7 +148,7 @@ set.termguicolors = true
 
 -- tokyonight config
 vim.g.tokyonight_style = "night"
-cmd 'colorscheme kanagawa'
+cmd("colorscheme kanagawa")
 
 -----------------------------------------------------------------------------//
 -- }}}1

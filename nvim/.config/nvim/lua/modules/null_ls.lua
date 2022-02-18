@@ -12,7 +12,6 @@ function M.config()
   local code_actions = nls.builtins.code_actions
 
   local custom_attach = require("core.lsp.custom_attach")
-  local nmap = require("core.utils").nmap
 
   local has_eslint_config = function(utils)
     return utils.root_has_file {

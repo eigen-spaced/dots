@@ -116,7 +116,6 @@ servers.gopls = {
   on_attach = function(client, bufnr)
     custom_attach(client, bufnr)
   end,
-  cmd = { "gopls", "--remote=auto" },
   flags = { debounce_text_changes = 150 },
 }
 
