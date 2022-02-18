@@ -10,11 +10,12 @@ return function()
     vim.lsp.diagnostic.on_publish_diagnostics,
     {
       virtual_text = {
-        prefix = "▎", -- Could be '●', '▎', 'x'
+        prefix = "▎", -- Could be '●', '▎', 'x'
       },
       update_in_insert = true,
     }
   )
+
   local signs = {
     { name = "DiagnosticSignError", text = "✖" },
     { name = "DiagnosticSignWarn", text = "▲" },
