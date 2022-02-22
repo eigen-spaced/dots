@@ -3,12 +3,8 @@ local exec = vim.api.nvim_exec
 local fn = vim.fn
 local execute = vim.api.nvim_command
 
-local map = require("core.utils").map
-local nmap = require("core.utils").nmap
-local vmap = require("core.utils").vmap
-local imap = require("core.utils").imap
-
 require("core.options")
+require("core.utils")
 
 -- Bootstrap packer
 local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
@@ -97,7 +93,7 @@ packer.startup {
       "windwp/nvim-ts-autotag",
       after = "nvim-treesitter",
       config = function()
-        require("nvim-ts-autotag").setup()
+        require("modules.autotag")
       end,
     }
 
@@ -123,7 +119,7 @@ packer.startup {
     use {
       "jose-elias-alvarez/null-ls.nvim",
       config = function()
-        require("modules.null_ls").config()
+        require("modules.null-ls-nvim")
       end,
     }
 
@@ -162,7 +158,7 @@ packer.startup {
       "windwp/nvim-autopairs",
       event = { "InsertEnter" },
       config = function()
-        require("modules.autopairs").config()
+        require("modules.autopairs")
       end,
     }
 
@@ -302,7 +298,7 @@ packer.startup {
 }
 
 -----------------------------------------------------------------------------//
--- Keymaps {{{1
+-- Keymaps {
 -----------------------------------------------------------------------------//
 
 -- Remap space as leader key
@@ -345,24 +341,16 @@ nmap("<Leader>bk", "<cmd>Bdelete<CR>")
 -- Exit terminal using easier keybindings
 -- U.map('t', 'jk', '<C-\\><C-n>')
 
--- Source lua.init
-nmap("<leader>si", "<cmd>luafile ~/.config/nvim/init.lua<CR>")
--- Source current lua file
-nmap("<leader>so", "<cmd>source %<CR>")
-
 -- Line bubbling
-map("x", "J", ":m '>+1<CR>gv-gv")
-map("x", "K", ":m '<-2<CR>gv-gv")
+xmap("J", ":m '>+1<CR>gv-gv")
+xmap("K", ":m '<-2<CR>gv-gv")
 imap("<C-j>", "<cmd>move .+1<CR><esc>==a")
 imap("<C-k>", "<cmd>move .-2<CR><esc>==a")
 nmap("<leader>j", "<cmd>move .+1<CR>==")
 nmap("<leader>k", "<cmd>move .-2<CR>==")
 
 -- Close readonly buffers with q
-nmap("gq", "&readonly ? ':close!<CR>' : 'q'", {
-  expr = true,
-  noremap = true,
-})
+nmap("gq", "&readonly ? ':close!<CR>' : 'q'", { expr = true, noremap = true })
 
 -- Remap for dealing with word wraps
 nmap(
@@ -376,8 +364,8 @@ nmap(
   { expr = true, noremap = true, silent = true }
 )
 
-map("", "Q", "") -- disable Q for ex mode
-map("", "q:", "") -- disable Q for ex mode
+-- map("", "Q", "") -- disable Q for ex mode
+-- map("", "q:", "") -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
 -- U.map('x', 'x', '"_x') -- delete visual selection without yank
 
@@ -386,15 +374,14 @@ imap(".", ".<C-g>u")
 imap("!", "!<C-g>u")
 imap("(", "(<C-g>u")
 
-map(
-  "c",
-  "w!!",
-  "<esc>:lua require 'core.utils'.sudo_write()<CR>",
-  { silent = true }
-)
+cmap("w!!", "<esc>:lua require'core.utils'.sudo_write()<CR>", {
+  silent = true,
+})
+
+nmap("<leader>so", "<cmd>lua require'core.utils'.source_filetype()<CR>")
 
 -----------------------------------------------------------------------------//
--- }}}1
+-- }
 -----------------------------------------------------------------------------//
 
 -- prevent auto commenting of new lines
