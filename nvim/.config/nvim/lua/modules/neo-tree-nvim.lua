@@ -1,31 +1,21 @@
 local M = {}
 
+require("core.utils")
+
 function M.setup()
-  local U = require"core.utils"
-  U.map(
-    "n",
-    "<leader><leader>",
-    "<cmd>NeoTreeFloatToggle<CR>",
-    { silent = true, noremap = true }
-  )
-  U.map(
-    "n",
-    "<leader>e",
-    "<cmd>NeoTreeRevealToggle<CR>",
-    { silent = true, noremap = true }
-  )
+  nmap("<leader><leader>", "<cmd>NeoTreeFloatToggle<CR>")
+  nmap("<leader>e", "<cmd>NeoTreeRevealToggle<CR>")
 end
 
 function M.config()
-  require("neo-tree").setup({
+  require("neo-tree").setup {
     follow_current_file = false,
     enable_git_status = true,
     enable_diagnostics = true,
     filesystem = {
       use_libuv_file_watcher = false, -- This will use the OS level file watchers
       window = {
-        position = "right",
-        width = 35,
+        width = 30,
         mappings = {
           ["o"] = "open",
           ["<c-s>"] = "open_split",
@@ -35,7 +25,7 @@ function M.config()
         },
       },
     },
-  })
+  }
 end
 
 return M

@@ -1,13 +1,7 @@
-local M = {}
+local status_ok, autopairs = pcall(require, "nvim-autopairs")
 
-function M.config()
-  local status_ok, autopairs = pcall(require, "nvim-autopairs")
-
-  if not status_ok then
-    return
-  end
-
-  autopairs.setup {}
+if not status_ok then
+  return
 end
 
-return M
+autopairs.setup {}

@@ -38,7 +38,7 @@ servers.sumneko_lua = {
 servers.tsserver = {
   on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
-
+    client.resolved_capabilities.document_range_formatting = false
     local ts_utils = require("nvim-lsp-ts-utils")
 
     -- defaults

@@ -1,8 +1,8 @@
 local M = {}
 
-function M.setup()
-  local nmap = require("core.utils").nmap
+require("core.utils")
 
+function M.setup()
   nmap("<leader>ng", '<cmd>lua require("neogit").open()<CR>')
   nmap("<leader>nc", '<cmd>lua require("neogit").open { "commit" }<CR>')
 end

@@ -1,8 +1,8 @@
 local M = {}
 
-function M.setup()
-  local nmap = require("core.utils").nmap
+require("core.utils")
 
+function M.setup()
   nmap(
     "'",
     '<cmd>lua require("neoclip"); require("telescope").extensions.neoclip.default()<CR>'

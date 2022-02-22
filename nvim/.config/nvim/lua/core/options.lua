@@ -56,13 +56,15 @@ set.titlelen = 70
 -----------------------------------------------------------------------------//
 -- Folds {{{1
 -----------------------------------------------------------------------------//
--- TODO: Understand these settings
-set.foldtext = "folds#render()"
-set.foldopen:append { "search" }
-set.foldlevelstart = 10
-set.foldmethod = "syntax"
--- set.foldmethod = 'expr'
--- set.foldexpr='nvim_treesitter#foldexpr()'
+set.foldexpr = "nvim_treesitter#foldexpr()"
+set.foldtext =
+  [[substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g').'...'.trim(getline(v:foldend)) ]]
+-- set.foldopen:append { "search" }
+-- set.foldlevelstart = 10
+set.foldmethod = "expr"
+set.fillchars = "fold:\\"
+set.foldnestmax = 3
+set.foldminlines = 1
 
 -----------------------------------------------------------------------------//
 -- Backup {{{1

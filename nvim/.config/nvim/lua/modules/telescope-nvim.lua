@@ -1,12 +1,13 @@
 local M = {}
 
-function M.setup()
-  local nmap = require("core.utils").nmap
+require("core.utils")
 
+function M.setup()
   function _G.__telescope_buffers()
     require("telescope.builtin").buffers(
       require("telescope.themes").get_dropdown {
         previewer = false,
+        prompt_title = "Jump to buffer",
         only_cwd = vim.fn.haslocaldir() == 1,
         show_all_buffers = false,
         sort_mru = true,
@@ -37,13 +38,18 @@ function M.setup()
     }
   end
 
+  function _G.__telescope_help()
+    require("telescope.builtin").help_tags(
+      require("telescope.themes").get_dropdown {
+        layout_config = { height = 10, width = 0.7 },
+      }
+    )
+  end
+
   nmap("<C-p>", "<cmd>lua __telescope_find_files()<CR>")
   nmap("<Leader>bb", "<cmd>lua __telescope_buffers()<CR>")
   nmap("<Leader>fw", "<cmd>lua __telescope_grep()<CR>")
-  nmap(
-    "<Leader><leader>h",
-    '<cmd>lua require "telescope.builtin".help_tags()<CR>'
-  )
+  nmap("<Leader><leader>h", "<cmd>lua __telescope_help()<CR>")
 end
 
 function M.config()
