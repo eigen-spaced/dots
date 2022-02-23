@@ -121,6 +121,7 @@ packer.startup {
       config = function()
         require("modules.null-ls-nvim")
       end,
+      after = "nvim-lspconfig",
     }
 
     use { "jose-elias-alvarez/nvim-lsp-ts-utils" }
@@ -156,7 +157,7 @@ packer.startup {
 
     use {
       "windwp/nvim-autopairs",
-      event = { "InsertEnter" },
+      event = "InsertEnter",
       config = function()
         require("modules.autopairs")
       end,
@@ -209,6 +210,13 @@ packer.startup {
     }
 
     use {
+      "sindrets/diffview.nvim",
+      config = function()
+        require("modules.diffview")
+      end,
+    }
+
+    use {
       "lukas-reineke/indent-blankline.nvim",
       config = function()
         require("indent_blankline").setup {
@@ -241,8 +249,8 @@ packer.startup {
     use {
       "feline-nvim/feline.nvim",
       config = function()
-        -- require("modules.feline-nvim").config()
-        require("feline").setup()
+        require("modules.feline-nvim")
+        -- require("feline").setup()
       end,
     }
 
