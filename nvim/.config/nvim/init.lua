@@ -395,6 +395,17 @@ nmap("<leader>so", "<cmd>lua require'core.utils'.source_filetype()<CR>")
 -- prevent auto commenting of new lines
 exec([[au BufEnter * set fo-=c fo-=r fo-=o]], false)
 
+-- Don't screw up folds when inserting text that might affect them, until
+-- leaving insert mode. Foldmethod is local to the window.
+cmd([[
+  autocmd InsertEnter * let w:last_fdm=&foldmethod | setlocal foldmethod=manual
+  autocmd InsertLeave * let &l:foldmethod=w:last_fdm
+  ]])
+
+-- highlight yanked text briefly
+cmd(
+  [[autocmd TextYankPost * silent! lua vim.highlight.on_yank { higroup="Search", timeout=250, on_visual=true }]]
+)
 -- git commit window
 exec(
   [[au BufNewFile,BufRead COMMIT_EDITMSG set spell nonumber wrap linebreak]],
