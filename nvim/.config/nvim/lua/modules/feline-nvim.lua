@@ -114,6 +114,9 @@ local comps = {
         fg = colors.violet,
         style = "bold",
       },
+      enabled = function()
+        return vim.api.nvim_win_get_width(0) > 80
+      end,
     },
   },
   line_percentage = {
@@ -278,8 +281,9 @@ feline.setup {
       "packer",
       "fugitive",
       "fugitiveblame",
+      "Outline",
     },
     buftypes = { "terminal" },
-    bufnames = {},
+    bufnames = { "neo-tree" },
   },
 }
