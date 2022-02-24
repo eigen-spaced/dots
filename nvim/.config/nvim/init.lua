@@ -236,11 +236,12 @@ packer.startup {
 
     use {
       "projekt0n/github-nvim-theme",
-      --[[ config = function()
-      require("github-theme").setup({
-        theme_style = "dark"
-      })
-    end ]]
+      -- config = function()
+      --   require("github-theme").setup {
+      --     theme_style = "dark_default",
+      --   }
+      -- end,
+      disable = true,
     }
 
     use { "folke/tokyonight.nvim" }
@@ -250,7 +251,6 @@ packer.startup {
       "feline-nvim/feline.nvim",
       config = function()
         require("modules.feline-nvim")
-        -- require("feline").setup()
       end,
     }
 
@@ -287,6 +287,8 @@ packer.startup {
         }
       end,
     }
+
+    use { "nathom/filetype.nvim" }
 
     use { "famiu/bufdelete.nvim", cmd = { "Bdelete", "Bwipeout" } }
 
