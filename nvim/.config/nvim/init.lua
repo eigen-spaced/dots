@@ -109,6 +109,7 @@ packer.startup {
       end,
     }
 
+    -- LSP
     use {
       "neovim/nvim-lspconfig",
       config = require("core.lsp"),
@@ -227,6 +228,16 @@ packer.startup {
       end,
     }
 
+    use {
+      "rmagatti/auto-session",
+      config = function()
+        require("auto-session").setup {
+          log_level = "info",
+          auto_session_suppress_dirs = { "~/", "~/Projects" },
+        }
+      end,
+    }
+
     use { "tpope/vim-eunuch" }
 
     use {
@@ -234,6 +245,7 @@ packer.startup {
       event = "BufReadPost",
     }
 
+    -- THEMES
     use {
       "projekt0n/github-nvim-theme",
       --[[ config = function()
@@ -372,8 +384,8 @@ nmap(
   { expr = true, noremap = true, silent = true }
 )
 
--- map("", "Q", "") -- disable Q for ex mode
--- map("", "q:", "") -- disable Q for ex mode
+vim.api.nvim_set_keymap("", "Q", "", { noremap = true, silent = true }) -- disable Q for ex mode
+vim.api.nvim_set_keymap("", "q:", "", { noremap = true, silent = true }) -- disable Q for ex mode
 -- U.map('n', 'x', '"_x') --delete char without yank
 -- U.map('x', 'x', '"_x') -- delete visual selection without yank
 
@@ -393,13 +405,19 @@ nmap("<leader>so", "<cmd>lua require'core.utils'.source_filetype()<CR>")
 -----------------------------------------------------------------------------//
 
 -- prevent auto commenting of new lines
-exec([[au BufEnter * set fo-=c fo-=r fo-=o]], false)
+cmd([[au BufEnter * set fo-=c fo-=r fo-=o]])
 
 -- Don't screw up folds when inserting text that might affect them, until
 -- leaving insert mode. Foldmethod is local to the window.
+
 cmd([[
-  autocmd InsertEnter * let w:last_fdm=&foldmethod | setlocal foldmethod=manual
-  autocmd InsertLeave * let &l:foldmethod=w:last_fdm
+    augroup folds
+      " Don't screw up folds when inserting text that might affect them, until
+      " leaving insert mode. Foldmethod is local to the window. Protect against
+      " screwing up folding when switching between windows.
+      autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
+      autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
+    augroup END
   ]])
 
 -- highlight yanked text briefly
