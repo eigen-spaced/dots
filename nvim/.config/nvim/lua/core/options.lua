@@ -113,6 +113,8 @@ set.fillchars = {
 
 -- resize splits when Vim is resized
 cmd("autocmd VimResized * wincmd =")
+vim.o.sessionoptions =
+  "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
 
 -----------------------------------------------------------------------------//
 -- Terminal {{{1
