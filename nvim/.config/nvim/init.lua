@@ -1,7 +1,6 @@
 local cmd = vim.cmd
 local exec = vim.api.nvim_exec
 local fn = vim.fn
-local execute = vim.api.nvim_command
 
 require("core.options")
 require("core.utils")
@@ -18,7 +17,6 @@ if fn.empty(fn.glob(install_path)) > 0 then
     "https://github.com/wbthomason/packer.nvim",
     install_path,
   }
-  execute("packadd packer.nvim")
 end
 
 cmd([[
@@ -28,6 +26,7 @@ cmd([[
     augroup end
   ]])
 
+cmd([[ packadd packer.nvim ]])
 local packer = require("packer")
 local use = packer.use
 
@@ -125,7 +124,17 @@ packer.startup {
       after = "nvim-lspconfig",
     }
 
-    use { "jose-elias-alvarez/nvim-lsp-ts-utils" }
+    use {
+      "jose-elias-alvarez/nvim-lsp-ts-utils",
+      ft = {
+        "javascript",
+        "javascriptreact",
+        "javascript.jsx",
+        "typescript",
+        "typescriptreact",
+        "typescript.tsx",
+      },
+    }
 
     use {
       "folke/trouble.nvim",
@@ -410,13 +419,10 @@ nmap("<leader>so", "<cmd>lua require'core.utils'.source_filetype()<CR>")
 cmd([[au BufEnter * set fo-=c fo-=r fo-=o]])
 
 -- Don't screw up folds when inserting text that might affect them, until
--- leaving insert mode. Foldmethod is local to the window.
-
+-- leaving insert mode. Foldmethod is local to the window. Protect against
+-- screwing up folding when switching between windows.
 cmd([[
     augroup folds
-      " Don't screw up folds when inserting text that might affect them, until
-      " leaving insert mode. Foldmethod is local to the window. Protect against
-      " screwing up folding when switching between windows.
       autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
       autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
     augroup END
