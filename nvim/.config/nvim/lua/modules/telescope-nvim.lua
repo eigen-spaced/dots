@@ -25,7 +25,7 @@ function M.setup()
   function _G.__telescope_find_files()
     require("telescope.builtin").find_files {
       previewer = false,
-      layout_config = { width = 0.6 },
+      layout_config = { width = 0.7 },
       color_devicons = true,
     }
   end

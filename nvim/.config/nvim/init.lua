@@ -3,7 +3,7 @@ local exec = vim.api.nvim_exec
 local fn = vim.fn
 
 require("core.options")
-require("core.utils")
+local utils = require("core.utils")
 
 -- Bootstrap packer
 local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
@@ -174,16 +174,6 @@ packer.startup {
     }
 
     use {
-      "L3MON4D3/LuaSnip",
-      after = "nvim-cmp",
-      config = function()
-        --   require 'conf.snippets'
-        require("luasnip/loaders/from_vscode").lazy_load()
-      end,
-      requires = { "rafamadriz/friendly-snippets" },
-    }
-
-    use {
       "simrat39/symbols-outline.nvim",
       event = "VimEnter",
       setup = function()
@@ -196,7 +186,7 @@ packer.startup {
 
     use {
       "hrsh7th/nvim-cmp",
-      event = "BufRead",
+      event = "InsertEnter",
       config = function()
         require("core.cmp").config()
       end,
@@ -209,13 +199,26 @@ packer.startup {
       },
     }
 
+    use {
+
+      "L3MON4D3/LuaSnip",
+      event = "InsertEnter",
+      module = "luasnip",
+      config = function()
+        --   require 'conf.snippets'
+        require("luasnip/loaders/from_vscode").lazy_load()
+      end,
+
+      requires = { "rafamadriz/friendly-snippets" },
+    }
+
     use { "michaelb/sniprun", run = "bash ./install.sh" }
 
     use {
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
       config = function()
-        require("modules.gitsigns").config()
+        require("modules.gitsigns-nvim")
       end,
     }
 
@@ -277,7 +280,8 @@ packer.startup {
 
     use {
       "TimUntersberger/neogit",
-      module = "neogit",
+      -- module = "neogit",
+      cond = utils.is_git_directory,
       event = "BufRead",
       setup = function()
         require("modules.neogit-nvim").setup()
@@ -310,6 +314,8 @@ packer.startup {
     }
 
     use { "nathom/filetype.nvim" }
+
+    use { "rafcamlet/nvim-luapad", cmd = "Luapad" }
 
     use { "famiu/bufdelete.nvim", cmd = { "Bdelete", "Bwipeout" } }
 
