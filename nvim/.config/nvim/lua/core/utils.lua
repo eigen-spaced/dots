@@ -66,7 +66,15 @@ U.source_filetype = function()
   end
 end
 
-function U.is_buffer_empty()
+U.is_git_directory = function()
+  local git_dir = io.popen("git rev-parse --git-dir 2>/dev/null")
+  local git_dir_result = git_dir:read("*a")
+  git_dir:close()
+
+  return git_dir_result ~= ""
+end
+
+U.is_buffer_empty = function()
   -- Check whether the current buffer is empty
   return vim.fn.empty(vim.fn.expand("%:t")) == 1
 end
