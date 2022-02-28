@@ -25,6 +25,7 @@ set.relativenumber = true -- Relative line numbers
 set.numberwidth = 2
 set.signcolumn = "yes:1" -- 'auto:1-2'
 set.colorcolumn = "81"
+set.cmdheight = 2 -- Set command line height to two lines
 
 set.wrap = true
 set.linebreak = true -- wrap, but on words, not randomly
@@ -35,6 +36,16 @@ set.showmode = false
 set.lazyredraw = true
 set.emoji = false -- turn off as they are treated as double width characters
 set.list = true -- show invisible characters
+
+--- This is used to handle markdown code blocks where the language might
+--- be set to a value that isn't equivalent to a vim filetype
+vim.g.markdown_fenced_languages = {
+  "js=javascript",
+  "ts=typescript",
+  "shell=sh",
+  "bash=sh",
+  "console=sh",
+}
 
 set.listchars = {
   eol = " ",

@@ -3,23 +3,46 @@ local M = {}
 require("core.utils")
 
 function M.setup()
+  local status_ok, _ = pcall(require, "telescope")
+
+  if not status_ok then
+    return
+  end
+
+  local themes = require("telescope.themes")
+
+  ---@param opts table
+  ---@return table
+  local get_border = function(opts)
+    return vim.tbl_deep_extend("force", opts or {}, {
+      borderchars = {
+        { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
+        prompt = { "─", "│", " ", "│", "┌", "┐", "│", "│" },
+        results = { "─", "│", "─", "│", "├", "┤", "┘", "└" },
+        preview = { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
+      },
+    })
+  end
+
+  local dropdown = function(opts)
+    return themes.get_dropdown(get_border(opts))
+  end
+
   function _G.__telescope_buffers()
-    require("telescope.builtin").buffers(
-      require("telescope.themes").get_dropdown {
-        previewer = false,
-        prompt_title = "Jump to buffer",
-        only_cwd = vim.fn.haslocaldir() == 1,
-        show_all_buffers = false,
-        sort_mru = true,
-        ignore_current_buffer = true,
-        sorter = require("telescope.sorters").get_substr_matcher(),
-        selection_strategy = "closest",
-        layout_strategy = "center",
-        winblend = 0,
-        layout_config = { width = 70 },
-        color_devicons = true,
-      }
-    )
+    require("telescope.builtin").buffers(dropdown {
+      sort_mru = true,
+      previewer = false,
+      prompt_title = "Jump to buffer",
+      only_cwd = vim.fn.haslocaldir() == 1,
+      show_all_buffers = false,
+      ignore_current_buffer = true,
+      sorter = require("telescope.sorters").get_substr_matcher(),
+      selection_strategy = "closest",
+      layout_strategy = "center",
+      winblend = 0, -- floating window transparency
+      layout_config = { width = 70 },
+      color_devicons = true,
+    })
   end
 
   function _G.__telescope_find_files()
@@ -39,28 +62,23 @@ function M.setup()
   end
 
   function _G.__telescope_help()
-    require("telescope.builtin").help_tags(
-      require("telescope.themes").get_dropdown {
-        layout_config = { height = 10, width = 0.7 },
-      }
-    )
+    require("telescope.builtin").help_tags(dropdown {
+      layout_config = { height = 10, width = 0.7 },
+    })
   end
 
   nmap("<C-p>", "<cmd>lua __telescope_find_files()<CR>")
   nmap("<Leader>bb", "<cmd>lua __telescope_buffers()<CR>")
   nmap("<Leader>fw", "<cmd>lua __telescope_grep()<CR>")
-  nmap("<Leader><leader>h", "<cmd>lua __telescope_help()<CR>")
+  nmap("<Leader>fh", "<cmd>lua __telescope_help()<CR>")
 end
 
 function M.config()
-  local status_ok, actions = pcall(require, "telescope.actions")
-
-  if not status_ok then
-    return
-  end
+  local actions = require("telescope.actions")
 
   require("telescope").setup {
     defaults = {
+      borderchars = { "─", "│", "─", "│", "┌", "┐", "┘", "└" },
       prompt_prefix = " ❯ ",
       mappings = {
         i = {
@@ -95,6 +113,12 @@ function M.config()
       set_env = { COLORTERM = "truecolor" },
       color_devicons = true,
       scroll_strategy = "limit",
+    },
+    extensions = {
+      fzf = {
+        override_generic_sorter = true, -- override the generic sorter
+        override_file_sorter = true, -- override the file sorter
+      },
     },
   }
 end

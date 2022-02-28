@@ -9,7 +9,8 @@ local utils = require("core.utils")
 local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
 
 if fn.empty(fn.glob(install_path)) > 0 then
-  packer_bootstrap = fn.system {
+  vim.notify("Bootstrapping packer.nvim", { title = "Packer" })
+  _G.packer_bootstrap = fn.system {
     "git",
     "clone",
     "--depth",
@@ -19,6 +20,8 @@ if fn.empty(fn.glob(install_path)) > 0 then
   }
 end
 
+cmd([[ packadd packer.nvim ]])
+
 cmd([[
     augroup Packer
       autocmd!
@@ -26,7 +29,6 @@ cmd([[
     augroup end
   ]])
 
-cmd([[ packadd packer.nvim ]])
 local packer = require("packer")
 local use = packer.use
 
@@ -89,6 +91,17 @@ packer.startup {
     }
 
     use {
+      "simrat39/symbols-outline.nvim",
+      event = "VimEnter",
+      setup = function()
+        require("modules.symbols-outline").setup()
+      end,
+      config = function()
+        require("modules.symbols-outline").config()
+      end,
+    }
+
+    use {
       "windwp/nvim-ts-autotag",
       after = "nvim-treesitter",
       config = function()
@@ -100,12 +113,24 @@ packer.startup {
       "nvim-telescope/telescope.nvim",
       module = "telescope",
       cmd = "Telescope",
+      key = { "<c-p>" },
+      module_pattern = "telescope.*",
       setup = function()
         require("modules.telescope-nvim").setup()
       end,
       config = function()
         require("modules.telescope-nvim").config()
       end,
+      requires = {
+        {
+          "nvim-telescope/telescope-fzf-native.nvim",
+          run = "make",
+          after = "telescope.nvim",
+          config = function()
+            require("telescope").load_extension("fzf")
+          end,
+        },
+      },
     }
 
     -- LSP
@@ -173,25 +198,16 @@ packer.startup {
       end,
     }
 
-    use {
-      "simrat39/symbols-outline.nvim",
-      event = "VimEnter",
-      setup = function()
-        require("modules.symbols-outline").setup()
-      end,
-      config = function()
-        require("modules.symbols-outline").config()
-      end,
-    }
-
+    -- AUTO-COMPLETION
     use {
       "hrsh7th/nvim-cmp",
+      module = "cmp",
       event = "InsertEnter",
       config = function()
-        require("core.cmp").config()
+        require("modules.cmp")
       end,
       requires = {
-        { "hrsh7th/cmp-nvim-lsp" },
+        { "hrsh7th/cmp-nvim-lsp" }, --, after = "nvim-lspconfig" },
         { "saadparwaiz1/cmp_luasnip", after = "nvim-cmp" },
         { "hrsh7th/cmp-buffer", after = "nvim-cmp" },
         { "hrsh7th/cmp-path", after = "nvim-cmp" },
@@ -200,7 +216,6 @@ packer.startup {
     }
 
     use {
-
       "L3MON4D3/LuaSnip",
       event = "InsertEnter",
       module = "luasnip",
@@ -313,6 +328,13 @@ packer.startup {
       end,
     }
 
+    use {
+      "folke/which-key.nvim",
+      config = function()
+        require("modules.whichkey-nvim")
+      end,
+    }
+
     use { "nathom/filetype.nvim" }
 
     use { "rafcamlet/nvim-luapad", cmd = "Luapad" }
@@ -343,6 +365,12 @@ nmap("<Space>", "<NOP>")
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+
+-- disable Q/q for ex-mode
+vim.api.nvim_set_keymap("", "Q", "", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("", "q:", "", { noremap = true, silent = true })
+-- U.map('n', 'x', '"_x') --delete char without yank
+-- U.map('x', 'x', '"_x') -- delete visual selection without yank
 
 -- Toggle highlighting
 nmap("<leader>hs", "<cmd>set hlsearch!<CR>")
@@ -401,21 +429,28 @@ nmap(
   { expr = true, noremap = true, silent = true }
 )
 
-vim.api.nvim_set_keymap("", "Q", "", { noremap = true, silent = true }) -- disable Q for ex mode
-vim.api.nvim_set_keymap("", "q:", "", { noremap = true, silent = true }) -- disable Q for ex mode
--- U.map('n', 'x', '"_x') --delete char without yank
--- U.map('x', 'x', '"_x') -- delete visual selection without yank
-
 imap(",", ",<C-g>u")
 imap(".", ".<C-g>u")
 imap("!", "!<C-g>u")
 imap("(", "(<C-g>u")
+
+-- packer
+nmap("<leader>ps", "<cmd>PackerSync<CR>", { silent = false })
+nmap("<leader>pcc", "<cmd>PackerClean<CR>", { silent = false })
+nmap("<leader>pco", "<cmd>PackerCompile<CR>", { silent = false })
 
 cmap("w!!", "<esc>:lua require'core.utils'.sudo_write()<CR>", {
   silent = true,
 })
 
 nmap("<leader>so", "<cmd>lua require'core.utils'.source_filetype()<CR>")
+
+--open a new file in the same directory
+nmap("<leader>nf", [[:e <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+--open a new file in a horizontal split
+nmap("<leader>ns", [[:sp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+--open a new file in a vertical split
+nmap("<leader>ns", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
 
 -----------------------------------------------------------------------------//
 -- }

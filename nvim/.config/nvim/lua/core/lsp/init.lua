@@ -16,18 +16,34 @@ return function()
     }
   )
 
-  local signs = {
-    { name = "DiagnosticSignError", text = "✖" },
-    { name = "DiagnosticSignWarn", text = "▲" },
-    { name = "DiagnosticSignHint", text = "" },
-    { name = "DiagnosticSignInfo", text = "✱" },
-  }
+  local diagnostic_signs = { " ", " ", " ", " " }
 
-  for _, sign in ipairs(signs) do
-    vim.fn.sign_define(
-      sign.name,
-      { texthl = sign.name, text = sign.text, numhl = "" }
-    )
+  local diagnostic_severity_fullnames = {
+    "Error",
+    "Warning",
+    "Hint",
+    "Information",
+  }
+  local diagnostic_severity_shortnames = { "Error", "Warn", "Hint", "Info" }
+
+  -- define diagnostic icons/highlights for signcolumn and other stuff
+  for index, icon in ipairs(diagnostic_signs) do
+    local fullname = diagnostic_severity_fullnames[index]
+    local shortname = diagnostic_severity_shortnames[index]
+
+    vim.fn.sign_define("DiagnosticSign" .. shortname, {
+      text = icon,
+      texthl = "Diagnostic" .. shortname,
+      linehl = "",
+      numhl = "",
+    })
+
+    vim.fn.sign_define("LspDiagnosticsSign" .. fullname, {
+      text = icon,
+      texthl = "LspDiagnosticsSign" .. fullname,
+      linehl = "",
+      numhl = "",
+    })
   end
 
   local capabilities = vim.lsp.protocol.make_client_capabilities()
