@@ -3,11 +3,14 @@ local cmd = vim.cmd
 local M = {}
 
 function M.config()
-  cmd [[packadd nvim-treesitter-textobjects]]
+  local wk_status_ok, wk = pcall(require, "which-key")
+
+  cmd([[packadd nvim-treesitter-textobjects]])
 
   require("nvim-treesitter.configs").setup {
     ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
     ignore_install = {
+      "perl",
       "php",
       "kotlin",
       "scala",
@@ -18,7 +21,7 @@ function M.config()
       enable = true, -- false will disable the whole extension
       use_languagetree = true,
     },
-    indent = { enable = true, disable = { 'python', 'yaml', 'go' } },
+    indent = { enable = true, disable = { "python", "yaml", "go" } },
     rainbows = { enable = true },
     context_commentstring = { enable = true },
 
@@ -28,35 +31,49 @@ function M.config()
         disable = {},
         keymaps = {
           -- You can use the capture groups defined in textobjects.scm
-          ['af'] = '@function.outer',
-          ['if'] = '@function.inner',
-          ['aC'] = '@class.outer',
-          ['iC'] = '@class.inner',
-          ['ac'] = '@conditional.outer',
-          ['ic'] = '@conditional.inner',
-          ['ab'] = '@block.outer',
-          ['ib'] = '@block.inner',
-          ['al'] = '@loop.outer',
-          ['il'] = '@loop.inner',
-          ['is'] = '@statement.inner',
-          ['as'] = '@statement.outer',
-          ['am'] = '@call.outer',
-          ['im'] = '@call.inner',
-          ['ad'] = '@comment.outer',
-          ['id'] = '@comment.inner',
+          ["af"] = "@function.outer",
+          ["if"] = "@function.inner",
+          ["aC"] = "@class.outer",
+          ["iC"] = "@class.inner",
+          ["ac"] = "@conditional.outer",
+          ["ic"] = "@conditional.inner",
+          ["ab"] = "@block.outer",
+          ["ib"] = "@block.inner",
+          ["al"] = "@loop.outer",
+          ["il"] = "@loop.inner",
+          ["is"] = "@statement.inner",
+          ["as"] = "@statement.outer",
+          ["am"] = "@call.outer",
+          ["im"] = "@call.inner",
+          ["ad"] = "@comment.outer",
+          ["id"] = "@comment.inner",
         },
       },
       swap = {
         enable = true,
         swap_next = {
-          ['<leader>>'] = '@parameter.inner',
-          ['<leader>f>'] = '@function.outer',
+          ["[["] = "@parameter.inner",
+          ["[f"] = "@function.outer",
         },
         swap_previous = {
-          ['<leader><'] = '@parameter.inner',
-          ['<leader>f<'] = '@function.outer',
+          ["]]"] = "@parameter.inner",
+          ["]f"] = "@function.outer",
         },
       },
+    },
+  }
+  if not wk_status_ok then
+    return
+  end
+
+  wk.register {
+    ["["] = {
+      ["["] = "swap current parameter with next",
+      ["f"] = "swap current function with next",
+    },
+    ["]"] = {
+      ["]"] = "swap current parameter with previous",
+      ["f"] = "swap current function with previous",
     },
   }
 end

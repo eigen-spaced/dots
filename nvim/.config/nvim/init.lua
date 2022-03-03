@@ -315,7 +315,7 @@ packer.startup {
             ---line-comment keymap
             line = "<leader>cc",
             ---block-comment keymap
-            block = "<leader>bc",
+            block = "<leader>cb",
           },
 
           opleader = {
@@ -389,6 +389,7 @@ nmap("<M-Left>", "5<C-W><")
 nmap("<M-Right>", "5<C-W>>")
 nmap("<M-Down>", "5<C-W>-")
 nmap("<M-Up>", "5<C-W>+")
+nmap("<Space>=", "<C-W>=")
 
 nmap("<Leader>o", "o<Esc>k")
 nmap("<Leader>O", "O<Esc>j")
@@ -450,7 +451,7 @@ nmap("<leader>nf", [[:e <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
 --open a new file in a horizontal split
 nmap("<leader>ns", [[:sp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
 --open a new file in a vertical split
-nmap("<leader>ns", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+nmap("<leader>nv", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
 
 -----------------------------------------------------------------------------//
 -- }
