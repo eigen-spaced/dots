@@ -405,7 +405,7 @@ nmap("<S-Tab>", "<cmd>bprev<CR>")
 nmap("<Leader>bk", "<cmd>Bdelete<CR>")
 
 -- Exit terminal using easier keybindings
--- U.map('t', 'jk', '<C-\\><C-n>')
+tmap("jk", "<C-\\><C-n>")
 
 -- Line bubbling
 xmap("J", ":m '>+1<CR>gv-gv")
