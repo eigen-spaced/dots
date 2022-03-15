@@ -21,6 +21,13 @@ wk.setup {
 wk.register {
   ["g>"] = "show message history",
   ["<leader>"] = {
+    j = "move current line down by 1",
+    k = "move current line up by 1",
+    c = {
+      -- name = "+insert-comment",
+      b = "block comment",
+      c = "line comment",
+    },
     n = {
       name = "+new",
       f = "create a new file",
@@ -38,23 +45,10 @@ wk.register {
       },
       s = "sync",
     },
-    g = "grep word under the cursor",
     l = {
       name = "+list",
       i = "toggle location list",
       s = "toggle quickfix",
-    },
-    e = {
-      name = "+edit",
-      v = "open vimrc in a vertical split",
-      p = "open plugins file in a vertical split",
-      z = "open zshrc in a vertical split",
-      t = "open tmux config in a vertical split",
-    },
-    t = {
-      name = "+tab",
-      c = "tab close",
-      n = "tab edit current buffer",
     },
     so = "source current buffer",
     ["="] = "make windows equal size",
@@ -82,3 +76,9 @@ wk.register {
       ['<tab>'] = 'open commandline bufferlist',
     }, ]]
 }
+
+wk.register({
+
+  b = "insert block comment",
+  c = "insert line comment",
+}, { mode = "v" })

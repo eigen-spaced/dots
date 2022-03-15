@@ -1,8 +1,10 @@
 return function()
-  local status_ok, lspconfig = pcall(require, "lspconfig")
+  local lsp_status_ok, lspconfig = pcall(require, "lspconfig")
+  local wk_status_ok, wk = pcall(require, "which-key")
+
   local servers = require("core.lsp.servers")
 
-  if not status_ok then
+  if not lsp_status_ok then
     return
   end
 
@@ -54,4 +56,18 @@ return function()
       vim.tbl_deep_extend("force", { capabilities = capabilities }, config)
     )
   end
+
+  wk.register {
+    ["<leader>"] = {
+      g = {
+        name = "+goto",
+        D = "lsp declaration",
+        d = "lsp definition",
+        i = "lsp implementation",
+        h = "lsp signature help",
+      },
+      ca = "code action",
+      rn = "lsp rename",
+    },
+  }
 end

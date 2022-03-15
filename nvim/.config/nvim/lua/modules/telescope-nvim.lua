@@ -68,7 +68,7 @@ function M.setup()
   end
 
   nmap("<C-p>", "<cmd>lua __telescope_find_files()<CR>")
-  nmap("<Leader>bb", "<cmd>lua __telescope_buffers()<CR>")
+  nmap("<Leader>fb", "<cmd>lua __telescope_buffers()<CR>")
   nmap("<Leader>fw", "<cmd>lua __telescope_grep()<CR>")
   nmap("<Leader>fh", "<cmd>lua __telescope_help()<CR>")
 end
