@@ -136,6 +136,8 @@ export npm_config_prefix="$HOME/.local"
 alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
 export PATH="$PATH:$HOME/dev/lua-language-server/bin"
 
+[ -f "/home/magnuscake/.ghcup/env" ] && source "/home/magnuscake/.ghcup/env" # ghcup-env
+
 # export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
 # pyenv config
