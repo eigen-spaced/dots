@@ -24,9 +24,11 @@ end
 local sources = {
   -- both needs to be enabled to so prettier can apply eslint fixes
   -- prettierd should come first to prevent occassional race condition
-  formatting.prettierd.with {
-    extra_args = { "--no-semi", "--single-quote", "--jsx-single-quote" },
-  },
+  -- formatting.prettierd.with {
+  --   extra_args = { "--no-semi", "--single-quote", "--jsx-single-quote" },
+  -- },
+  formatting.prettierd,
+
   diagnostics.eslint_d.with {
     condition = has_eslint_config,
     filetypes = {
