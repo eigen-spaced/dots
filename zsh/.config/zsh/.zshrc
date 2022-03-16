@@ -4,20 +4,28 @@
 # User configuration
 # some useful options (man zshoptions)
 setopt autocd extendedglob nomatch menucomplete
+setopt noautomenu
+setopt nomenucomplete
 setopt interactive_comments
-# stty stop undef		# Disable ctrl-s to freeze terminal.
+setopt APPEND_HISTORY
+setopt EXTENDED_HISTORY
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_REDUCE_BLANKS
+setopt HIST_SAVE_NO_DUPS
+setopt HIST_VERIFY
+setopt AUTOPARAMSLASH # tab completing directory appends a slash
+setopt SHARE_HISTORY # Share your history across all your terminal windows
+HISTSIZE=10000
+SAVEHIST=10000
+HISTFILE="$HOME"/.config/zsh/zsh_history
+
 zle_highlight=('paste:none')
 
 unsetopt BEEP
 unsetopt nomatch
-
-HISTFILE="$HOME"/.config/zsh/zsh_history
-HISTSIZE=10000
-SAVEHIST=10000
-setopt appendhistory
-
-setopt noautomenu
-setopt nomenucomplete
 
 zle -N history-substring-search-up
 zle -N history-substring-search-down
