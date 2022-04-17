@@ -36,6 +36,14 @@ servers.sumneko_lua = {
 }
 
 servers.tsserver = {
+  filetypes = {
+    "javascript",
+    "javascriptreact",
+    "javascript.jsx",
+    "typescript",
+    "typescriptreact",
+    "typescript.tsx",
+  },
   on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
     client.resolved_capabilities.document_range_formatting = false
@@ -123,6 +131,12 @@ servers.gopls = {
 servers.hls = {
   on_attach = function(client, bufnr)
     client.resolved_capabilities.document_formatting = false
+    custom_attach(client, bufnr)
+  end,
+}
+
+servers.tailwindcss = {
+  on_attach = function(client, bufnr)
     custom_attach(client, bufnr)
   end,
 }
