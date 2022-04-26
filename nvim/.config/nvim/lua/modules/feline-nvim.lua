@@ -4,8 +4,10 @@ if not status_ok then
   return
 end
 
+-- "┃", "█", "", "", "", "", "", "", "●"
+
 local colors = {
-  bg = "#282c34",
+  bg = "#1F2937",
   fg = "#abb2bf",
   yellow = "#e0af68",
   cyan = "#56b6c2",
@@ -71,7 +73,7 @@ local comps = {
         }
         return val
       end,
-      -- right_sep = ' '
+      -- right_sep = { str = " ", hl = colors.cyan},
     },
     right = {
       provider = "▊",
@@ -271,7 +273,7 @@ table.insert(components.inactive[1], comps.file.os)
 -- LuaFormatter on
 
 feline.setup {
-  colors = { bg = colors.bg, fg = colors.fg },
+  theme = { bg = colors.bg, fg = colors.fg },
   components = components,
   vi_mode_colors = vi_mode_colors,
   force_inactive = {

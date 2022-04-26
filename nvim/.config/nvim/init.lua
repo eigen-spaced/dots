@@ -167,14 +167,14 @@ packer.startup {
       config = function()
         require("modules.trouble").config()
       end,
-      requires = { "kyazdani42/nvim-web-devicons" },
     }
 
     use {
       "nanozuki/tabby.nvim",
-      requires = "kyazdani42/nvim-web-devicons",
       config = function()
-        require("tabby").setup()
+        require("tabby").setup {
+          tabline = require("tabby.presets").tab_with_top_win,
+        }
       end,
     }
 

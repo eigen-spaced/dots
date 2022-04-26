@@ -57,6 +57,10 @@ return function()
     )
   end
 
+  if not wk_status_ok then
+    return
+  end
+
   wk.register {
     ["<leader>"] = {
       g = {
