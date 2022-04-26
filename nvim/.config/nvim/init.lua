@@ -419,16 +419,8 @@ nmap("<leader>k", "<cmd>move .-2<CR>==")
 nmap("gq", "&readonly ? ':close!<CR>' : 'q'", { expr = true, noremap = true })
 
 -- Remap for dealing with word wraps
-nmap(
-  "j",
-  "v:count == 0 ? 'gj' : 'j'",
-  { expr = true, noremap = true, silent = true }
-)
-nmap(
-  "k",
-  "v:count == 0 ? 'gk' : 'k'",
-  { expr = true, noremap = true, silent = true }
-)
+nmap("j", "v:count == 0 ? 'gj' : 'j'", { expr = true, noremap = true, silent = true })
+nmap("k", "v:count == 0 ? 'gk' : 'k'", { expr = true, noremap = true, silent = true })
 
 imap(",", ",<C-g>u")
 imap(".", ".<C-g>u")
@@ -475,10 +467,7 @@ cmd(
   [[autocmd TextYankPost * silent! lua vim.highlight.on_yank { higroup="Search", timeout=250, on_visual=true }]]
 )
 -- git commit window
-exec(
-  [[au BufNewFile,BufRead COMMIT_EDITMSG set spell nonumber wrap linebreak]],
-  false
-)
+exec([[au BufNewFile,BufRead COMMIT_EDITMSG set spell nonumber wrap linebreak]], false)
 exec([[au BufEnter,BufWinEnter,WinEnter COMMIT_EDITMSG startinsert]], false)
 
 exec([[au filetype gitcommit let b:EditorConfig_disable=1]], false)

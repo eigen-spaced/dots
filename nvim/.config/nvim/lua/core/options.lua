@@ -24,7 +24,7 @@ set.number = true -- Display line number
 set.relativenumber = true -- Relative line numbers
 set.numberwidth = 2
 set.signcolumn = "yes:1" -- 'auto:1-2'
-set.colorcolumn = "81"
+set.colorcolumn = "100"
 set.cmdheight = 2 -- Set command line height to two lines
 
 set.wrap = true
@@ -101,8 +101,7 @@ cmd("set nohlsearch")
 
 -- Use faster grep alternatives if possible
 if executable("rg") then
-  set.grepprg =
-    [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
+  set.grepprg = [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
   set.grepformat:prepend { "%f:%l:%c:%m" }
 end
 
@@ -124,8 +123,7 @@ set.fillchars = {
 
 -- resize splits when Vim is resized
 cmd("autocmd VimResized * wincmd =")
-vim.o.sessionoptions =
-  "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
+vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
 
 -----------------------------------------------------------------------------//
 -- Terminal {{{1
