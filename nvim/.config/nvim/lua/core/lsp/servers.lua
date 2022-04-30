@@ -135,6 +135,14 @@ servers.hls = {
   end,
 }
 
+servers.svelte = {
+  on_attach = function(client, bufnr)
+    client.resolved_capabilities.document_formatting = false
+    custom_attach(client, bufnr)
+  end,
+}
+
+-- TAILWINDCSS
 servers.tailwindcss = {
   on_attach = function(client, bufnr)
     custom_attach(client, bufnr)

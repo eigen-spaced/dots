@@ -9,6 +9,12 @@ function U.map(mode, key, cmd, opts)
   vim.api.nvim_set_keymap(mode, key, cmd, options)
 end
 
+-- Create a keymap
+-- @param mode  string which mode the keymap belongs to
+-- @param lhs   string
+-- @param rhs   string
+-- @param opts  string
+-- @param bufnr string
 local keymap = function(mode, lhs, rhs, opts, bufnr)
   -- extend the default options with user's overrides
   local default_opts = { noremap = true, silent = true }
@@ -53,6 +59,53 @@ end
 -- set a key mapping for insert and command-line mode
 _G.icmap = function(...)
   keymap("!", ...)
+end
+
+-- @class Autocommand
+-- @field description string
+-- @field event  string[] list of autocommand events
+-- @field pattern string[] list of autocommand patterns
+-- @field command string | function
+-- @field nested  boolean
+-- @field once    boolean
+-- @field buffer  number
+
+-- Create an autocommand
+-- returns the group ID so that it can be cleared or manipulated.
+-- @param name string
+-- @param commands Autocommand[]
+-- @return number
+function U.augroup(name, commands)
+  local id = vim.api.nvim_create_augroup(name, { clear = true })
+
+  for _, autocmd in ipairs(commands) do
+    local is_callback = type(autocmd.command) == "function"
+    vim.api.nvim_create_autocmd(autocmd.event, {
+      group = id,
+      pattern = autocmd.pattern,
+      desc = autocmd.description,
+      callback = is_callback and autocmd.command or nil,
+      command = not is_callback and autocmd.command or nil,
+      once = autocmd.once,
+      nested = autocmd.nested,
+      buffer = autocmd.buffer,
+    })
+  end
+  return id
+end
+
+--- @class CommandArgs
+--- @field args string
+--- @field fargs table
+--- @field bang boolean
+
+---Create an nvim command
+---@param name any
+---@param rhs string | function(args: CommandArgs)
+---@param opts table
+function U.command(name, rhs, opts)
+  opts = opts or {}
+  vim.api.nvim_create_user_command(name, rhs, opts)
 end
 
 -- Reload current buffer if it is a vim or lua file

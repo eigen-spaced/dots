@@ -1,6 +1,7 @@
 local cmd = vim.cmd
 local exec = vim.api.nvim_exec
 local fn = vim.fn
+local api = vim.api
 
 require("core.options")
 local utils = require("core.utils")
@@ -22,12 +23,11 @@ end
 
 cmd([[ packadd packer.nvim ]])
 
-cmd([[
-    augroup Packer
-      autocmd!
-      autocmd BufWritePost init.lua PackerCompile
-    augroup end
-  ]])
+local packer_group = api.nvim_create_augroup("Packer", { clear = true })
+api.nvim_create_autocmd(
+  "BufWritePost",
+  { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" }
+)
 
 local packer = require("packer")
 local use = packer.use
@@ -48,7 +48,7 @@ packer.startup {
         "NeoTreeReveal",
         "NeoTreeRevealToggle",
       },
-      branch = "v1.x",
+      branch = "v2.x",
       requires = {
         "MunifTanjim/nui.nvim",
       },
@@ -265,6 +265,30 @@ packer.startup {
       end,
     }
 
+    use {
+      "NTBBloodbath/rest.nvim",
+      setup = function()
+        nmap("<leader>r", "<Plug>RestNvim")
+        nmap("<leader>rp", "<Plug>RestNvimPreview")
+        nmap("<leader>rl", "<Plug>RestNvimLast")
+      end,
+    }
+
+    use {
+      "mrjones2014/smart-splits.nvim",
+      config = function()
+        vim.keymap.set("n", "<M-Left>", require("smart-splits").resize_left)
+        vim.keymap.set("n", "<M-Down>", require("smart-splits").resize_down)
+        vim.keymap.set("n", "<M-Up>", require("smart-splits").resize_up)
+        vim.keymap.set("n", "<M-Right>", require("smart-splits").resize_right)
+        -- moving between splits
+        vim.keymap.set("n", "<C-h>", require("smart-splits").move_cursor_left)
+        vim.keymap.set("n", "<C-j>", require("smart-splits").move_cursor_down)
+        vim.keymap.set("n", "<C-k>", require("smart-splits").move_cursor_up)
+        vim.keymap.set("n", "<C-l>", require("smart-splits").move_cursor_right)
+      end,
+    }
+
     use { "tpope/vim-eunuch" }
 
     use {
@@ -284,7 +308,16 @@ packer.startup {
     }
 
     use { "folke/tokyonight.nvim" }
-    use { "rebelot/kanagawa.nvim" }
+
+    use {
+      "rebelot/kanagawa.nvim",
+      config = function()
+        require("kanagawa").setup {
+          dimInactive = true,
+          globalStatus = true,
+        }
+      end,
+    }
 
     use {
       "feline-nvim/feline.nvim",
@@ -356,6 +389,9 @@ packer.startup {
   },
 }
 
+-- weird bug when using kanagawa inactive buffer setting
+cmd("au VimEnter * colorscheme kanagawa")
+
 -----------------------------------------------------------------------------//
 -- Keymaps {
 -----------------------------------------------------------------------------//
@@ -379,17 +415,17 @@ imap("jk", "<Esc>")
 imap("kj", "<Esc>")
 
 -- Better split navigation
-nmap("<C-h>", "<C-w>h")
-nmap("<C-j>", "<C-w>j")
-nmap("<C-k>", "<C-w>k")
-nmap("<C-l>", "<C-w>l")
-
--- Better resizing
-nmap("<M-Left>", "5<C-W><")
-nmap("<M-Right>", "5<C-W>>")
-nmap("<M-Down>", "5<C-W>-")
-nmap("<M-Up>", "5<C-W>+")
-nmap("<Space>=", "<C-W>=")
+-- nmap("<C-h>", "<C-w>h")
+-- nmap("<C-j>", "<C-w>j")
+-- nmap("<C-k>", "<C-w>k")
+-- nmap("<C-l>", "<C-w>l")
+--
+-- -- Better resizing
+-- nmap("<M-Left>", "5<C-W><")
+-- nmap("<M-Right>", "5<C-W>>")
+-- nmap("<M-Down>", "5<C-W>-")
+-- nmap("<M-Up>", "5<C-W>+")
+-- nmap("<Space>=", "<C-W>=")
 
 nmap("<Leader>o", "o<Esc>k")
 nmap("<Leader>O", "O<Esc>j")
@@ -450,7 +486,11 @@ nmap("<leader>nv", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false }
 -----------------------------------------------------------------------------//
 
 -- prevent auto commenting of new lines
-cmd([[au BufEnter * set fo-=c fo-=r fo-=o]])
+local auto_comment_group = api.nvim_create_augroup("DisableAutoComment", { clear = true })
+api.nvim_create_autocmd(
+  "BufEnter",
+  { command = "set fo-=c fo-=r fo-=o", group = auto_comment_group, pattern = "*" }
+)
 
 -- Don't screw up folds when inserting text that might affect them, until
 -- leaving insert mode. Foldmethod is local to the window. Protect against
@@ -463,6 +503,15 @@ cmd([[
   ]])
 
 -- highlight yanked text briefly
+
+local highlight_group = api.nvim_create_augroup("YankHighlight", { clear = true })
+api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    vim.highlight.on_yank { higroup = "Search", timeout = 250, on_visual = true }
+  end,
+  group = highlight_group,
+  pattern = "*",
+})
 cmd(
   [[autocmd TextYankPost * silent! lua vim.highlight.on_yank { higroup="Search", timeout=250, on_visual=true }]]
 )

@@ -149,11 +149,11 @@ export PATH="$PATH:$HOME/dev/lua-language-server/bin"
 # export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
 # pyenv config
-# export PYENV_ROOT=$HOME/.pyenv
-# export PATH=$PYENV_ROOT/bin:$PATH
+export PYENV_ROOT=$HOME/.pyenv
+export PATH=$PYENV_ROOT/bin:$PATH
 # export PATH=$PYENV_ROOT/shims:$PATH
 
-# eval "$(pyenv init --path)"
-# eval "$(pyenv virtualenv-init -)"
+eval "$(pyenv init --path)"
+eval "$(pyenv virtualenv-init -)"
 
 eval $(/opt/homebrew/bin/brew shellenv)

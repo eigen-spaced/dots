@@ -67,15 +67,15 @@ set.titlelen = 70
 -----------------------------------------------------------------------------//
 -- Folds {{{1
 -----------------------------------------------------------------------------//
-set.foldexpr = "nvim_treesitter#foldexpr()"
-set.foldtext =
-  [[substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g').'...'.trim(getline(v:foldend)) ]]
--- set.foldopen:append { "search" }
--- set.foldlevelstart = 10
-set.foldmethod = "expr"
-set.fillchars = "fold:\\"
-set.foldnestmax = 3
-set.foldminlines = 1
+-- set.foldexpr = "nvim_treesitter#foldexpr()"
+-- set.foldtext =
+--   [[substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g').'...'.trim(getline(v:foldend)) ]]
+-- -- set.foldopen:append { "search" }
+-- -- set.foldlevelstart = 10
+-- set.foldmethod = "expr"
+-- -- set.fillchars = "fold:\\"
+-- set.foldnestmax = 3
+-- set.foldminlines = 1
 
 -----------------------------------------------------------------------------//
 -- Backup {{{1
@@ -121,8 +121,10 @@ set.fillchars = {
   foldclose = "▸",
 }
 
+set.laststatus = 3
+
 -- resize splits when Vim is resized
-cmd("autocmd VimResized * wincmd =")
+cmd("au VimResized * wincmd =")
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
 
 -----------------------------------------------------------------------------//
@@ -162,6 +164,8 @@ set.termguicolors = true
 -- tokyonight config
 vim.g.tokyonight_style = "night"
 cmd("colorscheme kanagawa")
+-- remove those awkward borders from between splits. Looking for a fix in the future
+vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None" })
 
 -----------------------------------------------------------------------------//
 -- }}}1
