@@ -8,7 +8,9 @@ local cb = require("diffview.config").diffview_callback
 diffview.setup {
   diff_binaries = false,
   file_panel = {
-    width = 30,
+    win_config = {
+      width = 30,
+    },
   },
   key_bindings = {
     view = {

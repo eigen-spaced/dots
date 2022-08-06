@@ -7,7 +7,7 @@ end
 -- "┃", "█", "", "", "", "", "", "", "●"
 
 local colors = {
-  bg = "#1F2937",
+  bg = "#131a24",
   fg = "#abb2bf",
   yellow = "#e0af68",
   cyan = "#56b6c2",
@@ -64,12 +64,13 @@ local comps = {
   vi_mode = {
     left = {
       provider = function()
-        return "  " .. vi_mode_utils.get_vim_mode()
+        return "   " .. vi_mode_utils.get_vim_mode() .. " "
       end,
       hl = function()
         local val = {
           name = vi_mode_utils.get_mode_highlight_name(),
-          fg = vi_mode_utils.get_mode_color(),
+          fg = colors.bg,
+          bg = vi_mode_utils.get_mode_color(),
         }
         return val
       end,

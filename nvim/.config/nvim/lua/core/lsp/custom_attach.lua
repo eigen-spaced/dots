@@ -1,4 +1,4 @@
-local cmd = vim.cmd -- execute vim commands
+local cmd = vim.cmd
 
 require("core.utils")
 
@@ -12,31 +12,29 @@ local custom_attach = function(client, bufnr)
   --Enable completion triggered by <c-x><c-o>
   buf_option("omnifunc", "v:lua.vim.lsp.omnifunc")
 
+  local function map(mode, lhs, rhs)
+    vim.keymap.set(mode, lhs, rhs, { buffer = bufnr })
+  end
+
   ----------- Mappings -----------
-  nmap("K", "<cmd>lua vim.lsp.buf.hover()<CR>", nil, bufnr)
-
-  nmap("<leader>gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", nil, bufnr)
-
-  nmap("<leader>gd", "<cmd>lua vim.lsp.buf.definition()<CR>", nil, bufnr)
-
-  nmap("<leader>D", "<cmd>lua vim.lsp.buf.type_definition()<CR>", nil, bufnr)
-
-  nmap("<leader>gi", "<cmd>lua vim.lsp.buf.implementation()<CR>", nil, bufnr)
-
-  nmap("<leader>ca", "<cmd>lua vim.lsp.buf.code_action()<CR>", nil, bufnr)
-
-  nmap("<leader>gh", "<cmd>lua vim.lsp.buf.signature_help()<CR>", nil, bufnr)
+  map("n", "K", vim.lsp.buf.hover)
+  map("n", "<leader>gD", vim.lsp.buf.declaration)
+  map("n", "<leader>gd", vim.lsp.buf.definition)
+  map("n", "<leader>D", vim.lsp.buf.type_definition)
+  map("n", "<leader>gi", vim.lsp.buf.implementation)
+  map("n", "<leader>ca", vim.lsp.buf.code_action)
+  map("n", "<leader>gh", vim.lsp.buf.signature_help)
 
   -- RENAME
-  nmap("<leader>rn", "<cmd>lua vim.lsp.buf.rename()<CR>", nil, bufnr)
+  map("n", "<leader>rn", vim.lsp.buf.rename)
 
-  nmap("[d", "vim.lsp.diagnostic.goto_prev()<CR>", nil, bufnr)
-  nmap("]d", "vim.lsp.diagnostic.goto_next()<CR>", nil, bufnr)
+  map("n", "[d", vim.lsp.diagnostic.goto_prev)
+  map("n", "]d", vim.lsp.diagnostic.goto_next)
 
-  nmap("<leader>xx", "<cmd>Trouble<CR>", nil, bufnr)
-  nmap("<leader>gr", "<cmd>Trouble lsp_references<CR>", nil, bufnr)
-  nmap("<leader>wd", "<cmd>Trouble workspace_diagnostics<CR>", nil, bufnr)
-  nmap("<leader>dd", "<cmd>Trouble document_diagnostics<CR>", nil, bufnr)
+  map("n", "<leader>xx", "<cmd>Trouble<CR>")
+  map("n", "<leader>gr", "<cmd>Trouble lsp_references<CR>")
+  map("n", "<leader>wd", "<cmd>Trouble workspace_diagnostics<CR>")
+  map("n", "<leader>dd", "<cmd>Trouble document_diagnostics<CR>")
 
   cmd([[ command! Format execute 'lua vim.lsp.buf.formatting()' ]])
 

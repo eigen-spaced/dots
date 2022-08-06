@@ -78,7 +78,6 @@ wk.register {
 }
 
 wk.register({
-
   b = "insert block comment",
   c = "insert line comment",
 }, { mode = "v" })

@@ -1,6 +1,4 @@
-local fn = vim.fn
-local set = vim.opt
-local cmd = vim.cmd
+local fn, set, cmd, api = vim.fn, vim.opt, vim.cmd, vim.api
 
 local executable = function(e)
   return fn.executable(e) > 0
@@ -67,15 +65,15 @@ set.titlelen = 70
 -----------------------------------------------------------------------------//
 -- Folds {{{1
 -----------------------------------------------------------------------------//
-set.foldexpr = "nvim_treesitter#foldexpr()"
-set.foldtext =
-  [[substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g').'...'.trim(getline(v:foldend)) ]]
--- set.foldopen:append { "search" }
--- set.foldlevelstart = 10
-set.foldmethod = "expr"
-set.fillchars = "fold:\\"
-set.foldnestmax = 3
-set.foldminlines = 1
+-- set.foldexpr = "nvim_treesitter#foldexpr()"
+-- set.foldtext =
+--   [[substitute(getline(v:foldstart),'\\t',repeat('\ ',&tabstop),'g').'...'.trim(getline(v:foldend)) ]]
+-- -- set.foldopen:append { "search" }
+-- -- set.foldlevelstart = 10
+-- set.foldmethod = "expr"
+-- -- set.fillchars = "fold:\\"
+-- set.foldnestmax = 3
+-- set.foldminlines = 1
 
 -----------------------------------------------------------------------------//
 -- Backup {{{1
@@ -121,8 +119,9 @@ set.fillchars = {
   foldclose = "▸",
 }
 
+set.laststatus = 3
+
 -- resize splits when Vim is resized
-cmd("autocmd VimResized * wincmd =")
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
 
 -----------------------------------------------------------------------------//
@@ -134,9 +133,14 @@ vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,
 -- Terminal visual tweaks
 -- Enter insert mode when switching to terminal
 -- Close terminal buffer on process exit
+local term_group = api.nvim_create_augroup("Term", { clear = true })
+api.nvim_create_autocmd(
+  "TermOpen",
+  { command = "setlocal listchars= nonumber norelativenumber nocursorline", group = term_group }
+)
+api.nvim_create_autocmd("TermOpen", { command = "startinsert" })
+
 cmd([[
-      autocmd TermOpen * setlocal listchars= nonumber norelativenumber nocursorline
-      autocmd TermOpen * startinsert
       autocmd BufEnter,BufWinEnter,WinEnter term://* startinsert
       autocmd BufLeave term://* stopinsert
       autocmd TermClose term://* call nvim_input('<CR>')
@@ -158,10 +162,12 @@ vim.g.netrw_banner = 0
 -- Colorscheme {{{1
 -----------------------------------------------------------------------------//
 set.termguicolors = true
+-- cmd("colorscheme leaf")
 
 -- tokyonight config
 vim.g.tokyonight_style = "night"
-cmd("colorscheme kanagawa")
+-- remove those awkward borders from between splits. Looking for a fix in the future
+-- vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None" })
 
 -----------------------------------------------------------------------------//
 -- }}}1

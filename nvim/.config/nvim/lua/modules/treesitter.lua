@@ -8,10 +8,9 @@ function M.config()
   cmd([[packadd nvim-treesitter-textobjects]])
 
   require("nvim-treesitter.configs").setup {
-    ensure_installed = "maintained", -- one of "all", "maintained" (parsers with maintainers), or a list of languages
     ignore_install = {
       "perl",
-      "php",
+      "vala",
       "kotlin",
       "scala",
       "elixir",
@@ -22,8 +21,10 @@ function M.config()
       use_languagetree = true,
     },
     indent = { enable = true, disable = { "python", "yaml", "go" } },
-    rainbows = { enable = true },
-    context_commentstring = { enable = true },
+    context_commentstring = {
+      enable = true,
+      enable_autocmd = false,
+    },
 
     textobjects = { -- syntax-aware textobjects
       select = {

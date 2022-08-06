@@ -24,11 +24,6 @@ end
 local sources = {
   -- both needs to be enabled to so prettier can apply eslint fixes
   -- prettierd should come first to prevent occassional race condition
-  -- formatting.prettierd.with {
-  --   extra_args = { "--no-semi", "--single-quote", "--jsx-single-quote" },
-  -- },
-  formatting.prettierd,
-
   diagnostics.eslint_d.with {
     condition = has_eslint_config,
     filetypes = {
@@ -40,9 +35,14 @@ local sources = {
       "svelte",
     },
   },
-  formatting.eslint_d.with {
-    condition = has_eslint_config,
-  },
+
+  -- formatting.prettierd.with {
+  --   extra_args = { "--no-semi", "--single-quote", "--jsx-single-quote" },
+  -- },
+
+  -- formatting.eslint_d.with {
+  --   condition = has_eslint_config,
+  -- },
 
   -- formatting.stylua.with {
   --   condition = function(utils)
@@ -51,10 +51,9 @@ local sources = {
   -- },
 
   formatting.stylua,
-  formatting.stylua.gofmt,
+  formatting.gofmt,
   formatting.black,
-
-  diagnostics.eslint_d,
+  formatting.prettierd,
 
   code_actions.gitsigns,
   -- nls.builtins.code_actions.refactoring,
