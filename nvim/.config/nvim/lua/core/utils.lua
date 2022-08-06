@@ -121,10 +121,12 @@ end
 
 U.is_git_directory = function()
   local git_dir = io.popen("git rev-parse --git-dir 2>/dev/null")
-  local git_dir_result = git_dir:read("*a")
-  git_dir:close()
+  if git_dir then
+    local git_dir_result = git_dir:read("*a")
+    git_dir:close()
 
-  return git_dir_result ~= ""
+    return git_dir_result ~= ""
+  end
 end
 
 U.is_buffer_empty = function()

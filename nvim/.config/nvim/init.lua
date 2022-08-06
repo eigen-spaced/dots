@@ -1,10 +1,8 @@
-local cmd = vim.cmd
-local exec = vim.api.nvim_exec
-local fn = vim.fn
-local api = vim.api
+local cmd, fn, api = vim.cmd, vim.fn, vim.api
+local utils = require("core.utils")
 
 require("core.options")
-local utils = require("core.utils")
+require("core.keymap")
 
 -- Bootstrap packer
 local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
@@ -22,12 +20,6 @@ if fn.empty(fn.glob(install_path)) > 0 then
 end
 
 cmd([[ packadd packer.nvim ]])
-
-local packer_group = api.nvim_create_augroup("Packer", { clear = true })
-api.nvim_create_autocmd(
-  "BufWritePost",
-  { command = "source <afile> | PackerCompile", group = packer_group, pattern = "init.lua" }
-)
 
 local packer = require("packer")
 local use = packer.use
@@ -170,15 +162,6 @@ packer.startup {
     }
 
     use {
-      "nanozuki/tabby.nvim",
-      config = function()
-        require("tabby").setup {
-          tabline = require("tabby.presets").tab_with_top_win,
-        }
-      end,
-    }
-
-    use {
       "AckslD/nvim-neoclip.lua",
       module = "neoclip",
       event = { "TextYankPost" },
@@ -227,8 +210,6 @@ packer.startup {
       requires = { "rafamadriz/friendly-snippets" },
     }
 
-    use { "michaelb/sniprun", run = "bash ./install.sh" }
-
     use {
       "lewis6991/gitsigns.nvim",
       event = { "BufReadPre", "BufNewFile" },
@@ -247,12 +228,19 @@ packer.startup {
     use {
       "lukas-reineke/indent-blankline.nvim",
       config = function()
+        if vim.wo.colorcolumn == "" then
+          vim.opt.colorcolumn = "99999" --  workaround for cursorline causing artifacts
+        end
         require("indent_blankline").setup {
+          show_first_indent_level = false,
           show_current_context = true,
+          show_current_context_start = true,
           buftype_exclude = { "terminal", "readonly", "nofile" },
-          filetype_exclude = { "help", "packer", "neo-tree" },
+          filetype_exclude = { "help", "packer", "neo-tree", "gitcommit" },
+          use_treesitter = true,
         }
       end,
+      disable = true,
     }
 
     use {
@@ -274,20 +262,7 @@ packer.startup {
       end,
     }
 
-    use {
-      "mrjones2014/smart-splits.nvim",
-      config = function()
-        vim.keymap.set("n", "<M-Left>", require("smart-splits").resize_left)
-        vim.keymap.set("n", "<M-Down>", require("smart-splits").resize_down)
-        vim.keymap.set("n", "<M-Up>", require("smart-splits").resize_up)
-        vim.keymap.set("n", "<M-Right>", require("smart-splits").resize_right)
-        -- moving between splits
-        vim.keymap.set("n", "<C-h>", require("smart-splits").move_cursor_left)
-        vim.keymap.set("n", "<C-j>", require("smart-splits").move_cursor_down)
-        vim.keymap.set("n", "<C-k>", require("smart-splits").move_cursor_up)
-        vim.keymap.set("n", "<C-l>", require("smart-splits").move_cursor_right)
-      end,
-    }
+    use { "mrjones2014/smart-splits.nvim" }
 
     use { "tpope/vim-eunuch" }
 
@@ -298,16 +273,26 @@ packer.startup {
 
     -- THEMES
     use {
-      "projekt0n/github-nvim-theme",
-      -- config = function()
-      --   require("github-theme").setup {
-      --     theme_style = "dark_default",
-      --   }
-      -- end,
-      disable = true,
+      "daschw/leaf.nvim",
+      config = function()
+        require("modules.colorscheme").leaf_config()
+      end,
     }
 
-    use { "folke/tokyonight.nvim" }
+    use {
+      "navarasu/onedark.nvim",
+      config = function()
+        require("onedark").setup {
+          style = "darker",
+          code_style = {
+            comments = "italic",
+            keywords = "bold",
+            functions = "none",
+          },
+        }
+        require("onedark").load()
+      end,
+    }
 
     use {
       "rebelot/kanagawa.nvim",
@@ -389,101 +374,8 @@ packer.startup {
   },
 }
 
--- weird bug when using kanagawa inactive buffer setting
-cmd("au VimEnter * colorscheme kanagawa")
-
------------------------------------------------------------------------------//
--- Keymaps {
------------------------------------------------------------------------------//
-
--- Remap space as leader key
-nmap("<Space>", "<NOP>")
-
-vim.g.mapleader = " "
-vim.g.maplocalleader = " "
-
--- disable Q/q for ex-mode
-vim.api.nvim_set_keymap("", "Q", "", { noremap = true, silent = true })
-vim.api.nvim_set_keymap("", "q:", "", { noremap = true, silent = true })
--- U.map('n', 'x', '"_x') --delete char without yank
--- U.map('x', 'x', '"_x') -- delete visual selection without yank
-
--- Toggle highlighting
-nmap("<leader>hs", "<cmd>set hlsearch!<CR>")
-
-imap("jk", "<Esc>")
-imap("kj", "<Esc>")
-
--- Better split navigation
--- nmap("<C-h>", "<C-w>h")
--- nmap("<C-j>", "<C-w>j")
--- nmap("<C-k>", "<C-w>k")
--- nmap("<C-l>", "<C-w>l")
---
--- -- Better resizing
--- nmap("<M-Left>", "5<C-W><")
--- nmap("<M-Right>", "5<C-W>>")
--- nmap("<M-Down>", "5<C-W>-")
--- nmap("<M-Up>", "5<C-W>+")
--- nmap("<Space>=", "<C-W>=")
-
-nmap("<Leader>o", "o<Esc>k")
-nmap("<Leader>O", "O<Esc>j")
-
--- Better indenting
-vmap("<", "<gv")
-vmap(">", ">gv")
-
--- Buffer management
-nmap("<Tab>", "<cmd>bnext<CR>")
-nmap("<S-Tab>", "<cmd>bprev<CR>")
-
-nmap("<Leader>bk", "<cmd>Bdelete<CR>")
-
--- Exit terminal using easier keybindings
-tmap("jk", "<C-\\><C-n>")
-
--- Line bubbling
-xmap("J", ":m '>+1<CR>gv-gv")
-xmap("K", ":m '<-2<CR>gv-gv")
-imap("<C-j>", "<cmd>move .+1<CR><esc>==a")
-imap("<C-k>", "<cmd>move .-2<CR><esc>==a")
-nmap("<leader>j", "<cmd>move .+1<CR>==")
-nmap("<leader>k", "<cmd>move .-2<CR>==")
-
--- Close readonly buffers with q
-nmap("gq", "&readonly ? ':close!<CR>' : 'q'", { expr = true, noremap = true })
-
--- Remap for dealing with word wraps
-nmap("j", "v:count == 0 ? 'gj' : 'j'", { expr = true, noremap = true, silent = true })
-nmap("k", "v:count == 0 ? 'gk' : 'k'", { expr = true, noremap = true, silent = true })
-
-imap(",", ",<C-g>u")
-imap(".", ".<C-g>u")
-imap("!", "!<C-g>u")
-imap("(", "(<C-g>u")
-
--- packer
-nmap("<leader>ps", "<cmd>PackerSync<CR>", { silent = false })
-nmap("<leader>pcc", "<cmd>PackerClean<CR>", { silent = false })
-nmap("<leader>pco", "<cmd>PackerCompile<CR>", { silent = false })
-
-cmap("w!!", "<esc>:lua require'core.utils'.sudo_write()<CR>", {
-  silent = true,
-})
-
-nmap("<leader>so", "<cmd>lua require'core.utils'.source_filetype()<CR>")
-
---open a new file in the same directory
-nmap("<leader>nf", [[:e <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
---open a new file in a horizontal split
-nmap("<leader>ns", [[:sp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
---open a new file in a vertical split
-nmap("<leader>nv", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
-
------------------------------------------------------------------------------//
--- }
------------------------------------------------------------------------------//
+-- vim.cmd("au VimEnter * colorscheme kanagawa")
+-- vim.cmd("colorscheme kanagawa")
 
 -- prevent auto commenting of new lines
 local auto_comment_group = api.nvim_create_augroup("DisableAutoComment", { clear = true })
@@ -502,21 +394,28 @@ cmd([[
     augroup END
   ]])
 
--- highlight yanked text briefly
+vim.api.nvim_create_augroup("bufcheck", { clear = true })
 
-local highlight_group = api.nvim_create_augroup("YankHighlight", { clear = true })
+-- reload config file on change
+api.nvim_create_autocmd("BufWritePost", {
+  group = "bufcheck",
+  pattern = vim.env.MYVIMRC,
+  command = "silent source %",
+})
+
+-- highlight yanked text briefly
 api.nvim_create_autocmd("TextYankPost", {
+  group = "bufcheck",
   callback = function()
     vim.highlight.on_yank { higroup = "Search", timeout = 250, on_visual = true }
   end,
-  group = highlight_group,
   pattern = "*",
 })
-cmd(
-  [[autocmd TextYankPost * silent! lua vim.highlight.on_yank { higroup="Search", timeout=250, on_visual=true }]]
-)
--- git commit window
-exec([[au BufNewFile,BufRead COMMIT_EDITMSG set spell nonumber wrap linebreak]], false)
-exec([[au BufEnter,BufWinEnter,WinEnter COMMIT_EDITMSG startinsert]], false)
 
-exec([[au filetype gitcommit let b:EditorConfig_disable=1]], false)
+-- Enable spell checking for certain file types
+api.nvim_create_autocmd(
+  { "BufRead", "BufNewFile" },
+  { pattern = { "*.txt", "*.md", "*.tex" }, command = "setlocal spell" }
+)
+
+api.nvim_create_autocmd("VimResized", { command = "wincmd =" })

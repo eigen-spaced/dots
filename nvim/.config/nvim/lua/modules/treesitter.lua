@@ -10,7 +10,7 @@ function M.config()
   require("nvim-treesitter.configs").setup {
     ignore_install = {
       "perl",
-      "php",
+      "vala",
       "kotlin",
       "scala",
       "elixir",
@@ -21,8 +21,10 @@ function M.config()
       use_languagetree = true,
     },
     indent = { enable = true, disable = { "python", "yaml", "go" } },
-    rainbows = { enable = true },
-    context_commentstring = { enable = true },
+    context_commentstring = {
+      enable = true,
+      enable_autocmd = false,
+    },
 
     textobjects = { -- syntax-aware textobjects
       select = {
