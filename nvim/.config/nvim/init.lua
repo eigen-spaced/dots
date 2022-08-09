@@ -240,7 +240,6 @@ packer.startup {
           use_treesitter = true,
         }
       end,
-      disable = true,
     }
 
     use {
@@ -309,6 +308,15 @@ packer.startup {
       config = function()
         require("modules.feline-nvim")
       end,
+      disable = true,
+    }
+
+    use {
+      "nvim-lualine/lualine.nvim",
+      config = function()
+        require("modules.lualine-nvim")
+      end,
+      disable = true,
     }
 
     use {
