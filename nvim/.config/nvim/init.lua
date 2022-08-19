@@ -227,6 +227,7 @@ packer.startup {
 
     use {
       "lukas-reineke/indent-blankline.nvim",
+      after = "nvim-treesitter",
       config = function()
         if vim.wo.colorcolumn == "" then
           vim.opt.colorcolumn = "99999" --  workaround for cursorline causing artifacts
@@ -234,7 +235,7 @@ packer.startup {
         require("indent_blankline").setup {
           show_first_indent_level = false,
           show_current_context = true,
-          show_current_context_start = true,
+          show_current_context_start = false,
           buftype_exclude = { "terminal", "readonly", "nofile" },
           filetype_exclude = { "help", "packer", "neo-tree", "gitcommit" },
           use_treesitter = true,
@@ -314,9 +315,8 @@ packer.startup {
     use {
       "nvim-lualine/lualine.nvim",
       config = function()
-        require("modules.lualine-nvim")
+        require("modules.lualine")
       end,
-      disable = true,
     }
 
     use {
@@ -402,7 +402,7 @@ cmd([[
     augroup END
   ]])
 
-vim.api.nvim_create_augroup("bufcheck", { clear = true })
+api.nvim_create_augroup("bufcheck", { clear = true })
 
 -- reload config file on change
 api.nvim_create_autocmd("BufWritePost", {
