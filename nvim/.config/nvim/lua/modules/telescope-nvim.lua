@@ -67,10 +67,10 @@ function M.setup()
     })
   end
 
-  nmap("<C-p>", "<cmd>lua __telescope_find_files()<CR>")
-  nmap("<Leader>fb", "<cmd>lua __telescope_buffers()<CR>")
-  nmap("<Leader>fw", "<cmd>lua __telescope_grep()<CR>")
-  nmap("<Leader>fh", "<cmd>lua __telescope_help()<CR>")
+  vim.keymap.set("n", "<C-p>", __telescope_find_files)
+  vim.keymap.set("n", "<Leader>fb", __telescope_buffers)
+  vim.keymap.set("n", "<Leader>fw", __telescope_grep)
+  vim.keymap.set("n", "<Leader>fh", __telescope_help)
 end
 
 function M.config()

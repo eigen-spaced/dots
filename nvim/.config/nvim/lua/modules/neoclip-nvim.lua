@@ -3,7 +3,8 @@ local M = {}
 require("core.utils")
 
 function M.setup()
-  nmap(
+  vim.keymap.set(
+    "n",
     "'",
     '<cmd>lua require("neoclip"); require("telescope").extensions.neoclip.default()<CR>'
   )

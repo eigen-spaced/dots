@@ -139,12 +139,10 @@ export PATH="$PATH:/usr/local/go/bin"
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
-export npm_config_prefix="$HOME/.local"
+# export npm_config_prefix="$HOME/.local"
 
 alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
 export PATH="$PATH:$HOME/dev/lua-language-server/bin"
-
-[ -f "/home/magnuscake/.ghcup/env" ] && source "/home/magnuscake/.ghcup/env" # ghcup-env
 
 # export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
@@ -157,3 +155,8 @@ eval "$(pyenv init --path)"
 eval "$(pyenv virtualenv-init -)"
 
 eval $(/opt/homebrew/bin/brew shellenv)
+
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

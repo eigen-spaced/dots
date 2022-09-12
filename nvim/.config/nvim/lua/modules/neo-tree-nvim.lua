@@ -3,8 +3,8 @@ local M = {}
 require("core.utils")
 
 function M.setup()
-  nmap("<leader><leader>", "<cmd>NeoTreeFloatToggle<CR>")
-  nmap("<leader>e", "<cmd>NeoTreeRevealToggle<CR>")
+  vim.keymap.set("n", "<leader><leader>", "<cmd>NeoTreeFloatToggle<CR>")
+  vim.keymap.set("n", "<leader>e", "<cmd>NeoTreeRevealToggle<CR>")
 end
 
 function M.config()

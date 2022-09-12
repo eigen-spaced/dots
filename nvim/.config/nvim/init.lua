@@ -256,9 +256,9 @@ packer.startup {
     use {
       "NTBBloodbath/rest.nvim",
       setup = function()
-        nmap("<leader>r", "<Plug>RestNvim")
-        nmap("<leader>rp", "<Plug>RestNvimPreview")
-        nmap("<leader>rl", "<Plug>RestNvimLast")
+        vim.keymap.set("n", "<leader>r", "<Plug>RestNvim")
+        vim.keymap.set("n", "<leader>rp", "<Plug>RestNvimPreview")
+        vim.keymap.set("n", "<leader>rl", "<Plug>RestNvimLast")
       end,
     }
 
