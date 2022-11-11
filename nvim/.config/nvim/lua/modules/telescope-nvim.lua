@@ -67,10 +67,10 @@ function M.setup()
     })
   end
 
-  vim.keymap.set("n", "<C-p>", __telescope_find_files)
-  vim.keymap.set("n", "<Leader>fb", __telescope_buffers)
-  vim.keymap.set("n", "<Leader>fw", __telescope_grep)
-  vim.keymap.set("n", "<Leader>fh", __telescope_help)
+  vim.keymap.set({ "n", "v" }, "<C-p>", __telescope_find_files)
+  vim.keymap.set({ "n", "v" }, "<C-b>", __telescope_buffers)
+  vim.keymap.set({ "n", "v" }, "<Leader>fw", __telescope_grep)
+  vim.keymap.set({ "n", "v" }, "<Leader>fh", __telescope_help)
 end
 
 function M.config()
