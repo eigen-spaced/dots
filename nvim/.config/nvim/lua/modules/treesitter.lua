@@ -5,9 +5,10 @@ local M = {}
 function M.config()
   local wk_status_ok, wk = pcall(require, "which-key")
 
-  cmd([[packadd nvim-treesitter-textobjects]])
+  cmd([[ packadd nvim-treesitter-textobjects ]])
 
   require("nvim-treesitter.configs").setup {
+    ensure_installed = { "norg" },
     ignore_install = {
       "perl",
       "vala",
