@@ -8,7 +8,6 @@ function M.config()
   cmd([[ packadd nvim-treesitter-textobjects ]])
 
   require("nvim-treesitter.configs").setup {
-    ensure_installed = { "norg" },
     ignore_install = {
       "perl",
       "vala",

@@ -1,7 +1,5 @@
 local M = {}
 
-require("core.utils")
-
 function M.setup()
   local status_ok, _ = pcall(require, "telescope")
 
@@ -48,7 +46,7 @@ function M.setup()
   function _G.__telescope_find_files()
     require("telescope.builtin").find_files {
       previewer = false,
-      layout_config = { width = 0.7 },
+      layout_config = { width = 0.5 },
       color_devicons = true,
     }
   end

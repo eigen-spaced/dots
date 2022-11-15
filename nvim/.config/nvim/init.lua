@@ -3,6 +3,7 @@ local utils = require("core.utils")
 
 require("core.options")
 require("core.keymap")
+require("modules.statusline")
 
 -- Bootstrap packer
 local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
@@ -128,17 +129,18 @@ packer.startup {
     -- LSP
     use {
       "neovim/nvim-lspconfig",
-      config = require("core.lsp"),
+      -- after = "nvim-treesitter",
+      setup = function()
+        require("core.lsp").setup()
+      end,
+      config = function()
+        require("core.lsp").config()
+      end,
     }
-
-    use { "williamboman/nvim-lsp-installer" }
 
     use {
       "jose-elias-alvarez/null-ls.nvim",
-      config = function()
-        require("modules.null-ls-nvim")
-      end,
-      after = "nvim-lspconfig",
+      module = "null-ls",
     }
 
     use {
@@ -280,17 +282,17 @@ packer.startup {
     }
 
     use {
-      "navarasu/onedark.nvim",
+      "catppuccin/nvim",
+      as = "catppuccin",
       config = function()
-        require("onedark").setup {
-          style = "darker",
-          code_style = {
-            comments = "italic",
-            keywords = "bold",
-            functions = "none",
+        require("catppuccin").setup {
+          flavour = "macchiato", -- mocha, macchiato, frappe, latte
+          dim_inactive = {
+            enabled = true,
+            percentage = 0.20,
           },
         }
-        require("onedark").load()
+        vim.api.nvim_command("colorscheme catppuccin")
       end,
     }
 
@@ -301,21 +303,6 @@ packer.startup {
           dimInactive = true,
           globalStatus = true,
         }
-      end,
-    }
-
-    use {
-      "feline-nvim/feline.nvim",
-      config = function()
-        require("modules.feline-nvim")
-      end,
-      disable = true,
-    }
-
-    use {
-      "nvim-lualine/lualine.nvim",
-      config = function()
-        require("modules.lualine")
       end,
     }
 
@@ -361,6 +348,23 @@ packer.startup {
       end,
     }
 
+    use {
+      "Pocco81/true-zen.nvim",
+      -- setup = function()
+      --   require("modules.true-zen").setup()
+      -- end,
+      config = function()
+        require("modules.true-zen").config()
+      end,
+    }
+
+    use {
+      "ggandor/leap.nvim",
+      config = function()
+        require("leap").add_default_mappings()
+      end,
+    }
+
     use { "nathom/filetype.nvim" }
 
     use { "rafcamlet/nvim-luapad", cmd = "Luapad" }
@@ -368,10 +372,6 @@ packer.startup {
     use { "famiu/bufdelete.nvim", cmd = { "Bdelete", "Bwipeout" } }
 
     use { "ellisonleao/glow.nvim", cmd = "Glow" }
-
-    if packer_bootstrap then
-      require("packer").sync()
-    end
   end,
   config = {
     display = {
@@ -391,6 +391,12 @@ api.nvim_create_autocmd(
   "BufEnter",
   { command = "set fo-=c fo-=r fo-=o", group = auto_comment_group, pattern = "*" }
 )
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = "bufcheck",
+  pattern = { "gitcommit", "gitrebase" },
+  command = "startinsert | 1",
+})
 
 -- Don't screw up folds when inserting text that might affect them, until
 -- leaving insert mode. Foldmethod is local to the window. Protect against
