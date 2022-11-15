@@ -103,6 +103,8 @@ if executable("rg") then
   set.grepformat:prepend { "%f:%l:%c:%m" }
 end
 
+set.wildignore:append { ".gitignore" }
+
 -----------------------------------------------------------------------------//
 -- window splitting and buffers {{{1
 -----------------------------------------------------------------------------//
@@ -167,7 +169,7 @@ set.termguicolors = true
 -- tokyonight config
 vim.g.tokyonight_style = "night"
 -- remove those awkward borders from between splits. Looking for a fix in the future
--- vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None" })
+vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None", fg = "#141414" })
 
 -----------------------------------------------------------------------------//
 -- }}}1
