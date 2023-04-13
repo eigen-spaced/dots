@@ -87,19 +87,24 @@ cmp.setup {
   },
   mapping = mapping,
   sources = {
-    { name = "luasnip" },
-    { name = "nvim_lsp" },
-    { name = "nvim_lua" },
-    { name = "path" },
+    { name = "nvim_lsp", priority = 8 },
+    { name = "luasnip", priority = 7 },
+    { name = "nvim_lua", priority = 5 },
+    { name = "path", priorty = 4 },
     { name = "buffer", keyword_length = 3 },
+  },
+  sorting = {
+    comparators = {
+      cmp.config.compare.locality,
+      cmp.config.compare.recently_used,
+      cmp.config.compare.score, -- based on :  score = score + ((#sources - (source_index - 1)) * sorting.priority_weight)
+      cmp.config.compare.offset,
+      cmp.config.compare.order,
+    },
   },
   formatting = {
     format = function(_, vim_item)
-      vim_item.kind = string.format(
-        "%s [%s]",
-        lsp.kinds[vim_item.kind],
-        vim_item.kind
-      )
+      vim_item.kind = string.format("%s [%s]", lsp.kinds[vim_item.kind], vim_item.kind)
       return vim_item
     end,
   },
