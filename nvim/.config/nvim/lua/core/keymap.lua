@@ -57,6 +57,9 @@ keymap.set("n", "<S-Tab>", "<cmd>bprev<CR>")
 
 keymap.set("n", "<Leader>bk", "<cmd>Bdelete<CR>")
 
+-- replace the entire buffer with contents from clipboard and go to the end of the file
+keymap.set("n", "<Leader>ra", "<cmd>%!pbpaste<CR>G")
+
 -- Exit terminal using easier keybindings
 keymap.set("t", "jk", "<C-\\><C-n>")
 

@@ -14,7 +14,7 @@ local U = {}
 -- @param name string
 -- @param commands Autocommand[]
 -- @return number
-function U.augroup(name, commands)
+U.augroup = function(name, commands)
   local id = vim.api.nvim_create_augroup(name, { clear = true })
 
   for _, autocmd in ipairs(commands) do
@@ -52,9 +52,9 @@ U.source_filetype = function()
   local ft = vim.api.nvim_buf_get_option(0, "filetype")
   if ft == "lua" or ft == "vim" then
     vim.cmd("source %")
-    print(ft .. " file reloaded!")
+    U.info(ft .. " file reloaded!")
   else
-    print("Not a lua or vim file")
+    U.err("Not a lua or vim file")
   end
 end
 
@@ -67,6 +67,37 @@ U.is_git_directory = function()
     return git_dir_result ~= ""
   end
 end
+
+local function branch_name()
+  local branch = vim.fn.system("git branch --show-current 2> /dev/null | tr -d '\n'")
+  if branch ~= "" then
+    return branch
+  else
+    return ""
+  end
+end
+
+-- Display the filename in the statusbar
+local function file_name()
+  local root_path = vim.fn.getcwd()
+  local root_dir = root_path:match("[^/]+$")
+  local home_path = vim.fn.expand("%:~")
+  local overlap, _ = home_path:find(root_dir)
+  if home_path == "" then
+    return root_path:gsub("/Users/[^/]+", "~")
+  elseif overlap then
+    return home_path:sub(overlap)
+  else
+    return home_path
+  end
+end
+
+vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "FocusGained" }, {
+  callback = function()
+    vim.b.branch_name = branch_name()
+    vim.b.file_name = file_name()
+  end,
+})
 
 U.is_buffer_empty = function()
   -- Check whether the current buffer is empty
@@ -94,13 +125,13 @@ function U.info(msg)
 end
 
 function U.warn(msg)
-  vim.cmd("echohl WarningU.g")
+  vim.cmd("echohl WarningMsg")
   U._echo_multiline(msg)
   vim.cmd("echohl None")
 end
 
 function U.err(msg)
-  vim.cmd("echohl ErrorU.g")
+  vim.cmd("echohl ErrorMsg")
   U._echo_multiline(msg)
   vim.cmd("echohl None")
 end
