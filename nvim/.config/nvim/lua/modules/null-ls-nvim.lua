@@ -37,9 +37,9 @@ function M.setup()
   local sources = {
     -- both needs to be enabled to so prettier can apply eslint fixes
     -- prettierd should come first to prevent occassional race condition
-    formatting.prettierd.with {
-      args = { "--no-semi", "--single-quote", "--jsx-single-quote" },
-    },
+    -- formatting.prettierd.with {
+    --   args = { "--no-semi", "--single-quote", "--jsx-single-quote" },
+    -- },
 
     diagnostics.eslint_d.with {
       condition = has_eslint_config,
@@ -66,6 +66,7 @@ function M.setup()
     formatting.stylua,
     formatting.gofmt,
     formatting.black,
+    formatting.prettierd,
     -- blackd,
 
     code_actions.gitsigns,
