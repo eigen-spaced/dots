@@ -1,11 +1,7 @@
-local cmd = vim.cmd
-
 local M = {}
 
 function M.config()
   local wk_status_ok, wk = pcall(require, "which-key")
-
-  cmd([[ packadd nvim-treesitter-textobjects ]])
 
   require("nvim-treesitter.configs").setup {
     ignore_install = {
@@ -25,7 +21,9 @@ function M.config()
       enable = true,
       enable_autocmd = false,
     },
-
+    autotag = {
+      enable = true,
+    },
     textobjects = { -- syntax-aware textobjects
       select = {
         enable = true,
