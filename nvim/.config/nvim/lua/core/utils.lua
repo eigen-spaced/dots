@@ -69,12 +69,8 @@ U.is_git_directory = function()
 end
 
 local function branch_name()
-  local branch = vim.fn.system("git branch --show-current 2> /dev/null | tr -d '\n'")
-  if branch ~= "" then
-    return branch
-  else
-    return ""
-  end
+  local cmd_output = vim.fn.systemlist("git branch --show-current 2> /dev/null")
+  return #cmd_output > 0 and cmd_output[1] or ""
 end
 
 -- Display the filename in the statusbar

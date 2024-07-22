@@ -2,32 +2,32 @@ local custom_attach = require("core.lsp.custom_attach")
 
 local servers = {}
 
-servers.sumneko_lua = {
-  flags = { debounce_text_changes = 150 },
-
-  settings = {
-    Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-        version = "LuaJIT",
-        -- Setup your lua path
-        path = vim.split(package.path, ";"),
-      },
-      diagnostics = {
-        -- Get the language server to recognize the `vim` global
-        globals = { "vim" },
-      },
-      workspace = {
-        -- Make the server aware of Neovim runtime files
-        library = {
-          [vim.fn.expand("$VIMRUNTIME/lua")] = true,
-          [vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true,
-        },
-      },
-      telemetry = { enable = false },
-    },
-  },
-}
+-- servers.sumneko_lua = {
+--   flags = { debounce_text_changes = 150 },
+--
+--   settings = {
+--     Lua = {
+--       runtime = {
+--         -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+--         version = "LuaJIT",
+--         -- Setup your lua path
+--         path = vim.split(package.path, ";"),
+--       },
+--       diagnostics = {
+--         -- Get the language server to recognize the `vim` global
+--         globals = { "vim" },
+--       },
+--       workspace = {
+--         -- Make the server aware of Neovim runtime files
+--         library = {
+--           [vim.fn.expand("$VIMRUNTIME/lua")] = true,
+--           [vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true,
+--         },
+--       },
+--       telemetry = { enable = false },
+--     },
+--   },
+-- }
 
 servers.tsserver = {
   filetypes = {
@@ -104,37 +104,37 @@ servers.html = {
 -- vscode-json-language-server
 servers.jsonls = {
   flags = { debounce_text_changes = 150 },
-  filetypes = { 'json', 'jsonc' },
+  filetypes = { "json", "jsonc" },
   settings = {
     json = {
       schemas = {
         {
-          fileMatch = { 'package.json' },
-          url = 'https://json.schemastore.org/package.json',
+          fileMatch = { "package.json" },
+          url = "https://json.schemastore.org/package.json",
         },
         {
-          fileMatch = { 'tsconfig*.json' },
-          url = 'https://json.schemastore.org/tsconfig.json',
-        },
-        {
-          fileMatch = {
-            '.prettierrc',
-            '.prettierrc.json',
-            'prettier.config.json',
-          },
-          url = 'https://json.schemastore.org/prettierrc.json',
-        },
-        {
-          fileMatch = { '.eslintrc', '.eslintrc.json' },
-          url = 'https://json.schemastore.org/eslintrc.json',
+          fileMatch = { "tsconfig*.json" },
+          url = "https://json.schemastore.org/tsconfig.json",
         },
         {
           fileMatch = {
-            '.stylelintrc',
-            '.stylelintrc.json',
-            'stylelint.config.json',
+            ".prettierrc",
+            ".prettierrc.json",
+            "prettier.config.json",
           },
-          url = 'http://json.schemastore.org/stylelintrc.json',
+          url = "https://json.schemastore.org/prettierrc.json",
+        },
+        {
+          fileMatch = { ".eslintrc", ".eslintrc.json" },
+          url = "https://json.schemastore.org/eslintrc.json",
+        },
+        {
+          fileMatch = {
+            ".stylelintrc",
+            ".stylelintrc.json",
+            "stylelint.config.json",
+          },
+          url = "http://json.schemastore.org/stylelintrc.json",
         },
       },
     },

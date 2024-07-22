@@ -1,6 +1,6 @@
 local M = {}
 
-function M.setup()
+function M.config()
   vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     vim.lsp.diagnostic.on_publish_diagnostics,
     {
@@ -11,7 +11,7 @@ function M.setup()
     }
   )
 
-  local diagnostic_signs = { " ", " ", " ", " " }
+  local diagnostic_signs = { " ", " ", " ", " " }
 
   local diagnostic_severity_fullnames = {
     "Error",
@@ -53,7 +53,7 @@ function M.setup()
   --     local bufnr = args.buf
   --     vim.api.nvim_buf_set_option(
   --       bufnr,
-  --       'formatexpr',
+  --       'formatexpr',lsp
   --       'v:lua.vim.lsp.formatexpr'
   --     )
   --     vim.api.nvim_buf_set_option(
@@ -142,8 +142,10 @@ function M.setup()
     callback = function(args)
       local bufnr = args.buf
       local client = vim.lsp.get_client_by_id(args.data.client_id)
+
       if client.server_capabilities.documentHighlightProvider then
         local augroup_lsp_highlight = "lsp_highlight"
+
         vim.api.nvim_create_augroup(augroup_lsp_highlight, { clear = false })
         vim.api.nvim_create_autocmd("CursorHold", {
           group = augroup_lsp_highlight,
@@ -168,15 +170,15 @@ function M.setup()
       if client.server_capabilities.documentFormattingProvider then
         local augroup_lsp_format = "lsp_format"
         vim.api.nvim_create_augroup(augroup_lsp_format, { clear = false })
-        vim.api.nvim_create_autocmd("BufWritePost", {
+        vim.api.nvim_create_autocmd("BufWritePre", {
           group = augroup_lsp_format,
           buffer = bufnr,
           callback = function()
             vim.lsp.buf.format {
-              async = true,
+              -- async = true,
               filter = function(server)
                 local disabled_servers = {
-                  "sumneko_lua",
+                  "lua_ls",
                   "eslint",
                   "tsserver",
                 }
@@ -193,55 +195,219 @@ function M.setup()
       -- end
     end,
   })
-end
 
-function M.config()
-  local lsp_status_ok, lspconfig = pcall(require, "lspconfig")
-  local wk_status_ok, wk = pcall(require, "which-key")
+  local mason_status_ok, mason = pcall(require, "mason")
+  local mason_lspconfig_status_ok, mason_lspconfig = pcall(require, "mason-lspconfig")
+  local lspconfig_status_ok, lspconfig = pcall(require, "lspconfig")
 
-  if not lsp_status_ok then
+  if not mason_status_ok then
     return
   end
 
-  vim.cmd([[packadd nvim-lspconfig]])
-  local servers = require("core.lsp.servers")
-
-  local capabilities = vim.lsp.protocol.make_client_capabilities()
-  require("cmp_nvim_lsp").default_capabilities(capabilities)
-
-  for server, config in pairs(servers) do
-    require("lspconfig")[server].setup(
-      vim.tbl_deep_extend("force", { capabilities = capabilities }, config)
-    )
+  if not mason_lspconfig_status_ok then
+    return
   end
 
-  local sources = require("modules.null-ls-nvim").setup()
+  if not lspconfig_status_ok then
+    return
+  end
 
-  require("null-ls").setup {
-    sources = sources,
-    debug = false,
-    -- Fallback to .bashrc as a project root to enable LSP on loose files
-    root_dir = function(fname)
-      return lspconfig.util.root_pattern("tsconfig.json", "pyproject.toml", "stylua.toml")(fname)
-        or lspconfig.util.root_pattern(".eslintrc.js", ".git")(fname)
-        or lspconfig.util.root_pattern("package.json", ".git/", ".zshrc")(fname)
-    end,
+  require("neodev").setup()
+
+  -- JSON
+  -- vscode-json-language-server
+  lspconfig.jsonls.setup = {
+    flags = { debounce_text_changes = 150 },
+    filetypes = { "json", "jsonc" },
+    settings = {
+      json = {
+        schemas = {
+          {
+            fileMatch = { "package.json" },
+            url = "https://json.schemastore.org/package.json",
+          },
+          {
+            fileMatch = { "tsconfig*.json" },
+            url = "https://json.schemastore.org/tsconfig.json",
+          },
+          {
+            fileMatch = {
+              ".prettierrc",
+              ".prettierrc.json",
+              "prettier.config.json",
+            },
+            url = "https://json.schemastore.org/prettierrc.json",
+          },
+          {
+            fileMatch = { ".eslintrc", ".eslintrc.json" },
+            url = "https://json.schemastore.org/eslintrc.json",
+          },
+          {
+            fileMatch = {
+              ".stylelintrc",
+              ".stylelintrc.json",
+              "stylelint.config.json",
+            },
+            url = "http://json.schemastore.org/stylelintrc.json",
+          },
+        },
+      },
+    },
   }
 
-  if not wk_status_ok then
-    return
-  end
-
-  wk.register {
-    g = {
-      name = "+goto",
-      D = "lsp declaration",
-      d = "lsp definition",
-      i = "lsp implementation",
-      h = "lsp signature help",
+  mason.setup()
+  mason_lspconfig.setup {
+    ensure_installed = {
+      "lua_ls",
+      "rust_analyzer",
+      "cssls",
+      "html",
+      "svelte",
+      "pyright",
+      "tailwindcss",
+      "vimls",
+      "bashls",
+      "tsserver",
+      "volar",
+      "gopls",
     },
-    ca = "code action",
-    rn = "lsp rename",
+  }
+
+  -- local capabilities = vim.lsp.protocol.make_client_capabilities()
+  -- require("cmp_nvim_lsp").default_capabilities(capabilities)
+
+  local capabilities = require("cmp_nvim_lsp").default_capabilities(
+    vim.lsp.protocol.make_client_capabilities()
+  )
+  capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+  require("rust-tools").setup {
+    -- rust-tools options
+    tools = {
+      autoSetHints = true,
+      inlay_hints = {
+        show_parameter_hints = true,
+        parameter_hints_prefix = "<- ",
+        other_hints_prefix = "=> ",
+      },
+    },
+    -- all the opts to send to nvim-lspconfig
+    -- these override the defaults set by rust-tools.nvim
+    --
+    -- REFERENCE:
+    -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
+    -- https://rust-analyzer.github.io/manual.html#configuration
+    -- https://rust-analyzer.github.io/manual.html#features
+    --
+    -- NOTE: The configuration format is `rust-analyzer.<section>.<property>`.
+    --       <section> should be an object.
+    --       <property> should be a primitive.
+    server = {
+      -- on_attach = function(client, bufnr)
+      --   require("shared/lsp")(client, bufnr)
+      --   require("illuminate").on_attach(client)
+      --
+      --   local bufopts = {
+      --     noremap = true,
+      --     silent = true,
+      --     buffer = bufnr,
+      --   }
+      --   vim.keymap.set("n", "<leader><leader>rr", "<Cmd>RustRunnables<CR>", bufopts)
+      --   vim.keymap.set("n", "K", "<Cmd>RustHoverActions<CR>", bufopts)
+      -- end,
+      ["rust-analyzer"] = {
+        assist = {
+          importEnforceGranularity = true,
+          importPrefix = "create",
+        },
+        cargo = { allFeatures = true },
+        checkOnSave = {
+          -- default: `cargo check`
+          command = "clippy",
+          allFeatures = true,
+        },
+      },
+      inlayHints = {
+        -- NOT SURE THIS IS VALID/WORKS 😬
+        lifetimeElisionHints = {
+          enable = true,
+          useParameterNames = true,
+        },
+      },
+    },
+  }
+
+  mason_lspconfig.setup_handlers {
+    function(server_name)
+      -- Otherwise the following `setup()` would override our config.
+      if server_name ~= "jsonls" then
+        lspconfig[server_name].setup {
+          capabilities = capabilities,
+        }
+      end
+    end,
+
+    ["lua_ls"] = function()
+      lspconfig.lua_ls.setup {
+        capabilities = capabilities,
+        flags = { debounce_text_changes = 150 },
+        settings = {
+          Lua = {
+            completion = {
+              callSnippet = "Replace",
+            },
+            workspace = {
+              checkThirdParty = false,
+            },
+            telemetry = { enable = false },
+            diagnostics = {
+              -- unusedLocalExclude = { "_*" },
+              globals = { "vim", "use", "require" },
+            },
+            format = { enable = false },
+          },
+        },
+      }
+    end,
+
+    ["tsserver"] = function()
+      lspconfig.tsserver.setup {
+        capabilities = capabilities,
+
+        on_attach = function(client, _)
+          client.server_capabilities.document_formatting = false
+          client.server_capabilities.document_range_formatting = false
+          local ts_utils = require("nvim-lsp-ts-utils")
+
+          -- defaults
+          ts_utils.setup {
+            -- eslint
+            eslint_enable_code_actions = true,
+            eslint_enable_disable_comments = true,
+            eslint_bin = "eslint_d",
+            eslint_config_fallback = nil,
+            eslint_enable_diagnostics = true,
+
+            -- formatting
+            enable_formatting = true,
+            formatter = "prettierd",
+            formatter_config_fallback = nil,
+
+            -- parentheses completion
+            complete_parens = false,
+            signature_help_in_parens = false,
+
+            -- update imports on file move
+            update_imports_on_move = true,
+            require_confirmation_on_move = false,
+            watch_dir = nil,
+          }
+
+          -- required to fix code action ranges
+          ts_utils.setup_client(client)
+        end,
+      }
+    end,
   }
 end
 

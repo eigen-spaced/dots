@@ -3,7 +3,14 @@ local M = {}
 function M.config()
   local wk_status_ok, wk = pcall(require, "which-key")
 
+  ---@diagnostic disable: missing-fields
   require("nvim-treesitter.configs").setup {
+    ensure_installed = {
+      "c",
+      "vim",
+      "lua",
+      "vimdoc",
+    },
     ignore_install = {
       "perl",
       "vala",

@@ -3,8 +3,8 @@ local M = {}
 require("core.utils")
 
 function M.setup()
-  vim.keymap.set("n", "<leader><leader>", "<cmd>NeoTreeFloatToggle<CR>")
-  vim.keymap.set("n", "<leader>e", "<cmd>NeoTreeRevealToggle<CR>")
+  -- vim.keymap.set("n", "<leader><leader>", "<cmd>NeoTreeFloatToggle<CR>")
+  -- vim.keymap.set("n", "<leader>e", "<cmd>NeoTreeRevealToggle<CR>")
 end
 
 function M.config()
@@ -13,6 +13,7 @@ function M.config()
     follow_current_file = false,
     enable_git_status = true,
     enable_diagnostics = true,
+    position = "left",
     filesystem = {
       use_libuv_file_watcher = false, -- This will use the OS level file watchers
       window = {

@@ -5,7 +5,7 @@ require("core.options")
 require("core.keymap")
 require("core.statusline")
 
--- Bootstrap packer
+-- Bootstrap lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system {
@@ -180,19 +180,19 @@ lazy.setup {
   -- LSP
   {
     "neovim/nvim-lspconfig",
-    setup = function()
-      require("core.lsp").setup()
-    end,
     config = function()
       require("core.lsp").config()
     end,
   },
 
   {
-    "jose-elias-alvarez/null-ls.nvim",
-    dependencies = { "nvim-lspconfig" },
+    "nvimtools/none-ls.nvim",
+    dependencies = {
+      "nvim-lspconfig",
+      "nvimtools/none-ls-extras.nvim",
+    },
     config = function()
-      require("modules.null-ls")
+      require("modules.none-ls")
     end,
   },
 
@@ -252,9 +252,6 @@ lazy.setup {
   {
     "AckslD/nvim-neoclip.lua",
     event = { "TextYankPost" },
-    setup = function()
-      require("modules.neoclip-nvim").setup()
-    end,
     config = function()
       require("modules.neoclip-nvim").config()
     end,
@@ -318,17 +315,15 @@ lazy.setup {
 
   {
     "lukas-reineke/indent-blankline.nvim",
+    main = "ibl",
     config = function()
-      if vim.wo.colorcolumn == "" then
-        vim.opt.colorcolumn = "99999" --  workaround for cursorline causing artifacts
-      end
-      require("indent_blankline").setup {
-        show_first_indent_level = false,
-        show_current_context = true,
-        show_current_context_start = false,
-        buftype_exclude = { "terminal", "readonly", "nofile" },
-        filetype_exclude = { "help", "packer", "neo-tree", "gitcommit" },
-        use_treesitter = true,
+      require("ibl").setup {
+        -- exclude = { "terminal", "readonly", "nofile" },
+        -- show_first_indent_level = false,
+        -- show_current_context = true,
+        -- show_current_context_start = false,
+        -- filetype_exclude = { "help", "gitcommit" },
+        -- use_treesitter = true,
       }
     end,
   },
@@ -353,6 +348,8 @@ lazy.setup {
   },
 
   { "mrjones2014/smart-splits.nvim" },
+
+  { "christoomey/vim-tmux-navigator" },
 
   { "tpope/vim-eunuch" },
 
@@ -431,9 +428,6 @@ lazy.setup {
 
   {
     "Pocco81/true-zen.nvim",
-    -- setup = function()
-    --   require("modules.true-zen").setup()
-    -- end,
     config = function()
       require("modules.true-zen").config()
     end,
@@ -452,7 +446,6 @@ lazy.setup {
 
   { "ellisonleao/glow.nvim", cmd = "Glow" },
 }
-
 -- prevent auto commenting of new lines
 local auto_comment_group = api.nvim_create_augroup("DisableAutoComment", { clear = true })
 api.nvim_create_autocmd(

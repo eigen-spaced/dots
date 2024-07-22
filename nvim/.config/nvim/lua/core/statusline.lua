@@ -2,13 +2,14 @@ local cmd, api = vim.cmd, vim.api
 
 local c = {
   fg = "#d8dee9",
-  bg = "#363a4f",
+  bg = "#262e38",
   accent = "#8fbcbb",
   lightbg = "#333a47",
   linebg = "#333a47",
   fgfaded = "#616e88",
   grey = "#3e4656",
   bright = "#eceff4",
+  dark = "#121212",
   red = "#bf616a",
   green = "#a3be8c",
   blue = "#8fbcbb",
@@ -40,16 +41,16 @@ local function lsp()
   local info = ""
 
   if count["errors"] ~= 0 then
-    errors = " %#LspDiagnosticsSignError# " .. count["errors"]
+    errors = " %#LspDiagnosticsSignError# " .. count["errors"]
   end
   if count["warnings"] ~= 0 then
-    warnings = " %#LspDiagnosticsSignWarning# " .. count["warnings"]
+    warnings = " %#LspDiagnosticsSignWarning#   " .. count["warnings"]
   end
   if count["hints"] ~= 0 then
-    hints = " %#LspDiagnosticsSignHint# " .. count["hints"]
+    hints = " %#LspDiagnosticsSignHint#  " .. count["hints"]
   end
   if count["info"] ~= 0 then
-    info = " %#LspDiagnosticsSignInformation# " .. count["info"]
+    info = " %#LspDiagnosticsSignInformation#  " .. count["info"]
   end
 
   return errors .. warnings .. hints .. info .. "%*"
@@ -68,7 +69,7 @@ Statusline.active = function()
   return table.concat {
     " ",
     "%<",
-    vim.b.branch_name .. " | " or "",
+    vim.b.branch_name .. " // " or "",
     vim.b.file_name,
     "%m",
     lsp(),
@@ -80,10 +81,6 @@ end
 
 function Statusline.inactive()
   return " %F"
-end
-
-function Statusline.short()
-  return "   neo-tree"
 end
 
 function Statusline.short()
@@ -115,9 +112,9 @@ api.nvim_create_autocmd({ "ColorScheme", "ModeChanged" }, {
     local curr_mode = api.nvim_get_mode().mode
 
     if curr_mode == "R" then
-      cmd("hi StatusLine  guibg=" .. c.orange .. " guifg=" .. c.bright)
+      cmd("hi StatusLine  guifg=" .. c.orange .. " guibg=" .. c.bg)
     else
-      cmd("hi StatusLine  guibg=" .. c.bg .. " guifg=" .. c.bright)
+      cmd("hi StatusLine  guifg=" .. c.bright .. " guibg=" .. c.bg)
     end
   end,
   -- command = "hi StatusLine  guibg=" .. c.bg .. " guifg=" .. c.bright,

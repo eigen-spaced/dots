@@ -4,7 +4,7 @@ require("core.utils")
 
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-  local custom_attach = function(client, bufnr)
+local custom_attach = function(client, bufnr)
   local function buf_option(...)
     vim.api.nvim_buf_set_option(bufnr, ...)
   end
