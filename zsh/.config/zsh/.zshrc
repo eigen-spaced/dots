@@ -139,24 +139,27 @@ export PATH="$PATH:/usr/local/go/bin"
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
-# export npm_config_prefix="$HOME/.local"
+export PATH="$PATH:$HOME/.config/emacs/bin"
 
-alias luamake=/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake
-export PATH="$PATH:$HOME/dev/lua-language-server/bin"
+# export npm_config_prefix="$HOME/.local"
 
 # export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
 
-# pyenv config
-export PYENV_ROOT=$HOME/.pyenv
-export PATH=$PYENV_ROOT/bin:$PATH
-# export PATH=$PYENV_ROOT/shims:$PATH
-
-eval "$(pyenv init --path)"
-eval "$(pyenv virtualenv-init -)"
-
 eval $(/opt/homebrew/bin/brew shellenv)
-
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+# pyenv config
+export PYENV_ROOT="$HOME/.pyenv"
+command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
+eval "$(pyenv init -)"
+eval "$(pyenv virtualenv-init -)"
+
+source /opt/homebrew/opt/chruby/share/chruby/chruby.sh
+source /opt/homebrew/opt/chruby/share/chruby/auto.sh
+chruby ruby-3.1.2
+
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
