@@ -103,6 +103,8 @@ if executable("rg") then
   set.grepformat:prepend { "%f:%l:%c:%m" }
 end
 
+set.wildignore:append { ".gitignore" }
+
 -----------------------------------------------------------------------------//
 -- window splitting and buffers {{{1
 -----------------------------------------------------------------------------//
@@ -153,21 +155,28 @@ cmd([[
 set.mouse = "a"
 
 -----------------------------------------------------------------------------//
+-- Filetype {{{1
+-----------------------------------------------------------------------------//
+vim.g.do_filetype_lua = true
+-- vim.g.did_load_filetypes = false
+
+-----------------------------------------------------------------------------//
 -- Netrw {{{1
 -----------------------------------------------------------------------------//
 -- do not display info on the top of window
 vim.g.netrw_banner = 0
+-- vim.g.netrw_liststyle = 2
+vim.g.netrw_altv = 1
+vim.g.netrw_winsize = 50
 
 -----------------------------------------------------------------------------//
 -- Colorscheme {{{1
 -----------------------------------------------------------------------------//
 set.termguicolors = true
--- cmd("colorscheme leaf")
 
 -- tokyonight config
-vim.g.tokyonight_style = "night"
 -- remove those awkward borders from between splits. Looking for a fix in the future
--- vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None" })
+vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None", fg = "#141414" })
 
 -----------------------------------------------------------------------------//
 -- }}}1

@@ -1,66 +1,5 @@
 local U = {}
 
--- mappings
-function U.map(mode, key, cmd, opts)
-  local options = { noremap = true, silent = true }
-  if opts then
-    options = vim.tbl_extend("force", options, opts)
-  end
-  vim.api.nvim_set_keymap(mode, key, cmd, options)
-end
-
--- Create a keymap
--- @param mode  string which mode the keymap belongs to
--- @param lhs   string
--- @param rhs   string
--- @param opts  string
--- @param bufnr string
-local keymap = function(mode, lhs, rhs, opts, bufnr)
-  -- extend the default options with user's overrides
-  local default_opts = { noremap = true, silent = true }
-  opts = opts and vim.tbl_extend("keep", opts, default_opts) or default_opts
-
-  -- set a buffer local mapping only if a buffer number is given to us
-  if bufnr then
-    vim.api.nvim_buf_set_keymap(bufnr, mode, lhs, rhs, opts)
-  else
-    vim.api.nvim_set_keymap(mode, lhs, rhs, opts)
-  end
-end
-
--- set a key mapping for normal mode
-_G.nmap = function(...)
-  keymap("n", ...)
-end
--- set a key mapping for visual mode
-_G.vmap = function(...)
-  keymap("v", ...)
-end
--- set a key mapping for insert mode
-_G.imap = function(...)
-  keymap("i", ...)
-end
--- set a key mapping for command-line mode
-_G.cmap = function(...)
-  keymap("c", ...)
-end
--- set a key mapping for terminal mode
-_G.tmap = function(...)
-  keymap("t", ...)
-end
--- set a key mapping for oator-pending mode
-_G.omap = function(...)
-  keymap("o", ...)
-end
-
-_G.xmap = function(...)
-  keymap("x", ...)
-end
--- set a key mapping for insert and command-line mode
-_G.icmap = function(...)
-  keymap("!", ...)
-end
-
 -- @class Autocommand
 -- @field description string
 -- @field event  string[] list of autocommand events
@@ -75,7 +14,7 @@ end
 -- @param name string
 -- @param commands Autocommand[]
 -- @return number
-function U.augroup(name, commands)
+U.augroup = function(name, commands)
   local id = vim.api.nvim_create_augroup(name, { clear = true })
 
   for _, autocmd in ipairs(commands) do
@@ -113,9 +52,9 @@ U.source_filetype = function()
   local ft = vim.api.nvim_buf_get_option(0, "filetype")
   if ft == "lua" or ft == "vim" then
     vim.cmd("source %")
-    print(ft .. " file reloaded!")
+    U.info(ft .. " file reloaded!")
   else
-    print("Not a lua or vim file")
+    U.err("Not a lua or vim file")
   end
 end
 
@@ -128,6 +67,33 @@ U.is_git_directory = function()
     return git_dir_result ~= ""
   end
 end
+
+local function branch_name()
+  local cmd_output = vim.fn.systemlist("git branch --show-current 2> /dev/null")
+  return #cmd_output > 0 and cmd_output[1] or ""
+end
+
+-- Display the filename in the statusbar
+local function file_name()
+  local root_path = vim.fn.getcwd()
+  local root_dir = root_path:match("[^/]+$")
+  local home_path = vim.fn.expand("%:~")
+  local overlap, _ = home_path:find(root_dir)
+  if home_path == "" then
+    return root_path:gsub("/Users/[^/]+", "~")
+  elseif overlap then
+    return home_path:sub(overlap)
+  else
+    return home_path
+  end
+end
+
+vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "FocusGained" }, {
+  callback = function()
+    vim.b.branch_name = branch_name()
+    vim.b.file_name = file_name()
+  end,
+})
 
 U.is_buffer_empty = function()
   -- Check whether the current buffer is empty
@@ -155,13 +121,13 @@ function U.info(msg)
 end
 
 function U.warn(msg)
-  vim.cmd("echohl WarningU.g")
+  vim.cmd("echohl WarningMsg")
   U._echo_multiline(msg)
   vim.cmd("echohl None")
 end
 
 function U.err(msg)
-  vim.cmd("echohl ErrorU.g")
+  vim.cmd("echohl ErrorMsg")
   U._echo_multiline(msg)
   vim.cmd("echohl None")
 end

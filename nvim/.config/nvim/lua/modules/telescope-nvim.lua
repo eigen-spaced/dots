@@ -1,7 +1,5 @@
 local M = {}
 
-require("core.utils")
-
 function M.setup()
   local status_ok, _ = pcall(require, "telescope")
 
@@ -48,7 +46,7 @@ function M.setup()
   function _G.__telescope_find_files()
     require("telescope.builtin").find_files {
       previewer = false,
-      layout_config = { width = 0.7 },
+      layout_config = { width = 0.5 },
       color_devicons = true,
     }
   end
@@ -67,10 +65,10 @@ function M.setup()
     })
   end
 
-  nmap("<C-p>", "<cmd>lua __telescope_find_files()<CR>")
-  nmap("<Leader>fb", "<cmd>lua __telescope_buffers()<CR>")
-  nmap("<Leader>fw", "<cmd>lua __telescope_grep()<CR>")
-  nmap("<Leader>fh", "<cmd>lua __telescope_help()<CR>")
+  -- vim.keymap.set({ "n", "v" }, "<C-p>", __telescope_find_files)
+  -- vim.keymap.set({ "n", "v" }, "<C-b>", __telescope_buffers)
+  -- vim.keymap.set({ "n", "v" }, "<Leader>fw", __telescope_grep)
+  vim.keymap.set({ "n", "v" }, "<Leader>fh", __telescope_help)
 end
 
 function M.config()

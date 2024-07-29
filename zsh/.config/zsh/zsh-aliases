@@ -12,6 +12,8 @@ alias gs='git status'
 alias ga='git archive --format=tar.gz HEAD > "${PWD##*/}-$(date "+%d-%m-%y").tar.gz"'
 alias gt='git ls-tree -r --name-only $(git branch --show-current) .'
 
+alias ':q'="You're not editing a file dumbass"
+
 # list
 # alias ls='ls --color=auto'
 alias la='ls -a'

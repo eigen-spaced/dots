@@ -19,6 +19,10 @@ keymap.set("n", "<leader>hs", "<cmd>set hlsearch!<CR>")
 keymap.set("i", "jk", "<Esc>")
 keymap.set("i", "kj", "<Esc>")
 
+-- I added this much later in my VIM journey. How did I not think of this?
+keymap.set("n", "H", "^")
+keymap.set("n", "L", "$")
+
 if status_ok then
   keymap.set("n", "<M-Left>", require("smart-splits").resize_left)
   keymap.set("n", "<M-Down>", require("smart-splits").resize_down)
@@ -57,6 +61,9 @@ keymap.set("n", "<S-Tab>", "<cmd>bprev<CR>")
 
 keymap.set("n", "<Leader>bk", "<cmd>Bdelete<CR>")
 
+-- replace the entire buffer with contents from clipboard and go to the end of the file
+keymap.set("n", "<Leader>ra", "<cmd>%!pbpaste<CR>G")
+
 -- Exit terminal using easier keybindings
 keymap.set("t", "jk", "<C-\\><C-n>")
 
@@ -80,11 +87,6 @@ keymap.set("i", ".", ".<C-g>u")
 keymap.set("i", "!", "!<C-g>u")
 keymap.set("i", "(", "(<C-g>u")
 
--- packer
-keymap.set("n", "<leader>ps", "<cmd>PackerSync<CR>")
-keymap.set("n", "<leader>pcc", "<cmd>PackerClean<CR>")
-keymap.set("n", "<leader>pco", "<cmd>PackerCompile<CR>")
-
 keymap.set("c", "w!!", require("core.utils").sudo_write, {
   silent = true,
 })
@@ -97,3 +99,16 @@ keymap.set("n", "<leader>nf", [[:e <C-R>=expand("%:p:h") . "/" <CR>]], { silent 
 keymap.set("n", "<leader>ns", [[:sp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
 --open a new file in a vertical split
 keymap.set("n", "<leader>nv", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+
+-- keymap.set("n", "<leader>e", [[ <cmd>Lex! %:p:h | vertical resize 40<CR> ]], { silent = true })
+keymap.set("n", "ex", [[ <cmd>Lex!<CR> ]], { silent = true })
+
+-- api.nvim_create_augroup("netrw_mapping", { clear = true })
+
+-- api.nvim_create_autocmd("FileType", {
+--   group = "netrw_mapping",
+--   pattern = "netrw",
+--   callback = function()
+--     api.nvim_buf_set_keymap(0, "n", "-", "-^")
+--   end,
+-- })

@@ -1,13 +1,10 @@
+local keymap = vim.keymap
 local M = {}
 
-require("core.utils")
-
-function M.setup()
-  nmap("<leader>ng", '<cmd>lua require("neogit").open()<CR>')
-  nmap("<leader>nc", '<cmd>lua require("neogit").open { "commit" }<CR>')
-end
-
 function M.config()
+  keymap.set("n", "<leader>ng", '<cmd>lua require("neogit").open()<CR>')
+  keymap.set("n", "<leader>nc", '<cmd>lua require("neogit").open { "commit" }<CR>')
+
   require("neogit").setup {
     signs = {
       section = { "", "" },

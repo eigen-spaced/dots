@@ -2,38 +2,32 @@ local custom_attach = require("core.lsp.custom_attach")
 
 local servers = {}
 
-servers.sumneko_lua = {
-  on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    client.resolved_capabilities.document_range_formatting = false
-
-    custom_attach(client, bufnr)
-  end,
-  flags = { debounce_text_changes = 150 },
-
-  settings = {
-    Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-        version = "LuaJIT",
-        -- Setup your lua path
-        path = vim.split(package.path, ";"),
-      },
-      diagnostics = {
-        -- Get the language server to recognize the `vim` global
-        globals = { "vim" },
-      },
-      workspace = {
-        -- Make the server aware of Neovim runtime files
-        library = {
-          [vim.fn.expand("$VIMRUNTIME/lua")] = true,
-          [vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true,
-        },
-      },
-      telemetry = { enable = false },
-    },
-  },
-}
+-- servers.sumneko_lua = {
+--   flags = { debounce_text_changes = 150 },
+--
+--   settings = {
+--     Lua = {
+--       runtime = {
+--         -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+--         version = "LuaJIT",
+--         -- Setup your lua path
+--         path = vim.split(package.path, ";"),
+--       },
+--       diagnostics = {
+--         -- Get the language server to recognize the `vim` global
+--         globals = { "vim" },
+--       },
+--       workspace = {
+--         -- Make the server aware of Neovim runtime files
+--         library = {
+--           [vim.fn.expand("$VIMRUNTIME/lua")] = true,
+--           [vim.fn.expand("$VIMRUNTIME/lua/vim/lsp")] = true,
+--         },
+--       },
+--       telemetry = { enable = false },
+--     },
+--   },
+-- }
 
 servers.tsserver = {
   filetypes = {
@@ -45,8 +39,8 @@ servers.tsserver = {
     "typescript.tsx",
   },
   on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    client.resolved_capabilities.document_range_formatting = false
+    client.server_capabilities.document_formatting = false
+    client.server_capabilities.document_range_formatting = false
     local ts_utils = require("nvim-lsp-ts-utils")
 
     -- defaults
@@ -85,69 +79,100 @@ servers.tsserver = {
 }
 
 servers.bashls = {
-  on_attach = function(client, bufnr)
-    custom_attach(client, bufnr)
-  end,
+  -- on_attach = function(client, bufnr)
+  --   custom_attach(client, bufnr)
+  -- end,
 }
 
 servers.vimls = {
-  on_attach = function(client, bufnr)
-    custom_attach(client, bufnr)
-  end,
+  -- on_attach = function(client, bufnr)
+  --   custom_attach(client, bufnr)
+  -- end,
 }
 
+-- vscode-css-language-server
 servers.cssls = {
-  on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    custom_attach(client, bufnr)
-  end,
+  flags = { debounce_text_changes = 150 },
 }
 
--- HTML
+-- vscode-html-language-server
 servers.html = {
-  -- cmd = { 'html languageserver', '--stdio' },
-  on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    custom_attach(client, bufnr)
-  end,
+  flags = { debounce_text_changes = 150 },
+}
+
+-- JSON
+-- vscode-json-language-server
+servers.jsonls = {
+  flags = { debounce_text_changes = 150 },
+  filetypes = { "json", "jsonc" },
+  settings = {
+    json = {
+      schemas = {
+        {
+          fileMatch = { "package.json" },
+          url = "https://json.schemastore.org/package.json",
+        },
+        {
+          fileMatch = { "tsconfig*.json" },
+          url = "https://json.schemastore.org/tsconfig.json",
+        },
+        {
+          fileMatch = {
+            ".prettierrc",
+            ".prettierrc.json",
+            "prettier.config.json",
+          },
+          url = "https://json.schemastore.org/prettierrc.json",
+        },
+        {
+          fileMatch = { ".eslintrc", ".eslintrc.json" },
+          url = "https://json.schemastore.org/eslintrc.json",
+        },
+        {
+          fileMatch = {
+            ".stylelintrc",
+            ".stylelintrc.json",
+            "stylelint.config.json",
+          },
+          url = "http://json.schemastore.org/stylelintrc.json",
+        },
+      },
+    },
+  },
 }
 
 -- PYTHON
-servers.pyright = {
-  on_attach = function(client, bufnr)
-    custom_attach(client, bufnr)
-  end,
-}
+servers.pyright = {}
 
 -- GOPLS
 servers.gopls = {
-  on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    custom_attach(client, bufnr)
-  end,
+  -- on_attach = function(client, bufnr)
+  --   client.server_capabilities.document_formatting = false
+  --   custom_attach(client, bufnr)
+  -- end,
   flags = { debounce_text_changes = 150 },
 }
 
 -- HASKELL
 servers.hls = {
-  on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    custom_attach(client, bufnr)
-  end,
+  -- on_attach = function(client, bufnr)
+  --   client.server_capabilities.document_formatting = false
+  --   custom_attach(client, bufnr)
+  -- end,
 }
 
 servers.svelte = {
-  on_attach = function(client, bufnr)
-    client.resolved_capabilities.document_formatting = false
-    custom_attach(client, bufnr)
-  end,
+  -- on_attach = function(client, bufnr)
+  --   client.server_capabilities.document_formatting = false
+  --   custom_attach(client, bufnr)
+  -- end,
 }
 
 -- TAILWINDCSS
 servers.tailwindcss = {
-  on_attach = function(client, bufnr)
-    custom_attach(client, bufnr)
-  end,
+  -- on_attach = function(client, bufnr)
+  --   custom_attach(client, bufnr)
+  -- end,
 }
 
 return servers

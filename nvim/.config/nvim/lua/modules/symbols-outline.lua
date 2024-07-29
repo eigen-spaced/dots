@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup()
-  nmap("<C-s>", "<cmd>SymbolsOutline<CR>")
+  vim.keymap.set("n", "<C-s>", "<cmd>SymbolsOutline<CR>")
 end
 
 function M.config()

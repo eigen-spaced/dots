@@ -1,13 +1,16 @@
-local cmd = vim.cmd
-
 local M = {}
 
 function M.config()
   local wk_status_ok, wk = pcall(require, "which-key")
 
-  cmd([[packadd nvim-treesitter-textobjects]])
-
+  ---@diagnostic disable: missing-fields
   require("nvim-treesitter.configs").setup {
+    ensure_installed = {
+      "c",
+      "vim",
+      "lua",
+      "vimdoc",
+    },
     ignore_install = {
       "perl",
       "vala",
@@ -25,7 +28,9 @@ function M.config()
       enable = true,
       enable_autocmd = false,
     },
-
+    autotag = {
+      enable = true,
+    },
     textobjects = { -- syntax-aware textobjects
       select = {
         enable = true,
