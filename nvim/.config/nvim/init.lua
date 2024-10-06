@@ -84,7 +84,9 @@ lazy.setup {
   {
     "prichrd/netrw.nvim",
     config = function()
-      require("netrw").setup {}
+      require("netrw").setup {
+        use_devicons = true,
+      }
     end,
   },
 
@@ -127,6 +129,8 @@ lazy.setup {
       require("modules.symbols-outline").config()
     end,
   },
+
+  -- { "mistweaverco/kulala.nvim", opts = {} },
 
   {
     "windwp/nvim-ts-autotag",
@@ -197,15 +201,9 @@ lazy.setup {
   },
 
   {
-    "jose-elias-alvarez/nvim-lsp-ts-utils",
-    ft = {
-      "javascript",
-      "javascriptreact",
-      "javascript.jsx",
-      "typescript",
-      "typescriptreact",
-      "typescript.tsx",
-    },
+    "pmizio/typescript-tools.nvim",
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
+    opts = {},
   },
 
   { "simrat39/rust-tools.nvim" },
@@ -221,24 +219,9 @@ lazy.setup {
   {
     "ibhagwan/fzf-lua",
     config = function()
-      vim.keymap.set(
-        { "n", "v" },
-        "<c-p>",
-        "<cmd>lua require('fzf-lua').files()<CR>",
-        { silent = true }
-      )
-      vim.keymap.set(
-        { "n", "v" },
-        "<leader>fw",
-        "<cmd>lua require('fzf-lua').grep()<CR>",
-        { silent = true }
-      )
-      vim.keymap.set(
-        { "n", "v" },
-        "<c-b>",
-        "<cmd>lua require('fzf-lua').buffers()<CR>",
-        { silent = true }
-      )
+      vim.keymap.set({ "n", "v" }, "<c-p>", "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
+      vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>lua require('fzf-lua').grep()<CR>", { silent = true })
+      vim.keymap.set({ "n", "v" }, "<c-b>", "<cmd>lua require('fzf-lua').buffers()<CR>", { silent = true })
       require("fzf-lua").setup {
         winpots = {
           preview = {
@@ -338,16 +321,7 @@ lazy.setup {
     end,
   },
 
-  {
-    "NTBBloodbath/rest.nvim",
-    setup = function()
-      vim.keymap.set("n", "<leader>r", "<Plug>RestNvim")
-      vim.keymap.set("n", "<leader>rp", "<Plug>RestNvimPreview")
-      vim.keymap.set("n", "<leader>rl", "<Plug>RestNvimLast")
-    end,
-  },
-
-  { "mrjones2014/smart-splits.nvim" },
+  -- { "mrjones2014/smart-splits.nvim" },
 
   { "christoomey/vim-tmux-navigator" },
 
@@ -416,13 +390,6 @@ lazy.setup {
           block = "<leader>b",
         },
       }
-    end,
-  },
-
-  {
-    "folke/which-key.nvim",
-    config = function()
-      require("modules.whichkey-nvim")
     end,
   },
 
