@@ -4,35 +4,7 @@ if not status_ok then
   return
 end
 
-local lsp = {
-  kinds = {
-    Text = "",
-    Method = "",
-    Function = "",
-    Constructor = "",
-    Field = "ﰠ",
-    Variable = "",
-    Class = "ﴯ",
-    Interface = "",
-    Module = "",
-    Property = "ﰠ",
-    Unit = "塞",
-    Value = "",
-    Enum = "",
-    Keyword = "",
-    Snippet = "",
-    Color = "",
-    File = "",
-    Reference = "",
-    Folder = "",
-    EnumMember = "",
-    Constant = "",
-    Struct = "פּ",
-    Event = "",
-    Operator = "",
-    TypeParameter = "",
-  },
-}
+local symbol_kinds = require("core.icons").symbol_kinds
 
 local prequire = require("core.utils").prequire
 local luasnip = prequire("luasnip")
@@ -88,11 +60,12 @@ cmp.setup {
   mapping = mapping,
   sources = {
     { name = "nvim_lsp", priority = 8 },
-    { name = "luasnip", priority = 7 },
+    { name = "buffer", keyword_length = 7 },
+    { name = "luasnip", priority = 6 },
     { name = "nvim_lua", priority = 5 },
     { name = "path", priorty = 4 },
-    { name = "buffer", keyword_length = 3 },
   },
+  ---@diagnostic disable: missing-fields
   sorting = {
     comparators = {
       cmp.config.compare.locality,
@@ -104,7 +77,8 @@ cmp.setup {
   },
   formatting = {
     format = function(_, vim_item)
-      vim_item.kind = string.format("%s [%s]", lsp.kinds[vim_item.kind], vim_item.kind)
+      vim_item.kind =
+        string.format("%s [%s]", symbol_kinds[vim_item.kind], vim_item.kind)
       return vim_item
     end,
   },
