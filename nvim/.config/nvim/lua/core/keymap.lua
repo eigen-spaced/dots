@@ -1,5 +1,5 @@
 local keymap = vim.keymap
-local status_ok, _ = pcall(require, "smart-splits")
+local smart_splits_status_ok, smart_splits = pcall(require, "smart-splits")
 
 -- Remap space as leader key
 keymap.set("n", "<Space>", "<NOP>")
@@ -23,16 +23,21 @@ keymap.set("i", "kj", "<Esc>")
 keymap.set("n", "H", "^")
 keymap.set("n", "L", "$")
 
-if status_ok then
-  keymap.set("n", "<M-Left>", require("smart-splits").resize_left)
-  keymap.set("n", "<M-Down>", require("smart-splits").resize_down)
-  keymap.set("n", "<M-Up>", require("smart-splits").resize_up)
-  keymap.set("n", "<M-Right>", require("smart-splits").resize_right)
+if smart_splits_status_ok then
+  keymap.set("n", "<M-Left>", smart_splits.resize_left)
+  keymap.set("n", "<M-Down>", smart_splits.resize_down)
+  keymap.set("n", "<M-Up>", smart_splits.resize_up)
+  keymap.set("n", "<M-Right>", smart_splits.resize_right)
   -- moving between splits
-  keymap.set("n", "<C-h>", require("smart-splits").move_cursor_left)
-  keymap.set("n", "<C-j>", require("smart-splits").move_cursor_down)
-  keymap.set("n", "<C-k>", require("smart-splits").move_cursor_up)
-  keymap.set("n", "<C-l>", require("smart-splits").move_cursor_right)
+  keymap.set("n", "<C-h>", smart_splits.move_cursor_left)
+  keymap.set("n", "<C-j>", smart_splits.move_cursor_down)
+  keymap.set("n", "<C-k>", smart_splits.move_cursor_up)
+  keymap.set("n", "<C-l>", smart_splits.move_cursor_right)
+  -- swapping buffers
+  -- keymap.set("n", "<leader><leader>h", smart_splits.swap_buf_left)
+  -- keymap.set("n", "<leader><leader>j", smart_splits.swap_buf_down)
+  -- keymap.set("n", "<leader><leader>k", smart_splits.swap_buf_up)
+  -- keymap.set("n", "<leader><leader>l", smart_splits.swap_buf_right)
 else
   -- Better split navigation
   keymap.set("n", "<C-h>", "<C-w>h")
@@ -76,39 +81,55 @@ keymap.set("n", "<leader>j", "<cmd>move .+1<CR>==")
 keymap.set("n", "<leader>k", "<cmd>move .-2<CR>==")
 
 -- Close readonly buffers with q
-keymap.set("n", "gq", "&readonly ? ':close!<CR>' : 'q'", { expr = true, noremap = true })
+keymap.set(
+  "n",
+  "gq",
+  "&readonly ? ':close!<CR>' : 'q'",
+  { expr = true, noremap = true }
+)
 
 -- Remap for dealing with word wraps
-keymap.set("n", "j", "v:count == 0 ? 'gj' : 'j'", { expr = true, noremap = true, silent = true })
-keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, noremap = true, silent = true })
+keymap.set(
+  "n",
+  "j",
+  "v:count == 0 ? 'gj' : 'j'",
+  { expr = true, noremap = true, silent = true }
+)
+keymap.set(
+  "n",
+  "k",
+  "v:count == 0 ? 'gk' : 'k'",
+  { expr = true, noremap = true, silent = true }
+)
 
 keymap.set("i", ",", ",<C-g>u")
 keymap.set("i", ".", ".<C-g>u")
 keymap.set("i", "!", "!<C-g>u")
 keymap.set("i", "(", "(<C-g>u")
 
-keymap.set("c", "w!!", require("core.utils").sudo_write, {
-  silent = true,
-})
-
 keymap.set("n", "<leader>so", require("core.utils").source_filetype)
 
 --open a new file in the same directory
-keymap.set("n", "<leader>nf", [[:e <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+keymap.set(
+  "n",
+  "<leader>nf",
+  [[:e <C-R>=expand("%:p:h") . "/" <CR>]],
+  { silent = false }
+)
 --open a new file in a horizontal split
-keymap.set("n", "<leader>ns", [[:sp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+keymap.set(
+  "n",
+  "<leader>ns",
+  [[:sp <C-R>=expand("%:p:h") . "/" <CR>]],
+  { silent = false }
+)
 --open a new file in a vertical split
-keymap.set("n", "<leader>nv", [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]], { silent = false })
+keymap.set(
+  "n",
+  "<leader>nv",
+  [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]],
+  { silent = false }
+)
 
 -- keymap.set("n", "<leader>e", [[ <cmd>Lex! %:p:h | vertical resize 40<CR> ]], { silent = true })
 keymap.set("n", "ex", [[ <cmd>Lex!<CR> ]], { silent = true })
-
--- api.nvim_create_augroup("netrw_mapping", { clear = true })
-
--- api.nvim_create_autocmd("FileType", {
---   group = "netrw_mapping",
---   pattern = "netrw",
---   callback = function()
---     api.nvim_buf_set_keymap(0, "n", "-", "-^")
---   end,
--- })

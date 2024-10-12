@@ -22,7 +22,7 @@ set.number = true -- Display line number
 set.relativenumber = true -- Relative line numbers
 set.numberwidth = 2
 set.signcolumn = "yes:1" -- 'auto:1-2'
-set.colorcolumn = "100"
+set.colorcolumn = "80"
 set.cmdheight = 2 -- Set command line height to two lines
 
 set.wrap = true
@@ -99,7 +99,8 @@ cmd("set nohlsearch")
 
 -- Use faster grep alternatives if possible
 if executable("rg") then
-  set.grepprg = [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
+  set.grepprg =
+    [[rg --hidden --glob "!.git" --no-heading --smart-case --vimgrep --follow $*]]
   set.grepformat:prepend { "%f:%l:%c:%m" }
 end
 
@@ -124,7 +125,8 @@ set.fillchars = {
 set.laststatus = 3
 
 -- resize splits when Vim is resized
-vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
+vim.o.sessionoptions =
+  "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal"
 
 -----------------------------------------------------------------------------//
 -- Terminal {{{1
@@ -136,10 +138,10 @@ vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,
 -- Enter insert mode when switching to terminal
 -- Close terminal buffer on process exit
 local term_group = api.nvim_create_augroup("Term", { clear = true })
-api.nvim_create_autocmd(
-  "TermOpen",
-  { command = "setlocal listchars= nonumber norelativenumber nocursorline", group = term_group }
-)
+api.nvim_create_autocmd("TermOpen", {
+  command = "setlocal listchars= nonumber norelativenumber nocursorline",
+  group = term_group,
+})
 api.nvim_create_autocmd("TermOpen", { command = "startinsert" })
 
 cmd([[
@@ -160,6 +162,12 @@ set.mouse = "a"
 vim.g.do_filetype_lua = true
 -- vim.g.did_load_filetypes = false
 
+vim.filetype.add {
+  extension = {
+    ["http"] = "http",
+  },
+}
+
 -----------------------------------------------------------------------------//
 -- Netrw {{{1
 -----------------------------------------------------------------------------//
@@ -174,7 +182,6 @@ vim.g.netrw_winsize = 50
 -----------------------------------------------------------------------------//
 set.termguicolors = true
 
--- tokyonight config
 -- remove those awkward borders from between splits. Looking for a fix in the future
 vim.api.nvim_set_hl(0, "WinSeparator", { bg = "None", fg = "#141414" })
 

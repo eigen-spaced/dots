@@ -3,7 +3,9 @@ local utils = require("core.utils")
 
 require("core.options")
 require("core.keymap")
+require("core.colors")
 require("core.statusline")
+require("core.winbar")
 
 -- Bootstrap lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -43,7 +45,7 @@ lazy.setup {
       require("oil").setup {
         delete_to_trash = false,
         keymaps = {
-          ["<C-s>"] = nil,
+          ["<C-s>"] = "actions.select_split",
           ["<C-v>"] = "actions.select_vsplit",
           ["<Esc>"] = "actions.close",
         },
@@ -190,6 +192,11 @@ lazy.setup {
   },
 
   {
+    "hinell/lsp-timeout.nvim",
+    dependencies = { "neovim/nvim-lspconfig" },
+  },
+
+  {
     "nvimtools/none-ls.nvim",
     dependencies = {
       "nvim-lspconfig",
@@ -211,17 +218,29 @@ lazy.setup {
   {
     "folke/trouble.nvim",
     cmd = "Trouble",
-    config = function()
-      require("modules.trouble").config()
-    end,
   },
 
   {
     "ibhagwan/fzf-lua",
     config = function()
-      vim.keymap.set({ "n", "v" }, "<c-p>", "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
-      vim.keymap.set({ "n", "v" }, "<leader>fw", "<cmd>lua require('fzf-lua').grep()<CR>", { silent = true })
-      vim.keymap.set({ "n", "v" }, "<c-b>", "<cmd>lua require('fzf-lua').buffers()<CR>", { silent = true })
+      vim.keymap.set(
+        { "n", "v" },
+        "<c-p>",
+        "<cmd>lua require('fzf-lua').files()<CR>",
+        { silent = true }
+      )
+      vim.keymap.set(
+        { "n", "v" },
+        "<leader>fw",
+        "<cmd>lua require('fzf-lua').grep()<CR>",
+        { silent = true }
+      )
+      vim.keymap.set(
+        { "n", "v" },
+        "<c-b>",
+        "<cmd>lua require('fzf-lua').buffers()<CR>",
+        { silent = true }
+      )
       require("fzf-lua").setup {
         winpots = {
           preview = {
@@ -243,9 +262,7 @@ lazy.setup {
   {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
-    config = function()
-      require("modules.autopairs")
-    end,
+    config = true,
   },
 
   { "folke/neodev.nvim" },
@@ -323,7 +340,22 @@ lazy.setup {
 
   -- { "mrjones2014/smart-splits.nvim" },
 
-  { "christoomey/vim-tmux-navigator" },
+  {
+    "alexghergh/nvim-tmux-navigation",
+    config = function()
+      require("nvim-tmux-navigation").setup {
+        disable_when_zoomed = true, -- defaults to false
+        keybindings = {
+          left = "<C-h>",
+          down = "<C-j>",
+          up = "<C-k>",
+          right = "<C-l>",
+          last_active = "<C-\\>",
+          next = "<C-Space>",
+        },
+      }
+    end,
+  },
 
   { "tpope/vim-eunuch" },
 
@@ -345,7 +377,6 @@ lazy.setup {
           },
         },
       }
-      vim.cmd("colorscheme nightfox")
     end,
   },
 
@@ -354,8 +385,9 @@ lazy.setup {
     config = function()
       require("kanagawa").setup {
         dimInactive = true,
-        globalStatus = true,
       }
+      vim.cmd("colorscheme kanagawa")
+      -- Since colors are being loaded from kanagawa, we'll put this here
     end,
   },
 
@@ -413,12 +445,15 @@ lazy.setup {
 
   { "ellisonleao/glow.nvim", cmd = "Glow" },
 }
+
 -- prevent auto commenting of new lines
-local auto_comment_group = api.nvim_create_augroup("DisableAutoComment", { clear = true })
-api.nvim_create_autocmd(
-  "BufEnter",
-  { command = "set fo-=c fo-=r fo-=o", group = auto_comment_group, pattern = "*" }
-)
+local auto_comment_group =
+  api.nvim_create_augroup("DisableAutoComment", { clear = true })
+api.nvim_create_autocmd("BufEnter", {
+  command = "set fo-=c fo-=r fo-=o",
+  group = auto_comment_group,
+  pattern = "*",
+})
 -- Don't screw up folds when inserting text that might affect them, until
 -- leaving insert mode. Foldmethod is local to the window. Protect against
 -- screwing up folding when switching between windows.
