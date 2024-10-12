@@ -128,10 +128,14 @@ ex ()
   fi
 }
 
-#create a file called .zshrc-personal and put all your personal aliases
-#in there. They will not be overwritten by skel.
+# create a file called .zshrc-personal and put all your personal aliases
+# in there. They will not be overwritten by skel.
 
 [[ -f ~/.zshrc-personal ]] && . ~/.zshrc-personal
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
@@ -139,20 +143,13 @@ export PATH="$PATH:/usr/local/go/bin"
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
-export PATH="$PATH:$HOME/.config/emacs/bin"
+PATH="$HOME/.emacs.d/bin:$PATH"
 
-# export npm_config_prefix="$HOME/.local"
 
-# export PYENV_VIRTUALENVWRAPPER_PREFER_PYVENV="true"
-
-eval $(/opt/homebrew/bin/brew shellenv)
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# pyenv config
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# pnpm
+export PNPM_HOME="/Users/sunny/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end
