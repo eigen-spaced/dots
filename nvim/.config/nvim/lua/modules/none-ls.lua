@@ -60,33 +60,22 @@ local sources = {
   formatting.stylua,
   formatting.gofmt,
   formatting.black,
-  formatting.prettier,
+  -- formatting.prettier,
 
-  -- formatting.prettierd.with {
-  --   extra_args = { "--no-semi", "--jsx-single-quote" },
-  -- },
+  formatting.prettierd.with {
+    env = {
+      PRETTIERD_DEFAULT_CONFIG = vim.fn.expand(
+        vim.fn.stdpath("config") .. "/lua/conf/prettier-config/.prettierrc.json"
+      ),
+    },
+    -- extra_args = { "--no-semi", "--jsx-single-quote", "--print-width=80", "--use-tabs=2" },
+  },
 
   -- code_actions.gitsigns,
   -- nls.builtins.code_actions.refactoring,
 }
 
-local augroup = vim.api.nvim_create_augroup("LspFormatting", {})
-
-local on_attach = function(client, bufnr)
-  if client.supports_method("textDocument/formatting") then
-    vim.api.nvim_clear_autocmds { group = augroup, buffer = bufnr }
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      group = augroup,
-      buffer = bufnr,
-      callback = function()
-        vim.lsp.buf.format { bufnr = bufnr }
-      end,
-    })
-  end
-end
-
 require("null-ls").setup {
   debug = true,
   sources = sources,
-  on_attach = on_attach,
 }

@@ -1,8 +1,6 @@
 local M = {}
 
 function M.config()
-  local wk_status_ok, wk = pcall(require, "which-key")
-
   ---@diagnostic disable: missing-fields
   require("nvim-treesitter.configs").setup {
     ensure_installed = {
@@ -10,8 +8,12 @@ function M.config()
       "vim",
       "lua",
       "vimdoc",
+      "html",
+      "javascript",
+      "typescript",
     },
     ignore_install = {
+      "http",
       "perl",
       "vala",
       "kotlin",
@@ -27,9 +29,6 @@ function M.config()
     context_commentstring = {
       enable = true,
       enable_autocmd = false,
-    },
-    autotag = {
-      enable = true,
     },
     textobjects = { -- syntax-aware textobjects
       select = {
@@ -68,20 +67,17 @@ function M.config()
       },
     },
   }
-  if not wk_status_ok then
-    return
-  end
 
-  wk.register {
-    ["["] = {
-      ["["] = "swap current parameter with next",
-      ["f"] = "swap current function with next",
-    },
-    ["]"] = {
-      ["]"] = "swap current parameter with previous",
-      ["f"] = "swap current function with previous",
-    },
-  }
+  -- wk.register {
+  --   ["["] = {
+  --     ["["] = "swap current parameter with next",
+  --     ["f"] = "swap current function with next",
+  --   },
+  --   ["]"] = {
+  --     ["]"] = "swap current parameter with previous",
+  --     ["f"] = "swap current function with previous",
+  --   },
+  -- }
 end
 
 return M

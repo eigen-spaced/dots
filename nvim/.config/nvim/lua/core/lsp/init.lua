@@ -1,41 +1,38 @@
 local M = {}
 
 function M.config()
-  vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-    vim.lsp.diagnostic.on_publish_diagnostics,
-    {
+  local icons = require("core.icons")
+
+  vim.lsp.handlers["textDocument/publishDiagnostics"] =
+    vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
       virtual_text = {
         prefix = "▎", -- Could be '●', '▎', 'x'
       },
       update_in_insert = true,
-    }
-  )
+    })
 
-  local diagnostic_signs = { " ", " ", " ", " " }
-
-  local diagnostic_severity_fullnames = {
-    "Error",
-    "Warning",
-    "Hint",
-    "Information",
+  local diagnostic_data = {
+    { icon = icons.diagnostics.ERROR, fullname = "Error", shortname = "Error" },
+    { icon = icons.diagnostics.WARN, fullname = "Warning", shortname = "Warn" },
+    { icon = icons.diagnostics.HINT, fullname = "Hint", shortname = "Hint" },
+    {
+      icon = icons.diagnostics.INFO,
+      fullname = "Information",
+      shortname = "Info",
+    },
   }
-  local diagnostic_severity_shortnames = { "Error", "Warn", "Hint", "Info" }
 
-  -- define diagnostic icons/highlights for signcolumn and other stuff
-  for index, icon in ipairs(diagnostic_signs) do
-    local fullname = diagnostic_severity_fullnames[index]
-    local shortname = diagnostic_severity_shortnames[index]
-
-    vim.fn.sign_define("DiagnosticSign" .. shortname, {
-      text = icon,
-      texthl = "Diagnostic" .. shortname,
+  for _, diagnostic in ipairs(diagnostic_data) do
+    vim.fn.sign_define("DiagnosticSign" .. diagnostic.shortname, {
+      text = diagnostic.icon,
+      texthl = "Diagnostic" .. diagnostic.shortname,
       linehl = "",
       numhl = "",
     })
 
-    vim.fn.sign_define("LspDiagnosticsSign" .. fullname, {
-      text = icon,
-      texthl = "LspDiagnosticsSign" .. fullname,
+    vim.fn.sign_define("LspDiagnosticsSign" .. diagnostic.fullname, {
+      text = diagnostic.icon,
+      texthl = "LspDiagnosticsSign" .. diagnostic.fullname,
       linehl = "",
       numhl = "",
     })
@@ -68,70 +65,68 @@ function M.config()
     group = au,
     desc = "LSP keymaps",
     callback = function(args)
-      local bufnr = args.buf
-      local function map(mode, lhs, rhs)
-        vim.keymap.set(mode, lhs, rhs, { buffer = bufnr })
+      local keymap_opts = { buffer = args.buf, silent = true, noremap = true }
+      local with_desc = function(opts, desc)
+        return vim.tbl_extend("force", opts, { desc = desc })
       end
 
-      map("n", "gD", vim.lsp.buf.declaration)
-      map("n", "<leader>gd", vim.lsp.buf.definition)
-      map("n", "K", vim.lsp.buf.hover)
-      map("n", "gi", vim.lsp.buf.implementation)
-      map("n", "<C-s>", vim.lsp.buf.signature_help)
-      map("i", "<C-s>", vim.lsp.buf.signature_help)
-      map("n", "<leader>wa", vim.lsp.buf.add_workspace_folder)
-      map("n", "<leader>wr", vim.lsp.buf.remove_workspace_folder)
-      map("n", "<leader>wl", function()
-        print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-      end)
-      map("n", "<leader>D", vim.lsp.buf.type_definition)
-      map("n", "<leader>rn", vim.lsp.buf.rename)
-      -- map('n', '<leader>rn', function()
-      --   require('conf.nui_lsp').lsp_rename()
-      -- end)
-      map("n", "gr", function()
-        require("trouble").open { mode = "lsp_references" }
-      end)
-      map("n", "gR", vim.lsp.buf.references)
-      map("n", "<leader>li", vim.lsp.buf.incoming_calls)
-      map("n", "<leader>lo", vim.lsp.buf.outgoing_calls)
-      map("n", "<leader>lt", vim.lsp.buf.document_symbol)
-      map("n", "<leader>d", function()
-        vim.diagnostic.open_float {
-          {
-            scope = "line",
-            border = "single",
-            focusable = false,
-            severity_sort = true,
-          },
-        }
-      end)
-      map("n", "[d", function()
-        vim.diagnostic.goto_prev { enable_popup = false }
-      end)
-      map("n", "]d", function()
-        vim.diagnostic.goto_next { enable_popup = false }
-      end)
-      map("n", "[e", function()
-        vim.diagnostic.goto_prev {
-          enable_popup = false,
-          severity = { min = vim.diagnostic.severity.WARN },
-        }
-      end)
-      map("n", "]e", function()
-        vim.diagnostic.goto_next {
-          enable_popup = false,
-          severity = { min = vim.diagnostic.severity.WARN },
-        }
-      end)
-      map("n", "<leader>q", vim.diagnostic.setloclist)
-      map("n", "<leader>ls", vim.lsp.buf.document_symbol)
-      map("n", "<leader>lS", vim.lsp.buf.workspace_symbol)
+      vim.keymap.set(
+        "n",
+        "gD",
+        vim.lsp.buf.declaration,
+        with_desc(keymap_opts, "LSP declaration")
+      )
+      vim.keymap.set(
+        "n",
+        "<leader>gd",
+        vim.lsp.buf.definition,
+        with_desc(keymap_opts, "LSP definition")
+      )
+      vim.keymap.set(
+        "n",
+        "K",
+        vim.lsp.buf.hover,
+        with_desc(keymap_opts, "LSP hover")
+      )
+      vim.keymap.set(
+        "n",
+        "gi",
+        vim.lsp.buf.implementation,
+        with_desc(keymap_opts, "LSP implementation")
+      )
+      vim.keymap.set("n", "<C-s>", vim.lsp.buf.signature_help, keymap_opts)
+      vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, keymap_opts)
 
-      map("n", "<leader>xx", "<cmd>Trouble<CR>")
-      map("n", "<leader>gr", "<cmd>Trouble lsp_references<CR>")
-      map("n", "<leader>wd", "<cmd>Trouble workspace_diagnostics<CR>")
-      map("n", "<leader>dd", "<cmd>Trouble document_diagnostics<CR>")
+      vim.keymap.set("n", "<leader>D", vim.lsp.buf.type_definition)
+      vim.keymap.set(
+        "n",
+        "<leader>rn",
+        vim.lsp.buf.rename,
+        with_desc(keymap_opts, "LSP rename")
+      )
+
+      -- vim.keymap.set("n", "<leader>lt", vim.lsp.buf.document_symbol)
+      vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
+
+      local troubleHelper = function(mode)
+        require("trouble").open { mode = mode }
+      end
+
+      vim.keymap.set("n", "<leader>xx", "<cmd>Trouble<CR>")
+      vim.keymap.set("n", "<leader>gr", function()
+        troubleHelper("lsp_references")
+      end, with_desc(keymap_opts, "Trouble LSP references"))
+
+      vim.keymap.set("n", "<leader>dd", function()
+        require("trouble").toggle { mode = "diagnostics", focus = true }
+      end, with_desc(keymap_opts, "Trouble LSP references"))
+
+      vim.keymap.set("n", "<leader>li", function()
+        troubleHelper("lsp_incoming_calls")
+      end, with_desc(keymap_opts, "Trouble LSP incoming calls"))
+      vim.keymap.set("n", "<leader>lo", function()
+        troubleHelper("lsp_outgoing_calls")
+      end, with_desc(keymap_opts, "Trouble LSP outgoing calls"))
       vim.opt.shortmess:append("c")
     end,
   })
@@ -143,7 +138,7 @@ function M.config()
       local bufnr = args.buf
       local client = vim.lsp.get_client_by_id(args.data.client_id)
 
-      if client.server_capabilities.documentHighlightProvider then
+      if client and client.server_capabilities.documentHighlightProvider then
         local augroup_lsp_highlight = "lsp_highlight"
 
         vim.api.nvim_create_augroup(augroup_lsp_highlight, { clear = false })
@@ -167,7 +162,7 @@ function M.config()
     callback = function(args)
       local bufnr = args.buf
       local client = vim.lsp.get_client_by_id(args.data.client_id)
-      if client.server_capabilities.documentFormattingProvider then
+      if client and client.server_capabilities.documentFormattingProvider then
         local augroup_lsp_format = "lsp_format"
         vim.api.nvim_create_augroup(augroup_lsp_format, { clear = false })
         vim.api.nvim_create_autocmd("BufWritePre", {
@@ -188,16 +183,12 @@ function M.config()
           end,
         })
       end
-
-      -- FIXME
-      -- if client.server_capabilities.documentRangeFormattingProvider then
-      --     map('n', '<leader>f', vim.lsp.buf.range_formatting)
-      -- end
     end,
   })
 
   local mason_status_ok, mason = pcall(require, "mason")
-  local mason_lspconfig_status_ok, mason_lspconfig = pcall(require, "mason-lspconfig")
+  local mason_lspconfig_status_ok, mason_lspconfig =
+    pcall(require, "mason-lspconfig")
   local lspconfig_status_ok, lspconfig = pcall(require, "lspconfig")
 
   if not mason_status_ok then
@@ -267,18 +258,12 @@ function M.config()
       "tailwindcss",
       "vimls",
       "bashls",
-      "tsserver",
       "volar",
       "gopls",
     },
   }
 
-  -- local capabilities = vim.lsp.protocol.make_client_capabilities()
-  -- require("cmp_nvim_lsp").default_capabilities(capabilities)
-
-  local capabilities = require("cmp_nvim_lsp").default_capabilities(
-    vim.lsp.protocol.make_client_capabilities()
-  )
+  local capabilities = require("cmp_nvim_lsp").default_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
 
   require("rust-tools").setup {
@@ -363,51 +348,67 @@ function M.config()
             diagnostics = {
               -- unusedLocalExclude = { "_*" },
               globals = { "vim", "use", "require" },
+              missing_parameters = false, -- missing fields :)
             },
             format = { enable = false },
           },
         },
       }
     end,
-
-    ["tsserver"] = function()
-      lspconfig.tsserver.setup {
+    ["volar"] = function()
+      lspconfig.volar.setup {
         capabilities = capabilities,
-
-        on_attach = function(client, _)
-          client.server_capabilities.document_formatting = false
-          client.server_capabilities.document_range_formatting = false
-          local ts_utils = require("nvim-lsp-ts-utils")
-
-          -- defaults
-          ts_utils.setup {
-            -- eslint
-            eslint_enable_code_actions = true,
-            eslint_enable_disable_comments = true,
-            eslint_bin = "eslint_d",
-            eslint_config_fallback = nil,
-            eslint_enable_diagnostics = true,
-
-            -- formatting
-            enable_formatting = true,
-            formatter = "prettierd",
-            formatter_config_fallback = nil,
-
-            -- parentheses completion
-            complete_parens = false,
-            signature_help_in_parens = false,
-
-            -- update imports on file move
-            update_imports_on_move = true,
-            require_confirmation_on_move = false,
-            watch_dir = nil,
-          }
-
-          -- required to fix code action ranges
-          ts_utils.setup_client(client)
-        end,
+        filetypes = {
+          "typescript",
+          "javascript",
+          "javascriptreact",
+          "typescriptreact",
+          "vue",
+        },
       }
     end,
+  }
+
+  -- https://www.npbee.me/posts/deno-and-typescript-in-a-monorepo-neovim-lsp
+  ---Specialized root pattern that allows for an exclusion
+  ---@param opt { root: string[], exclude: string[] }
+  ---@return fun(file_name: string): string | nil
+  local function root_pattern_exclude(opt)
+    local lsputil = require("lspconfig.util")
+
+    return function(fname)
+      local excluded_root = lsputil.root_pattern(opt.exclude)(fname)
+      local included_root = lsputil.root_pattern(opt.root)(fname)
+
+      if excluded_root then
+        return nil
+      else
+        return included_root
+      end
+    end
+  end
+
+  require("typescript-tools").setup {
+    filetypes = {
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact",
+      "vue",
+    },
+    settings = {
+      capabilities = capabilities,
+      root_dir = root_pattern_exclude {
+        root = { "package.json" },
+        exclude = { "deno.json", "deno.jsonc" },
+      },
+      separate_diagnostic_server = true,
+      tsserver_max_memory = "auto",
+      single_file_support = false,
+      tsserver_plugins = {
+        "@vue/typescript-plugin",
+      },
+    },
   }
 end
 
