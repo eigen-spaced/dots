@@ -83,15 +83,6 @@ lazy.setup {
     end,
   },
 
-  {
-    "prichrd/netrw.nvim",
-    config = function()
-      require("netrw").setup {
-        use_devicons = true,
-      }
-    end,
-  },
-
   -- TREESITTER ECOSYSTEM
   {
     "nvim-treesitter/nvim-treesitter",
@@ -191,10 +182,10 @@ lazy.setup {
     end,
   },
 
-  {
-    "hinell/lsp-timeout.nvim",
-    dependencies = { "neovim/nvim-lspconfig" },
-  },
+  -- {
+  --   "hinell/lsp-timeout.nvim",
+  --   dependencies = { "neovim/nvim-lspconfig" },
+  -- },
 
   {
     "nvimtools/none-ls.nvim",
@@ -211,6 +202,31 @@ lazy.setup {
     "pmizio/typescript-tools.nvim",
     dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
     opts = {},
+    config = function()
+      local capabilities = require("cmp_nvim_lsp").default_capabilities()
+      require("typescript-tools").setup {
+        on_attach = function(client)
+          client.server_capabilities.documentFormattingProvider = false
+          client.server_capabilities.documentRangeFormattingProvider = false
+        end,
+        filetypes = {
+          "javascript",
+          "javascriptreact",
+          "typescript",
+          "typescriptreact",
+          "vue",
+        },
+        settings = {
+          capabilities = capabilities,
+          separate_diagnostic_server = true,
+          tsserver_max_memory = "auto",
+          single_file_support = false,
+          tsserver_plugins = {
+            "@vue/typescript-plugin",
+          },
+        },
+      }
+    end,
   },
 
   { "simrat39/rust-tools.nvim" },
@@ -262,7 +278,23 @@ lazy.setup {
   {
     "windwp/nvim-autopairs",
     event = "InsertEnter",
-    config = true,
+    config = function()
+      local npairs = require("nvim-autopairs")
+      npairs.setup()
+
+      local cond = require("nvim-autopairs.conds")
+      local Rule = require("nvim-autopairs.rule")
+
+      -- uses the default behaviour and adds +,-,/,* to no_after for clojure and lisp
+      npairs.add_rules {
+        Rule("(", ")", { "clojure", "lisp" }):with_pair(
+          cond.not_after_regex([=[[%w%%%'%[%"%.%`%$%+%-%/%*]]=])
+        ),
+      }
+
+      -- turn off the original rule for clojure and lisp
+      npairs.get_rule("(")[1].not_filetypes = { "clojure", "lisp" }
+    end,
   },
 
   { "folke/neodev.nvim" },
@@ -299,11 +331,6 @@ lazy.setup {
     config = function()
       require("modules.gitsigns-nvim")
     end,
-    -- cond = function()
-    -- if vim.api.nvim_exec2("!git rev-parse --is-inside-work-tree", {}) then
-    --   return true
-    -- end
-    -- end,
   },
 
   {
@@ -502,6 +529,7 @@ api.nvim_create_autocmd("TextYankPost", {
 
 -- Enable spell checking for certain file types
 api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+  group = "bufcheck",
   pattern = { "*.txt", "*.md", "*.tex" },
   callback = function()
     local buf_path = vim.api.nvim_buf_get_name(1)
@@ -519,3 +547,24 @@ api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 })
 
 api.nvim_create_autocmd("VimResized", { command = "wincmd =" })
+
+-- prettier_d doesn't seem to reset the prettier config unless we run `prettierd restart`
+-- So instead I'll use this autocmd to run the cmd when we make changes to
+-- prettier config
+vim.api.nvim_create_autocmd("BufWritePost", {
+  group = vim.api.nvim_create_augroup("PrettierConfigWatch", { clear = true }),
+  pattern = {
+    "prettier.config.js",
+    ".prettierrc",
+    ".prettierrc.json",
+    ".prettierrc.yaml",
+  },
+  callback = function()
+    local ok, _ = pcall(vim.fn.system, "prettierd restart")
+    if ok then
+      vim.notify("Prettierd restarted successfully!", vim.log.levels.INFO)
+    else
+      vim.notify("Failed to restart Prettierd", vim.log.levels.ERROR)
+    end
+  end,
+})
