@@ -131,6 +131,37 @@ function M.config()
     end,
   })
 
+  -- Prevent race conditions and conflicts between volar and tsserver
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = au,
+    desc = "prevent tsserver and volar competing",
+    callback = function(args)
+      if not (args.data and args.data.client_id) then
+        return
+      end
+      local active_clients = vim.lsp.get_clients()
+      local client = vim.lsp.get_client_by_id(args.data.client_id)
+      -- prevent tsserver and volar competing
+      -- if client.name == "volar" or require("lspconfig").util.root_pattern("nuxt.config.ts")(vim.fn.getcwd()) then
+      -- OR
+      if client and client.name == "volar" then
+        for _, client_ in pairs(active_clients) do
+          -- stop tsserver if volar is already active
+          if client_.name == "tsserver" then
+            client_.stop()
+          end
+        end
+      elseif client and client.name == "tsserver" then
+        for _, client_ in pairs(active_clients) do
+          -- prevent tsserver from starting if volar is already active
+          if client_.name == "volar" then
+            client.stop()
+          end
+        end
+      end
+    end,
+  })
+
   vim.api.nvim_create_autocmd("LspAttach", {
     group = au,
     desc = "LSP highlight",
@@ -266,62 +297,6 @@ function M.config()
   local capabilities = require("cmp_nvim_lsp").default_capabilities()
   capabilities.textDocument.completion.completionItem.snippetSupport = true
 
-  require("rust-tools").setup {
-    -- rust-tools options
-    tools = {
-      autoSetHints = true,
-      inlay_hints = {
-        show_parameter_hints = true,
-        parameter_hints_prefix = "<- ",
-        other_hints_prefix = "=> ",
-      },
-    },
-    -- all the opts to send to nvim-lspconfig
-    -- these override the defaults set by rust-tools.nvim
-    --
-    -- REFERENCE:
-    -- https://github.com/rust-analyzer/rust-analyzer/blob/master/docs/user/generated_config.adoc
-    -- https://rust-analyzer.github.io/manual.html#configuration
-    -- https://rust-analyzer.github.io/manual.html#features
-    --
-    -- NOTE: The configuration format is `rust-analyzer.<section>.<property>`.
-    --       <section> should be an object.
-    --       <property> should be a primitive.
-    server = {
-      -- on_attach = function(client, bufnr)
-      --   require("shared/lsp")(client, bufnr)
-      --   require("illuminate").on_attach(client)
-      --
-      --   local bufopts = {
-      --     noremap = true,
-      --     silent = true,
-      --     buffer = bufnr,
-      --   }
-      --   vim.keymap.set("n", "<leader><leader>rr", "<Cmd>RustRunnables<CR>", bufopts)
-      --   vim.keymap.set("n", "K", "<Cmd>RustHoverActions<CR>", bufopts)
-      -- end,
-      ["rust-analyzer"] = {
-        assist = {
-          importEnforceGranularity = true,
-          importPrefix = "create",
-        },
-        cargo = { allFeatures = true },
-        checkOnSave = {
-          -- default: `cargo check`
-          command = "clippy",
-          allFeatures = true,
-        },
-      },
-      inlayHints = {
-        -- NOT SURE THIS IS VALID/WORKS 😬
-        lifetimeElisionHints = {
-          enable = true,
-          useParameterNames = true,
-        },
-      },
-    },
-  }
-
   mason_lspconfig.setup_handlers {
     function(server_name)
       -- Otherwise the following `setup()` would override our config.
@@ -330,6 +305,21 @@ function M.config()
           capabilities = capabilities,
         }
       end
+    end,
+
+    ["html"] = function()
+      lspconfig.html.setup {
+        -- disable any autoformatting html brings for .njk files
+        on_attach = function(client, bufnr)
+          if
+            vim.bo[bufnr].filetype == "html" and vim.fn.expand("%:e") == "njk"
+          then
+            client.server_capabilities.documentFormattingProvider = false
+          end
+          -- Optional: Attach other LSP functions (like autocompletion) if needed
+          -- require("your-lsp-utils").on_attach(client, bufnr)
+        end,
+      }
     end,
 
     ["lua_ls"] = function()
@@ -360,56 +350,14 @@ function M.config()
         capabilities = capabilities,
         filetypes = {
           "typescript",
-          "javascript",
-          "javascriptreact",
-          "typescriptreact",
           "vue",
         },
       }
     end,
   }
 
-  -- https://www.npbee.me/posts/deno-and-typescript-in-a-monorepo-neovim-lsp
-  ---Specialized root pattern that allows for an exclusion
-  ---@param opt { root: string[], exclude: string[] }
-  ---@return fun(file_name: string): string | nil
-  local function root_pattern_exclude(opt)
-    local lsputil = require("lspconfig.util")
-
-    return function(fname)
-      local excluded_root = lsputil.root_pattern(opt.exclude)(fname)
-      local included_root = lsputil.root_pattern(opt.root)(fname)
-
-      if excluded_root then
-        return nil
-      else
-        return included_root
-      end
-    end
-  end
-
-  require("typescript-tools").setup {
-    filetypes = {
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact",
-      "vue",
-    },
-    settings = {
-      capabilities = capabilities,
-      root_dir = root_pattern_exclude {
-        root = { "package.json" },
-        exclude = { "deno.json", "deno.jsonc" },
-      },
-      separate_diagnostic_server = true,
-      tsserver_max_memory = "auto",
-      single_file_support = false,
-      tsserver_plugins = {
-        "@vue/typescript-plugin",
-      },
-    },
-  }
+  -- https://www.npbee.me/posts/deno-and-typescript-in-a-monorepo-neovim-lsp if
+  -- I ever have to setup deno with TS
 end
 
 return M
