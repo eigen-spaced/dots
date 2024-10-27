@@ -11,6 +11,8 @@ function M.config()
       "html",
       "javascript",
       "typescript",
+      "clojure",
+      "fennel",
     },
     ignore_install = {
       "http",

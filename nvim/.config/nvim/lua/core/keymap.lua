@@ -1,6 +1,4 @@
 local keymap = vim.keymap
-local smart_splits_status_ok, smart_splits = pcall(require, "smart-splits")
-
 -- Remap space as leader key
 keymap.set("n", "<Space>", "<NOP>")
 
@@ -23,33 +21,17 @@ keymap.set("i", "kj", "<Esc>")
 keymap.set("n", "H", "^")
 keymap.set("n", "L", "$")
 
-if smart_splits_status_ok then
-  keymap.set("n", "<M-Left>", smart_splits.resize_left)
-  keymap.set("n", "<M-Down>", smart_splits.resize_down)
-  keymap.set("n", "<M-Up>", smart_splits.resize_up)
-  keymap.set("n", "<M-Right>", smart_splits.resize_right)
-  -- moving between splits
-  keymap.set("n", "<C-h>", smart_splits.move_cursor_left)
-  keymap.set("n", "<C-j>", smart_splits.move_cursor_down)
-  keymap.set("n", "<C-k>", smart_splits.move_cursor_up)
-  keymap.set("n", "<C-l>", smart_splits.move_cursor_right)
-  -- swapping buffers
-  -- keymap.set("n", "<leader><leader>h", smart_splits.swap_buf_left)
-  -- keymap.set("n", "<leader><leader>j", smart_splits.swap_buf_down)
-  -- keymap.set("n", "<leader><leader>k", smart_splits.swap_buf_up)
-  -- keymap.set("n", "<leader><leader>l", smart_splits.swap_buf_right)
-else
-  -- Better split navigation
-  keymap.set("n", "<C-h>", "<C-w>h")
-  keymap.set("n", "<C-j>", "<C-w>j")
-  keymap.set("n", "<C-k>", "<C-w>k")
-  keymap.set("n", "<C-l>", "<C-w>l")
-  -- Better resizing
-  keymap.set("n", "<M-Left>", "5<C-W><")
-  keymap.set("n", "<M-Right>", "5<C-W>>")
-  keymap.set("n", "<M-Down>", "5<C-W>-")
-  keymap.set("n", "<M-Up>", "5<C-W>+")
-end
+-- Fallback split navigation incase smart-splits fails
+-- Better split navigation
+keymap.set("n", "<C-h>", "<C-w>h")
+keymap.set("n", "<C-j>", "<C-w>j")
+keymap.set("n", "<C-k>", "<C-w>k")
+keymap.set("n", "<C-l>", "<C-w>l")
+-- Better resizing
+keymap.set("n", "<M-Left>", "5<C-W><")
+keymap.set("n", "<M-Right>", "5<C-W>>")
+keymap.set("n", "<M-Down>", "5<C-W>-")
+keymap.set("n", "<M-Up>", "5<C-W>+")
 
 keymap.set("n", "<Space>=", "<C-W>=")
 

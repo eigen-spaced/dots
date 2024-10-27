@@ -23,7 +23,7 @@ set.relativenumber = true -- Relative line numbers
 set.numberwidth = 2
 set.signcolumn = "yes:1" -- 'auto:1-2'
 set.colorcolumn = "80"
-set.cmdheight = 2 -- Set command line height to two lines
+set.cmdheight = 1
 
 set.wrap = true
 set.linebreak = true -- wrap, but on words, not randomly
