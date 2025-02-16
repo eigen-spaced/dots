@@ -1,14 +1,14 @@
 local cmd, api = vim.cmd, vim.api
 
 require("core.options")
-require("core.keymap")
 require("core.colors")
 require("core.statusline")
 require("core.winbar")
+require("core.keymap")
 
 -- Bootstrap lazy
-local ok, _ = pcall(require, "core.plugins")
-if not ok then
+local plugins_ok, _ = pcall(require, "core.plugins")
+if not plugins_ok then
   vim.notify("Failed to load plugin manager. Core config loaded.")
 end
 
@@ -106,4 +106,34 @@ vim.api.nvim_create_autocmd("BufWritePost", {
       vim.notify("Failed to restart Prettierd", vim.log.levels.ERROR)
     end
   end,
+})
+
+vim.opt.cmdheight = 1
+
+vim.api.nvim_create_autocmd("CmdlineEnter", {
+  group = vim.api.nvim_create_augroup(
+    "cmdheight_1_on_cmdlineenter",
+    { clear = true }
+  ),
+  desc = "Don't hide the status line when typing a command",
+  command = ":set cmdheight=1",
+})
+
+vim.api.nvim_create_autocmd("CmdlineLeave", {
+  group = vim.api.nvim_create_augroup(
+    "cmdheight_0_on_cmdlineleave",
+    { clear = true }
+  ),
+  desc = "Hide cmdline when not typing a command",
+  command = ":set cmdheight=0",
+})
+
+vim.api.nvim_create_autocmd("BufWritePost", {
+  group = vim.api.nvim_create_augroup(
+    "hide_message_after_write",
+    { clear = true }
+  ),
+  desc = "Get rid of message after writing a file",
+  pattern = { "*" },
+  command = "redrawstatus",
 })

@@ -291,6 +291,7 @@ function M.config()
       "bashls",
       "volar",
       "gopls",
+      "astro",
     },
   }
 
@@ -309,6 +310,7 @@ function M.config()
 
     ["html"] = function()
       lspconfig.html.setup {
+        capabilities = capabilities,
         -- disable any autoformatting html brings for .njk files
         on_attach = function(client, bufnr)
           if
@@ -316,9 +318,25 @@ function M.config()
           then
             client.server_capabilities.documentFormattingProvider = false
           end
-          -- Optional: Attach other LSP functions (like autocompletion) if needed
-          -- require("your-lsp-utils").on_attach(client, bufnr)
         end,
+      }
+    end,
+
+    ["cssls"] = function()
+      lspconfig.cssls.setup {
+        capabilities = capabilities,
+        on_attach = function(client, bufnr)
+          -- Disable formatting capability of `cssls`
+          client.server_capabilities.documentFormattingProvider = false
+          client.server_capabilities.documentRangeFormattingProvider = false
+        end,
+        settings = {
+          css = {
+            lint = {
+              unknownAtRules = "ignore", -- Prevent errors on @apply, @tailwind, etc.
+            },
+          },
+        },
       }
     end,
 

@@ -226,7 +226,11 @@ if lazy_ok then
       end,
     },
 
-    { "simrat39/rust-tools.nvim" },
+    {
+      "mrcjkb/rustaceanvim",
+      version = "^5", -- Recommended
+      lazy = false,
+    },
 
     {
       "folke/trouble.nvim",
@@ -260,6 +264,9 @@ if lazy_ok then
               hidden = "hidden",
             },
           },
+          files = {
+            cmd = "rg --files --hidden --glob '!.git/' --glob '!node_modules/'",
+          },
         }
       end,
     },
@@ -274,23 +281,27 @@ if lazy_ok then
 
     {
       "windwp/nvim-autopairs",
-      event = "InsertEnter",
+      -- event = "VeryLazy",
       config = function()
-        local npairs = require("nvim-autopairs")
-        npairs.setup()
+        require("nvim-autopairs").setup {}
 
+        local autopairs = require("nvim-autopairs")
         local cond = require("nvim-autopairs.conds")
         local Rule = require("nvim-autopairs.rule")
 
-        -- uses the default behaviour and adds +,-,/,* to no_after for clojure and lisp
-        npairs.add_rules {
-          Rule("(", ")", { "clojure", "lisp" }):with_pair(
-            cond.not_after_regex([=[[%w%%%'%[%"%.%`%$%+%-%/%*]]=])
-          ),
-        }
+        -- remove add single quote on filetype scheme or lisp
+        autopairs.get_rules("`")[1].not_filetypes = { "clojure", "lisp" }
+        autopairs.get_rules("'")[1].not_filetypes = { "clojure", "lisp" }
+        -- autopairs.get_rules("(")[1].not_filetypes = { "clojure", "lisp" }
 
-        -- turn off the original rule for clojure and lisp
-        npairs.get_rule("(")[1].not_filetypes = { "clojure", "lisp" }
+        autopairs.add_rules {
+          -- Rule to insert only '() without adding duplicate quotes
+          Rule("'", ")", { "clojure", "lisp" })
+            :with_pair(cond.not_after_text("("))
+            :with_move(cond.none())
+            :with_cr(cond.none())
+            :use_key("("), -- Trigger on typing '('
+        }
       end,
     },
 
@@ -372,8 +383,47 @@ if lazy_ok then
       lazy = true,
       init = function()
         -- This is VERY helpful when reporting an issue with the project
-        vim.g["conjure#debug"] = true
+        -- vim.g["conjure#debug"] = true
       end,
+    },
+
+    {
+      "julienvincent/nvim-paredit",
+      config = function()
+        require("nvim-paredit").setup()
+      end,
+    },
+
+    {
+      "epwalsh/obsidian.nvim",
+      version = "*", -- recommended, use latest release instead of latest commit
+      lazy = true,
+      ft = "markdown",
+      -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
+      -- event = {
+      --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
+      --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
+      --   -- refer to `:h file-pattern` for more examples
+      --   "BufReadPre path/to/my-vault/*.md",
+      --   "BufNewFile path/to/my-vault/*.md",
+      -- },
+      dependencies = {
+        -- Required.
+        "nvim-lua/plenary.nvim",
+
+        -- see below for full list of optional dependencies 👇
+      },
+      opts = {
+        workspaces = {
+          {
+            name = "personal",
+            path = "~/notes",
+          },
+        },
+        picker = {
+          name = "fzf-lua",
+        },
+      },
     },
 
     {
@@ -402,8 +452,12 @@ if lazy_ok then
     { "tpope/vim-eunuch" },
 
     {
-      "tpope/vim-surround",
-      event = "BufReadPost",
+      "kylechui/nvim-surround",
+      version = "*",
+      event = "VeryLazy",
+      config = function()
+        require("nvim-surround").setup {}
+      end,
     },
 
     -- THEMES
@@ -429,7 +483,6 @@ if lazy_ok then
           dimInactive = true,
         }
         vim.cmd("colorscheme kanagawa")
-        -- Since colors are being loaded from kanagawa, we'll put this here
       end,
     },
 
@@ -449,6 +502,7 @@ if lazy_ok then
       "numToStr/Comment.nvim",
       event = "BufReadPost",
       config = function()
+        ---@diagnostic disable: missing-fields
         require("Comment").setup {
           toggler = {
             ---line-comment keymap
@@ -461,7 +515,7 @@ if lazy_ok then
             ---line-comment keymap
             line = "<leader>c",
             ---block-comment keymap
-            block = "<leader>b",
+            block = "<leader><leader>b",
           },
         }
       end,

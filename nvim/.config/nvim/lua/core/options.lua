@@ -58,7 +58,7 @@ set.listchars = {
 -- Title {{{1
 -----------------------------------------------------------------------------//
 set.titlestring = "❐ %t"
-set.titleold = '%{fnamemodify(getcwd(), ":t")}'
+-- set.titleold = '%{fnamemodify(getcwd(), ":t")}'
 set.title = true
 set.titlelen = 70
 

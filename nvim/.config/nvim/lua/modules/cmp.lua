@@ -65,6 +65,14 @@ cmp.setup {
     { name = "nvim_lua", priority = 5 },
     { name = "path", priorty = 4 },
   },
+  window = {
+    completion = cmp.config.window.bordered {
+      border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+      side_padding = 0,
+      winhighlight = "Normal:Pmenu,FloatBorder:Pmenu,CursorLine:PmenuSel,Search:None",
+    },
+    documentation = cmp.config.window.bordered(),
+  },
   ---@diagnostic disable: missing-fields
   sorting = {
     comparators = {

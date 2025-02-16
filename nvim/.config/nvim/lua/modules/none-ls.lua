@@ -44,13 +44,6 @@ local sources = {
     },
   },
 
-  -- formatting.stylua.with {
-  --   condition = function(utils)
-  --     return utils.root_has_file 'stylua.toml'
-  --       or utils.root_has_file '.stylua.toml'
-  --   end,
-  -- },
-
   formatting.stylua,
   formatting.gofmt,
   formatting.black,
