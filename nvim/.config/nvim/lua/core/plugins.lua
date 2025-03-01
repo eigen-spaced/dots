@@ -40,13 +40,26 @@ if lazy_ok then
             rust = { "rustfmt", lsp_format = "fallback" },
             -- Conform will run the first available formatter
             javascript = { "prettierd", "prettier", stop_after_first = true },
+            javascriptreact = {
+              "prettierd",
+              "prettier",
+              stop_after_first = true,
+            },
+            typescript = { "prettierd", "prettier", stop_after_first = true },
+            typescriptreact = {
+              "prettierd",
+              "prettier",
+              stop_after_first = true,
+            },
+            vue = { "prettierd", "prettier", stop_after_first = true },
+            json = { "prettierd", "prettier", stop_after_first = true },
           },
           formatters = {
             prettierd = {
               env = {
                 PRETTIERD_DEFAULT_CONFIG = vim.fn.expand(
                   vim.fn.stdpath("config")
-                    .. "/lua/conf/prettier-config/.prettierrc.json"
+                    .. "/lua/conf/envconfig/.prettierrc.json"
                 ),
               },
             },
@@ -202,22 +215,6 @@ if lazy_ok then
       "neovim/nvim-lspconfig",
       config = function()
         require("core.lsp").config()
-      end,
-    },
-
-    -- {
-    --   "hinell/lsp-timeout.nvim",
-    --   dependencies = { "neovim/nvim-lspconfig" },
-    -- },
-
-    {
-      "nvimtools/none-ls.nvim",
-      dependencies = {
-        "nvim-lspconfig",
-        "nvimtools/none-ls-extras.nvim",
-      },
-      config = function()
-        require("modules.none-ls")
       end,
     },
 

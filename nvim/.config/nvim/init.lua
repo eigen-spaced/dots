@@ -88,8 +88,7 @@ api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 api.nvim_create_autocmd("VimResized", { command = "wincmd =" })
 
 -- prettier_d doesn't seem to reset the prettier config unless we run `prettierd restart`
--- So instead I'll use this autocmd to run the cmd when we make changes to
--- prettier config
+-- So  use this autocmd to run the cmd when we make changes to prettier config
 vim.api.nvim_create_autocmd("BufWritePost", {
   group = vim.api.nvim_create_augroup("PrettierConfigWatch", { clear = true }),
   pattern = {

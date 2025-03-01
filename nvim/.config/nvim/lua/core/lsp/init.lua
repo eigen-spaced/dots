@@ -292,6 +292,7 @@ function M.config()
       "volar",
       "gopls",
       "astro",
+      "biome",
     },
   }
 
@@ -363,6 +364,32 @@ function M.config()
         },
       }
     end,
+
+    ["biome"] = function()
+      local function get_git_root(fname)
+        local git_dir = vim.fs.find(".git", { path = fname, upward = true })[1]
+        return git_dir and vim.fs.dirname(git_dir) or nil
+      end
+
+      local global_biome_config =
+        vim.fn.expand(vim.fn.stdpath("config") .. "/lua/conf/envconfig")
+
+      lspconfig.biome.setup {
+        filetypes = { "javascript", "typescript", "typescriptreact" },
+        root_dir = function(fname)
+          local util = require("lspconfig.util")
+          return util.root_pattern("biome.json", ".eslintrc")(fname)
+            or get_git_root(fname)
+            or global_biome_config
+        end,
+        on_attach = function(client, _)
+          -- Disable formatting from Biome
+          client.server_capabilities.documentFormattingProvider = false
+          client.server_capabilities.documentRangeFormattingProvider = false
+        end,
+      }
+    end,
+
     ["volar"] = function()
       lspconfig.volar.setup {
         capabilities = capabilities,
