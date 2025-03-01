@@ -44,9 +44,6 @@ local sources = {
     },
   },
 
-  formatting.stylua,
-  formatting.gofmt,
-  formatting.black,
   -- formatting.prettier.with {
   --   condition = function(utils)
   --     return utils.root_has_file {
@@ -56,14 +53,6 @@ local sources = {
   --     }
   --   end,
   -- },
-
-  formatting.prettierd.with {
-    env = {
-      PRETTIERD_DEFAULT_CONFIG = vim.fn.expand(
-        vim.fn.stdpath("config") .. "/lua/conf/prettier-config/.prettierrc.json"
-      ),
-    },
-  },
 
   -- code_actions.gitsigns,
   -- nls.builtins.code_actions.refactoring,

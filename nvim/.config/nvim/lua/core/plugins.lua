@@ -19,7 +19,6 @@ local lazy_ok, lazy = pcall(require, "lazy")
 if lazy_ok then
   lazy.setup {
     { "nvim-lua/plenary.nvim" },
-
     { "kyazdani42/nvim-web-devicons" },
 
     {
@@ -28,6 +27,33 @@ if lazy_ok then
     },
 
     { "williamboman/mason-lspconfig.nvim" },
+
+    {
+      "stevearc/conform.nvim",
+      opts = {},
+      config = function()
+        require("conform").setup {
+          formatters_by_ft = {
+            lua = { "stylua" },
+            -- Conform will run multiple formatters sequentially
+            -- python = { "isort", "black" },
+            rust = { "rustfmt", lsp_format = "fallback" },
+            -- Conform will run the first available formatter
+            javascript = { "prettierd", "prettier", stop_after_first = true },
+          },
+          formatters = {
+            prettierd = {
+              env = {
+                PRETTIERD_DEFAULT_CONFIG = vim.fn.expand(
+                  vim.fn.stdpath("config")
+                    .. "/lua/conf/prettier-config/.prettierrc.json"
+                ),
+              },
+            },
+          },
+        }
+      end,
+    },
 
     {
       "stevearc/oil.nvim",
@@ -239,6 +265,7 @@ if lazy_ok then
 
     {
       "ibhagwan/fzf-lua",
+      dependencies = { "kyazdani42/nvim-web-devicons" },
       config = function()
         vim.keymap.set(
           { "n", "v" },

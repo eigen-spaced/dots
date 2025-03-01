@@ -200,7 +200,7 @@ function M.config()
           group = augroup_lsp_format,
           buffer = bufnr,
           callback = function()
-            vim.lsp.buf.format {
+            require("conform").format {
               -- async = true,
               filter = function(server)
                 local disabled_servers = {
