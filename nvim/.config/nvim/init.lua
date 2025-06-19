@@ -7,7 +7,7 @@ require("core.winbar")
 require("core.keymap")
 
 -- Bootstrap lazy
-local plugins_ok, _ = pcall(require, "core.plugins")
+local plugins_ok, _ = pcall(require, "conf.lazy")
 if not plugins_ok then
   vim.notify("Failed to load plugin manager. Core config loaded.")
 end

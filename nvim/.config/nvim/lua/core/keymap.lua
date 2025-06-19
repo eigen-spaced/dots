@@ -46,8 +46,6 @@ keymap.set("v", ">", ">gv")
 keymap.set("n", "<Tab>", "<cmd>bnext<CR>")
 keymap.set("n", "<S-Tab>", "<cmd>bprev<CR>")
 
-keymap.set("n", "<Leader>bk", "<cmd>Bdelete<CR>")
-
 -- replace the entire buffer with contents from clipboard and go to the end of the file
 keymap.set("n", "<Leader>ra", "<cmd>%!pbpaste<CR>G")
 
