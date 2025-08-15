@@ -39,6 +39,7 @@ return {
           },
           vue = { "prettierd", "prettier", stop_after_first = true },
           json = { "prettierd", "prettier", stop_after_first = true },
+          astro = { "prettierd", "prettier", stop_after_first = true },
         },
         formatters = {
           prettierd = {
@@ -287,9 +288,12 @@ return {
     lazy = false,
     ---@type snacks.Config
     opts = {
-      -- your configuration comes here
-      -- or leave it empty to use the default settings
-      -- refer to the configuration section below
+      explorer = { enabled = true },
+      indent = { enabled = true },
+      input = { enabled = true },
+      notifier = { enabled = true },
+      quickfile = { enabled = true },
+      scope = { enabled = false },
       bigfile = {
         enabled = true,
         notify = false,
@@ -308,17 +312,15 @@ return {
           end)
         end,
       },
-      dashboard = { enabled = false },
-      explorer = { enabled = true },
-      indent = { enabled = true },
-      input = { enabled = true },
-      picker = { enabled = false },
-      notifier = { enabled = true },
-      quickfile = { enabled = true },
-      scope = { enabled = false },
-      scroll = { enabled = false },
-      statuscolumn = { enabled = false },
-      words = { enabled = false },
+    },
+    keys = {
+      {
+        "<leader>bk",
+        function()
+          Snacks.bufdelete()
+        end,
+        desc = "Delete Buffer",
+      },
     },
   },
 
@@ -334,8 +336,7 @@ return {
       keymap = {
         -- ["tab"] = { "select_next" },
         -- ["<s-tab>"] = { "select_prev" },
-        -- ["<CR>"] = { "select_and_accept" },
-        ["<c-y>"] = { "select_and_accept", "fallback" },
+        ["<CR>"] = { "select_and_accept", "fallback" },
         ["<c-e>"] = { "hide", "show", "fallback" },
         ["<c-n>"] = { "select_next", "show", "fallback" },
         ["<c-p>"] = { "select_prev", "show", "fallback" },
@@ -416,38 +417,6 @@ return {
     config = function()
       require("nvim-paredit").setup()
     end,
-  },
-
-  {
-    "epwalsh/obsidian.nvim",
-    version = "*", -- recommended, use latest release instead of latest commit
-    lazy = true,
-    ft = "markdown",
-    -- Replace the above line with this if you only want to load obsidian.nvim for markdown files in your vault:
-    -- event = {
-    --   -- If you want to use the home shortcut '~' here you need to call 'vim.fn.expand'.
-    --   -- E.g. "BufReadPre " .. vim.fn.expand "~" .. "/my-vault/*.md"
-    --   -- refer to `:h file-pattern` for more examples
-    --   "BufReadPre path/to/my-vault/*.md",
-    --   "BufNewFile path/to/my-vault/*.md",
-    -- },
-    dependencies = {
-      -- Required.
-      "nvim-lua/plenary.nvim",
-
-      -- see below for full list of optional dependencies 👇
-    },
-    opts = {
-      workspaces = {
-        {
-          name = "personal",
-          path = "~/notes",
-        },
-      },
-      picker = {
-        name = "fzf-lua",
-      },
-    },
   },
 
   {
