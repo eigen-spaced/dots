@@ -28,10 +28,6 @@ function M.config()
       use_languagetree = true,
     },
     indent = { enable = true, disable = { "python", "yaml", "go" } },
-    context_commentstring = {
-      enable = true,
-      enable_autocmd = false,
-    },
     textobjects = { -- syntax-aware textobjects
       select = {
         enable = true,
@@ -69,17 +65,6 @@ function M.config()
       },
     },
   }
-
-  -- wk.register {
-  --   ["["] = {
-  --     ["["] = "swap current parameter with next",
-  --     ["f"] = "swap current function with next",
-  --   },
-  --   ["]"] = {
-  --     ["]"] = "swap current parameter with previous",
-  --     ["f"] = "swap current function with previous",
-  --   },
-  -- }
 end
 
 return M

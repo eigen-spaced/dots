@@ -82,7 +82,7 @@ return {
   -- TREESITTER ECOSYSTEM
   {
     "nvim-treesitter/nvim-treesitter",
-    event = "BufRead",
+    lazy = false,
     cmd = {
       "TSInstall",
       "TSInstallInfo",
@@ -93,15 +93,12 @@ return {
       "TSDisableAll",
       "TSEnableAll",
     },
-    dependencies = {
-      {
-        "nvim-treesitter/nvim-treesitter-textobjects",
-      },
-      {
-        "nvim-treesitter/playground",
-        cmd = "TSPlaygroundToggle",
-      },
-    },
+    -- branch = "main",
+    -- dependencies = {
+    --   {
+    --     "nvim-treesitter/nvim-treesitter-textobjects",
+    --   },
+    -- },
     build = ":TSUpdate",
     config = function()
       require("modules.treesitter").config()
@@ -109,16 +106,17 @@ return {
   },
 
   {
-    "HiPhish/rainbow-delimiters.nvim",
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter",
-    },
+    "nvim-treesitter/nvim-treesitter-textobjects",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    lazy = true, -- Don't load automatically
+    event = "BufRead", -- Load when you actually read a buffer
   },
-
-  -- { "mistweaverco/kulala.nvim", opts = {} },
 
   {
     "windwp/nvim-ts-autotag",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
+    lazy = true, -- Don't load automatically
+    event = "VeryLazy", -- Load after everything else
     config = function()
       require("nvim-ts-autotag").setup {
         filetypes = {
@@ -152,6 +150,14 @@ return {
         },
       }
     end,
+  },
+
+  {
+    "HiPhish/rainbow-delimiters.nvim",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter",
+      after = "nvim-treesitter",
+    },
   },
 
   {
@@ -212,37 +218,21 @@ return {
     "ibhagwan/fzf-lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
-      vim.keymap.set(
-        { "n", "v" },
-        "<c-p>",
-        "<cmd>lua require('fzf-lua').files()<CR>",
-        { silent = true }
-      )
-      vim.keymap.set(
-        { "n", "v" },
-        "<leader>fw",
-        "<cmd>lua require('fzf-lua').grep()<CR>",
-        { silent = true }
-      )
-      vim.keymap.set(
-        { "n", "v" },
-        "<c-b>",
-        "<cmd>lua require('fzf-lua').buffers()<CR>",
-        { silent = true }
-      )
-      require("fzf-lua").setup {
-        winpots = {
-          preview = {
-            hidden = "hidden",
-          },
-        },
-        files = {
-          cmd = "rg --files --hidden --glob '!.git/' --glob '!node_modules/'",
-        },
-      }
+      local fzf = require("fzf-lua")
+
+      -- fzf.setup {
+      --   files = {
+      --     previewer = false,
+      --     cmd = "rg --files --hidden --glob '!.git/' --glob '!node_modules/'",
+      --   },
+      -- }
+
+      vim.keymap.set({ "n", "v" }, "<c-p>", fzf.files, { silent = true })
+      vim.keymap.set({ "n", "v" }, "<c-g>", fzf.grep, { silent = true })
+      vim.keymap.set({ "n", "v" }, "<c-/>", fzf.live_grep, { silent = true })
+      vim.keymap.set({ "n", "v" }, "<c-b>", fzf.buffers, { silent = true })
     end,
   },
-
   {
     "AckslD/nvim-neoclip.lua",
     event = { "TextYankPost" },
@@ -250,7 +240,28 @@ return {
       require("modules.neoclip-nvim").config()
     end,
   },
-
+  {
+    "hat0uma/csvview.nvim",
+    ---@module "csvview"
+    ---@type CsvView.Options
+    opts = {
+      parser = { comments = { "#", "//" } },
+      keymaps = {
+        -- Text objects for selecting fields
+        textobject_field_inner = { "if", mode = { "o", "x" } },
+        textobject_field_outer = { "af", mode = { "o", "x" } },
+        -- Excel-like navigation:
+        -- Use <Tab> and <S-Tab> to move horizontally between fields.
+        -- Use <Enter> and <S-Enter> to move vertically between rows and place the cursor at the end of the field.
+        -- Note: In terminals, you may need to enable CSI-u mode to use <S-Tab> and <S-Enter>.
+        jump_next_field_end = { "<Tab>", mode = { "n", "v" } },
+        jump_prev_field_end = { "<S-Tab>", mode = { "n", "v" } },
+        jump_next_row = { "<Enter>", mode = { "n", "v" } },
+        jump_prev_row = { "<S-Enter>", mode = { "n", "v" } },
+      },
+    },
+    cmd = { "CsvViewEnable", "CsvViewDisable", "CsvViewToggle" },
+  },
   {
     "windwp/nvim-autopairs",
     -- event = "VeryLazy",

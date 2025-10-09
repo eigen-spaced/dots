@@ -52,9 +52,9 @@ U.source_filetype = function()
   local ft = vim.api.nvim_buf_get_option(0, "filetype")
   if ft == "lua" or ft == "vim" then
     vim.cmd("source %")
-    U.info(ft .. " file reloaded!")
+    Snacks.notify.info(ft .. " file reloaded!")
   else
-    U.err("Not a lua or vim file")
+    Snacks.notify.error("Not a lua or vim file")
   end
 end
 
@@ -95,11 +95,6 @@ vim.api.nvim_create_autocmd({ "FileType", "BufEnter", "FocusGained" }, {
   end,
 })
 
-U.is_buffer_empty = function()
-  -- Check whether the current buffer is empty
-  return vim.fn.empty(vim.fn.expand("%:t")) == 1
-end
-
 function U._echo_multiline(msg)
   for _, s in ipairs(vim.fn.split(msg, "\n")) do
     vim.cmd("echom '" .. s:gsub("'", "''") .. "'")
@@ -112,24 +107,6 @@ function U.prequire(...)
     return lib
   end
   return nil
-end
-
-function U.info(msg)
-  vim.cmd("echohl Directory")
-  U._echo_multiline(msg)
-  vim.cmd("echohl None")
-end
-
-function U.warn(msg)
-  vim.cmd("echohl WarningMsg")
-  U._echo_multiline(msg)
-  vim.cmd("echohl None")
-end
-
-function U.err(msg)
-  vim.cmd("echohl ErrorMsg")
-  U._echo_multiline(msg)
-  vim.cmd("echohl None")
 end
 
 -- sudo write and execute within neovim
