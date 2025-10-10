@@ -57,26 +57,34 @@ return {
 
   {
     "stevearc/oil.nvim",
-    config = function()
-      require("oil").setup {
-        delete_to_trash = false,
-        keymaps = {
-          ["<C-s>"] = "actions.select_split",
-          ["<C-v>"] = "actions.select_vsplit",
-          ["<Esc>"] = "actions.close",
+    opts = {
+      delete_to_trash = false,
+      keymaps = {
+        ["<C-s>"] = "actions.select_split",
+        ["<C-v>"] = "actions.select_vsplit",
+        ["<Esc>"] = "actions.close",
+      },
+      float = {
+        -- Padding around the floating window
+        max_width = 80,
+        border = "single",
+        win_options = {
+          winblend = 10,
         },
-        float = {
-          -- Padding around the floating window
-          max_width = 80,
-          border = "single",
-          win_options = {
-            winblend = 10,
-          },
-        },
-      }
+      },
+    },
+    keys = {
       -- vim.keymap.set("n", "-", require("oil").open, { desc = "Open parent directory" })
-      vim.keymap.set("n", "-", require("oil").toggle_float)
-    end,
+      -- vim.keymap.set("n", "-", require("oil").toggle_float)
+      {
+        "-",
+        function()
+          require("oil").toggle_float()
+        end,
+        mode = { "n", "x" },
+        desc = "Open folder under current folder",
+      },
+    },
   },
 
   -- TREESITTER ECOSYSTEM
