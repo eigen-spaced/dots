@@ -128,13 +128,8 @@ ex ()
   fi
 }
 
-# create a file called .zshrc-personal and put all your personal aliases
-# in there. They will not be overwritten by skel.
+# Personnel aliases
 [[ -f ~/.zshrc-personal ]] && . ~/.zshrc-personal
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 export GOPATH="$HOME/go"
 export PATH="$PATH:$GOPATH/bin"
@@ -142,8 +137,7 @@ export PATH="$PATH:/usr/local/go/bin"
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
-PATH="$HOME/.emacs.d/bin:$PATH"
-
+eval "$(mise activate zsh)"
 
 # pnpm
 export PNPM_HOME="/Users/sunny/Library/pnpm"
@@ -153,4 +147,5 @@ case ":$PATH:" in
 esac
 # pnpm end
 
-export PATH=$(brew --prefix openvpn)/sbin:$PATH
+# uv
+export PATH="/Users/sunny/.local/bin:$PATH"
