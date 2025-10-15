@@ -21,15 +21,6 @@ api.nvim_create_autocmd("BufEnter", {
   group = auto_comment_group,
   pattern = "*",
 })
--- Don't screw up folds when inserting text that might affect them, until
--- leaving insert mode. Foldmethod is local to the window. Protect against
--- screwing up folding when switching between windows.
-cmd([[
-    augroup folds
-      autocmd InsertEnter * if !exists('w:last_fdm') | let w:last_fdm=&foldmethod | setlocal foldmethod=manual | endif
-      autocmd InsertLeave,WinLeave * if exists('w:last_fdm') | let &l:foldmethod=w:last_fdm | unlet w:last_fdm | endif
-    augroup END
-  ]])
 
 api.nvim_create_augroup("bufcheck", { clear = true })
 

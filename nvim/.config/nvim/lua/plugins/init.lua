@@ -168,18 +168,6 @@ return {
     },
   },
 
-  {
-    "nvim-telescope/telescope.nvim",
-    cmd = "Telescope",
-    key = { "<c-p>" },
-    setup = function()
-      require("modules.telescope-nvim").setup()
-    end,
-    config = function()
-      require("modules.telescope-nvim").config()
-    end,
-  },
-
   -- LSP
   {
     "neovim/nvim-lspconfig",
