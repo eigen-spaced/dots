@@ -23,7 +23,11 @@ function M.get_or_create_hl(hl)
     -- and the statusline's background color.
     local bg_hl = vim.api.nvim_get_hl(0, { name = "StatusLine" })
     local fg_hl = vim.api.nvim_get_hl(0, { name = hl })
-    vim.api.nvim_set_hl(0, hl_name, { bg = ("#%06x"):format(bg_hl.bg), fg = ("#%06x"):format(fg_hl.fg) })
+    vim.api.nvim_set_hl(
+      0,
+      hl_name,
+      { bg = ("#%06x"):format(bg_hl.bg), fg = ("#%06x"):format(fg_hl.fg) }
+    )
     statusline_hls[hl] = true
   end
 
@@ -111,7 +115,8 @@ end
 function M.filename_component()
   -- Get the current buffer's filename
   local current_buf = vim.api.nvim_get_current_buf()
-  local current_file_name = vim.fn.fnamemodify(vim.fn.bufname(current_buf), ":t")
+  local current_file_name =
+    vim.fn.fnamemodify(vim.fn.bufname(current_buf), ":t")
 
   if current_file_name == "" then
     return ""
@@ -138,7 +143,9 @@ function M.filename_component()
 
   if #current_buf_list > 1 then
     -- If duplicates, prepend parent folder and return
-    filename = vim.fn.fnamemodify(vim.fn.bufname(current_buf), ":p:h:t") .. "/" .. current_file_name
+    filename = vim.fn.fnamemodify(vim.fn.bufname(current_buf), ":p:h:t")
+      .. "/"
+      .. current_file_name
   else
     -- No duplicates, return just the file name
     filename = current_file_name
@@ -245,7 +252,12 @@ function M.diagnostics_component()
       end
 
       local hl = "Diagnostic" .. severity:sub(1, 1) .. severity:sub(2):lower()
-      return string.format("%%#%s#%s %d", M.get_or_create_hl(hl), icons.diagnostics[severity], count)
+      return string.format(
+        "%%#%s#%s %d",
+        M.get_or_create_hl(hl),
+        icons.diagnostics[severity],
+        count
+      )
     end)
     :totable()
 
@@ -272,7 +284,6 @@ function M.filetype_component()
     gitcommit = { icons.misc.git, "Number" },
     gitrebase = { icons.misc.git, "Number" },
     lazy = { icons.symbol_kinds.Method, "Special" },
-    -- lazyterm = { "", "Special" },
     minifiles = { icons.symbol_kinds.Folder, "Directory" },
     qf = { icons.misc.search, "Conditional" },
   }
@@ -287,23 +298,32 @@ function M.filetype_component()
     icon, icon_hl = unpack(special_icons[filetype])
   else
     local buf_name = vim.api.nvim_buf_get_name(0)
-    local name, ext = vim.fn.fnamemodify(buf_name, ":t"), vim.fn.fnamemodify(buf_name, ":e")
+    local name, ext =
+      vim.fn.fnamemodify(buf_name, ":t"), vim.fn.fnamemodify(buf_name, ":e")
 
     icon, icon_hl = devicons.get_icon(name, ext)
     if not icon then
-      icon, icon_hl = devicons.get_icon_by_filetype(filetype, { default = true })
+      icon, icon_hl =
+        devicons.get_icon_by_filetype(filetype, { default = true })
     end
   end
   icon_hl = M.get_or_create_hl(icon_hl)
 
-  return string.format("%%#%s#%s %%#StatuslineTitle#%s", icon_hl, icon, filetype)
+  return string.format(
+    "%%#%s#%s %%#StatuslineTitle#%s",
+    icon_hl,
+    icon,
+    filetype
+  )
 end
 
 --- File-content encoding for the current buffer.
 ---@return string
 function M.encoding_component()
   local encoding = vim.opt.fileencoding:get()
-  return encoding ~= "" and string.format("%%#StatuslineModeSeparatorOther# %s", encoding) or ""
+  return encoding ~= ""
+      and string.format("%%#StatuslineModeSeparatorOther# %s", encoding)
+    or ""
 end
 
 --- The current line, total line count, and column position.
@@ -320,15 +340,39 @@ function M.position_component()
   }
 end
 
+--- Show current search match index and total count
+---@return string
+function M.search_count_component()
+  local sc = vim.fn.searchcount { recompute = 1, maxcount = 9999 }
+
+  if vim.v.hlsearch == 0 or sc.total == 0 then
+    return ""
+  end
+
+  -- format current and total (if available)
+  local current = sc.current or 0
+  local total = sc.total or 0
+
+  return string.format(
+    "%%#StatuslineItalic# %%#StatuslineTitle#%d%%#StatuslineItalic#/%d",
+    current,
+    total
+  )
+end
+
 --- Renders the statusline.
 ---@return string
 function M.render()
   ---@param components string[]
   ---@return string
   local function concat_components(components)
-    return vim.iter(components):skip(1):fold(components[1], function(acc, component)
-      return #component > 0 and string.format("%s    %s", acc, component) or acc
-    end)
+    return vim
+      .iter(components)
+      :skip(1)
+      :fold(components[1], function(acc, component)
+        return #component > 0 and string.format("%s    %s", acc, component)
+          or acc
+      end)
   end
 
   return table.concat {
@@ -343,6 +387,7 @@ function M.render()
       M.diagnostics_component(),
       M.filetype_component(),
       M.encoding_component(),
+      M.search_count_component(),
       M.position_component(),
     },
     " ",
