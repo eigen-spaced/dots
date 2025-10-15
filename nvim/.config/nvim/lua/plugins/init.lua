@@ -213,29 +213,155 @@ return {
   {
     "ibhagwan/fzf-lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    config = function()
-      local fzf = require("fzf-lua")
+    opts = {
+      files = {
+        winopts = {
+          width = 0.5,
+          height = 0.5,
+        },
+        previewer = false,
+        cmd = "rg --files --hidden --glob '!.git/' --glob '!node_modules/'",
+      },
+    },
+    keys = {
+      {
+        "<c-p>",
+        function()
+          require("fzf-lua").files()
+        end,
+        mode = { "n", "x" },
+      },
+      {
+        "<c-g>",
+        function()
+          require("fzf-lua").grep()
+        end,
+        mode = { "n", "x" },
+      },
 
-      -- fzf.setup {
-      --   files = {
-      --     previewer = false,
-      --     cmd = "rg --files --hidden --glob '!.git/' --glob '!node_modules/'",
-      --   },
-      -- }
+      {
+        "<c-/>",
+        function()
+          require("fzf-lua").live_grep()
+        end,
+        mode = { "n", "x" },
+      },
 
-      vim.keymap.set({ "n", "v" }, "<c-p>", fzf.files, { silent = true })
-      vim.keymap.set({ "n", "v" }, "<c-g>", fzf.grep, { silent = true })
-      vim.keymap.set({ "n", "v" }, "<c-/>", fzf.live_grep, { silent = true })
-      vim.keymap.set({ "n", "v" }, "<c-b>", fzf.buffers, { silent = true })
-    end,
+      {
+        "<c-b>",
+        function()
+          require("fzf-lua").buffers()
+        end,
+        mode = { "n", "x" },
+      },
+    },
   },
+
   {
-    "AckslD/nvim-neoclip.lua",
-    event = { "TextYankPost" },
-    config = function()
-      require("modules.neoclip-nvim").config()
-    end,
+    "gbprod/yanky.nvim",
+    dependencies = {
+      { "kkharji/sqlite.lua", "folke/snacks.nvim" },
+    },
+    opts = {
+      ring = { storage = "sqlite" },
+    },
+    keys = {
+      {
+        "<c-'>",
+        function()
+          Snacks.picker.yanky()
+        end,
+        mode = { "n", "x" },
+        desc = "Open Yank History",
+      },
+      { "y", "<Plug>(YankyYank)", mode = { "n", "x" }, desc = "Yank text" },
+      {
+        "p",
+        "<Plug>(YankyPutAfter)",
+        mode = { "n", "x" },
+        desc = "Put yanked text after cursor",
+      },
+      {
+        "P",
+        "<Plug>(YankyPutBefore)",
+        mode = { "n", "x" },
+        desc = "Put yanked text before cursor",
+      },
+      {
+        "gp",
+        "<Plug>(YankyGPutAfter)",
+        mode = { "n", "x" },
+        desc = "Put yanked text after selection",
+      },
+      {
+        "gP",
+        "<Plug>(YankyGPutBefore)",
+        mode = { "n", "x" },
+        desc = "Put yanked text before selection",
+      },
+      {
+        "<leader>p",
+        "<Plug>(YankyPreviousEntry)",
+        desc = "Select previous entry through yank history",
+      },
+      {
+        "<leader>n",
+        "<Plug>(YankyNextEntry)",
+        desc = "Select next entry through yank history",
+      },
+      {
+        "]p",
+        "<Plug>(YankyPutIndentAfterLinewise)",
+        desc = "Put indented after cursor (linewise)",
+      },
+      {
+        "[p",
+        "<Plug>(YankyPutIndentBeforeLinewise)",
+        desc = "Put indented before cursor (linewise)",
+      },
+      {
+        "]P",
+        "<Plug>(YankyPutIndentAfterLinewise)",
+        desc = "Put indented after cursor (linewise)",
+      },
+      {
+        "[P",
+        "<Plug>(YankyPutIndentBeforeLinewise)",
+        desc = "Put indented before cursor (linewise)",
+      },
+      {
+        ">p",
+        "<Plug>(YankyPutIndentAfterShiftRight)",
+        desc = "Put and indent right",
+      },
+      {
+        "<p",
+        "<Plug>(YankyPutIndentAfterShiftLeft)",
+        desc = "Put and indent left",
+      },
+      {
+        ">P",
+        "<Plug>(YankyPutIndentBeforeShiftRight)",
+        desc = "Put before and indent right",
+      },
+      {
+        "<P",
+        "<Plug>(YankyPutIndentBeforeShiftLeft)",
+        desc = "Put before and indent left",
+      },
+      {
+        "=p",
+        "<Plug>(YankyPutAfterFilter)",
+        desc = "Put after applying a filter",
+      },
+      {
+        "=P",
+        "<Plug>(YankyPutBeforeFilter)",
+        desc = "Put before applying a filter",
+      },
+    },
   },
+
   {
     "hat0uma/csvview.nvim",
     ---@module "csvview"
@@ -298,9 +424,10 @@ return {
       explorer = { enabled = true },
       indent = { enabled = true },
       input = { enabled = true },
-      notifier = { enabled = true },
+      -- notifier = { enabled = true },
       quickfile = { enabled = true },
       scope = { enabled = false },
+      picker = { enabled = true },
       bigfile = {
         enabled = true,
         notify = false,
