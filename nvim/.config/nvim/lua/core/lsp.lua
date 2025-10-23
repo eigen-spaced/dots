@@ -1,3 +1,4 @@
+local keymap = vim.keymap
 local M = {}
 
 function M.config()
@@ -40,27 +41,6 @@ function M.config()
 
   local au = vim.api.nvim_create_augroup("LspAttach", { clear = true })
 
-  -- vim.api.nvim_create_autocmd('LspAttach', {
-  --   group = au,
-  --   desc = 'LSP options',
-  --   callback = function(args)
-  --     local client = vim.lsp.get_client_by_id(args.data.client_id)
-  --     require('lsp-status').on_attach(client)
-  --
-  --     local bufnr = args.buf
-  --     vim.api.nvim_buf_set_option(
-  --       bufnr,
-  --       'formatexpr',lsp
-  --       'v:lua.vim.lsp.formatexpr'
-  --     )
-  --     vim.api.nvim_buf_set_option(
-  --       bufnr,
-  --       'tagfunc',
-  --       'v:lua.vim.lsp.tagfunc'
-  --     )
-  --   end,
-  -- })
-
   vim.api.nvim_create_autocmd("LspAttach", {
     group = au,
     desc = "LSP keymaps",
@@ -70,61 +50,67 @@ function M.config()
         return vim.tbl_extend("force", opts, { desc = desc })
       end
 
-      vim.keymap.set(
+      keymap.set(
         "n",
         "gD",
         vim.lsp.buf.declaration,
         with_desc(keymap_opts, "LSP declaration")
       )
-      vim.keymap.set(
+      keymap.set(
         "n",
         "<leader>gd",
         vim.lsp.buf.definition,
         with_desc(keymap_opts, "LSP definition")
       )
-      vim.keymap.set(
+      keymap.set(
         "n",
         "K",
         vim.lsp.buf.hover,
         with_desc(keymap_opts, "LSP hover")
       )
-      vim.keymap.set(
+      keymap.set(
         "n",
         "gi",
         vim.lsp.buf.implementation,
         with_desc(keymap_opts, "LSP implementation")
       )
-      vim.keymap.set("n", "<C-s>", vim.lsp.buf.signature_help, keymap_opts)
-      vim.keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, keymap_opts)
+      keymap.set(
+        { "n", "v" },
+        "<leader>ca",
+        vim.lsp.buf.code_action,
+        with_desc(keymap_opts, "LSP code action")
+      )
+      keymap.set("n", "<C-s>", vim.lsp.buf.signature_help, keymap_opts)
+      keymap.set("i", "<C-s>", vim.lsp.buf.signature_help, keymap_opts)
 
-      vim.keymap.set("n", "<leader>D", vim.lsp.buf.type_definition)
-      vim.keymap.set(
+      keymap.set("n", "<leader>D", vim.lsp.buf.type_definition)
+      keymap.set(
         "n",
         "<leader>rn",
         vim.lsp.buf.rename,
         with_desc(keymap_opts, "LSP rename")
       )
 
-      -- vim.keymap.set("n", "<leader>lt", vim.lsp.buf.document_symbol)
-      vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
+      -- keymap.set("n", "<leader>lt", vim.lsp.buf.document_symbol)
+      keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
 
       local troubleHelper = function(mode)
         require("trouble").open { mode = mode }
       end
 
-      vim.keymap.set("n", "<leader>xx", "<cmd>Trouble<CR>")
-      vim.keymap.set("n", "<leader>gr", function()
+      keymap.set("n", "<leader>xx", "<cmd>Trouble<CR>")
+      keymap.set("n", "<leader>gr", function()
         troubleHelper("lsp_references")
       end, with_desc(keymap_opts, "Trouble LSP references"))
 
-      vim.keymap.set("n", "<leader>dd", function()
+      keymap.set("n", "<leader>dd", function()
         require("trouble").toggle { mode = "diagnostics", focus = true }
       end, with_desc(keymap_opts, "Trouble LSP references"))
 
-      vim.keymap.set("n", "<leader>li", function()
+      keymap.set("n", "<leader>li", function()
         troubleHelper("lsp_incoming_calls")
       end, with_desc(keymap_opts, "Trouble LSP incoming calls"))
-      vim.keymap.set("n", "<leader>lo", function()
+      keymap.set("n", "<leader>lo", function()
         troubleHelper("lsp_outgoing_calls")
       end, with_desc(keymap_opts, "Trouble LSP outgoing calls"))
       vim.opt.shortmess:append("c")
@@ -239,6 +225,7 @@ function M.config()
     "gopls",
     "astro",
     "biome",
+    "harper_ls",
   }
 
   local ensure_installed = servers or {}
@@ -250,12 +237,24 @@ function M.config()
 
   vim.api.nvim_create_user_command("LspEnable", function()
     local lsp_configs = {}
+
     for _, f in pairs(vim.api.nvim_get_runtime_file("lsp/*.lua", true)) do
       local server_name = vim.fn.fnamemodify(f, ":t:r")
-      -- Skip if on the disabled list
-      table.insert(lsp_configs, server_name)
+      local ok, cfg = pcall(require, "lsp." .. server_name)
+
+      if ok then
+        -- Register config
+        vim.lsp.config[server_name] = cfg
+        table.insert(lsp_configs, server_name)
+      else
+        vim.notify(
+          "LSP config not found or invalid for " .. server_name,
+          vim.log.levels.WARN
+        )
+      end
     end
 
+    -- Enable all defined servers
     vim.lsp.enable(lsp_configs)
   end, {})
 
