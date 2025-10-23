@@ -20,6 +20,7 @@ set.numberwidth = 2
 set.signcolumn = "yes:1" -- 'auto:1-2'
 set.colorcolumn = "80"
 set.cmdheight = 1
+set.conceallevel = 1
 
 set.wrap = true
 set.linebreak = true -- wrap, but on words, not randomly

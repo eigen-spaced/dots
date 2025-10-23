@@ -75,7 +75,6 @@ return {
     },
     keys = {
       -- vim.keymap.set("n", "-", require("oil").open, { desc = "Open parent directory" })
-      -- vim.keymap.set("n", "-", require("oil").toggle_float)
       {
         "-",
         function()
@@ -425,6 +424,7 @@ return {
       indent = { enabled = true },
       input = { enabled = true },
       -- notifier = { enabled = true },
+      zen = { enabled = true },
       quickfile = { enabled = true },
       scope = { enabled = false },
       picker = { enabled = true },
@@ -454,6 +454,20 @@ return {
           Snacks.bufdelete()
         end,
         desc = "Delete Buffer",
+      },
+      {
+        "<leader>z",
+        function()
+          Snacks.zen()
+        end,
+        desc = "Toggle Zen Mode",
+      },
+      {
+        "<leader>Z",
+        function()
+          Snacks.zen.zoom()
+        end,
+        desc = "Toggle Zoom",
       },
     },
   },
@@ -551,6 +565,45 @@ return {
     config = function()
       require("nvim-paredit").setup()
     end,
+  },
+
+  {
+
+    "obsidian-nvim/obsidian.nvim",
+    version = "*", -- recommended, use latest release instead of latest commit
+    event = {
+      "BufReadPre " .. vim.fn.expand("~") .. "/notes/*.md",
+      "BufNewFile " .. vim.fn.expand("~") .. "/notes/*.md",
+    },
+    ---@module 'obsidian'
+    ---@type obsidian.config
+    opts = {
+      workspaces = {
+        {
+          name = "main",
+          path = "~/notes",
+        },
+      },
+      completion = {
+        nvim_cmp = false,
+        min_chars = 0,
+      },
+      picker = {
+        name = "fzf-lua",
+      },
+      frontmatter = {
+        func = function(note)
+          local out = { collections = "Uncategorised", tags = note.tags }
+          if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
+            for k, v in pairs(note.metadata) do
+              out[k] = v
+            end
+          end
+          return out
+        end,
+        sort = { "tags", "collections" },
+      },
+    },
   },
 
   {

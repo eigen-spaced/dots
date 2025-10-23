@@ -58,7 +58,7 @@ api.nvim_create_autocmd("TextYankPost", {
   pattern = "*",
 })
 
--- Enable spell checking for certain file types
+-- Enable spell checking for certain filetypes
 api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   group = "bufcheck",
   pattern = { "*.txt", "*.md", "*.tex" },
