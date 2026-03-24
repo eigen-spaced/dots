@@ -212,54 +212,35 @@ function M.config()
   end
 
   local servers = {
-    "lua_ls",
-    "rust_analyzer",
+    -- "lua_ls",
     "cssls",
     "html",
     "svelte",
-    "pyright",
+    "basedpyright",
     "tailwindcss",
     "vimls",
     "bashls",
     "vue_ls",
     "gopls",
     "astro",
-    "biome",
     "harper_ls",
   }
 
-  local ensure_installed = servers or {}
-
   mason.setup()
   mason_lspconfig.setup {
-    ensure_installed = ensure_installed,
+    ensure_installed = servers,
   }
 
   vim.api.nvim_create_user_command("LspEnable", function()
-    local lsp_configs = {}
+    for _, name in ipairs(servers) do
+      local ok, custom_config = pcall(require, "lsp." .. name)
 
-    for _, f in pairs(vim.api.nvim_get_runtime_file("lsp/*.lua", true)) do
-      local server_name = vim.fn.fnamemodify(f, ":t:r")
-      local ok, cfg = pcall(require, "lsp." .. server_name)
+      -- Register the server configuration
+      vim.lsp.config[name] = ok and custom_config or {}
 
-      if ok then
-        -- Register config
-        vim.lsp.config[server_name] = cfg
-        table.insert(lsp_configs, server_name)
-      else
-        vim.notify(
-          "LSP config not found or invalid for " .. server_name,
-          vim.log.levels.WARN
-        )
-      end
+      vim.lsp.enable(name)
     end
-
-    -- Enable all defined servers
-    vim.lsp.enable(lsp_configs)
-  end, {})
-
-  -- https://www.npbee.me/posts/deno-and-typescript-in-a-monorepo-neovim-lsp if
-  -- I ever have to setup deno with TS
+  end, { desc = "Initialize and Enable LSPs" })
 end
 
 return M
