@@ -1,7 +1,16 @@
 return {
   { "nvim-lua/plenary.nvim" },
 
-  { "nvim-tree/nvim-web-devicons" },
+  {
+    "nvim-mini/mini.nvim",
+    version = false,
+    config = function()
+      require("mini.comment").setup()
+      require("mini.surround").setup()
+      require("mini.icons").setup()
+      require("mini.misc").setup()
+    end,
+  },
 
   {
     "mason-org/mason.nvim",
@@ -20,9 +29,19 @@ return {
     config = function()
       require("conform").setup {
         formatters_by_ft = {
+          cpp = { "clang-format" },
+          c = { "clang-format" },
           lua = { "stylua" },
-          -- Conform will run multiple formatters sequentially
-          -- python = { "isort", "black" },
+          go = { "goimports", "gofmt" },
+          python = function(bufnr)
+            if
+              require("conform").get_formatter_info("ruff_format", bufnr).available
+            then
+              return { "ruff_format" }
+            else
+              return { "isort", "black" }
+            end
+          end, -- Conform will run multiple formatters sequentially
           rust = { "rustfmt", lsp_format = "fallback" },
           -- Conform will run the first available formatter
           javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -42,6 +61,9 @@ return {
           astro = { "prettierd", "prettier", stop_after_first = true },
         },
         formatters = {
+          ["clang-format"] = {
+            command = "/opt/homebrew/opt/llvm/bin/clang-format",
+          },
           prettierd = {
             env = {
               PRETTIERD_DEFAULT_CONFIG = vim.fn.expand(
@@ -108,15 +130,20 @@ return {
     -- },
     build = ":TSUpdate",
     config = function()
-      require("modules.treesitter").config()
+      require("nvim-treesitter").install {
+        "c",
+        "vim",
+        "lua",
+        "vimdoc",
+        "astro",
+        "html",
+        "python",
+        "javascript",
+        "typescript",
+        "clojure",
+        "fennel",
+      }
     end,
-  },
-
-  {
-    "nvim-treesitter/nvim-treesitter-textobjects",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    lazy = true, -- Don't load automatically
-    event = "BufRead", -- Load when you actually read a buffer
   },
 
   {
@@ -160,6 +187,18 @@ return {
   },
 
   {
+    "MeanderingProgrammer/render-markdown.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" },
+    ---@module 'render-markdown'
+    ---@type render.md.UserConfig
+    opts = {
+      heading = {
+        enabled = false,
+      },
+    },
+  },
+
+  {
     "HiPhish/rainbow-delimiters.nvim",
     dependencies = {
       "nvim-treesitter/nvim-treesitter",
@@ -173,6 +212,12 @@ return {
     config = function()
       require("core.lsp").config()
     end,
+  },
+
+  {
+    "mrcjkb/rustaceanvim",
+    version = "^6",
+    lazy = false,
   },
 
   {
@@ -211,7 +256,9 @@ return {
 
   {
     "ibhagwan/fzf-lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { "nvim-mini/mini.icons" },
+    ---@module "fzf-lua"
+    ---@type fzf-lua.Config
     opts = {
       files = {
         winopts = {
@@ -254,6 +301,16 @@ return {
         mode = { "n", "x" },
       },
     },
+  },
+
+  {
+    "rachartier/tiny-inline-diagnostic.nvim",
+    event = "LspAttach",
+    priority = 1000,
+    config = function()
+      require("tiny-inline-diagnostic").setup()
+      vim.diagnostic.config { virtual_text = false } -- Disable Neovim's default virtual text diagnostics
+    end,
   },
 
   {
@@ -412,6 +469,13 @@ return {
   {
     "folke/lazydev.nvim",
     ft = "lua", -- only load on lua files
+    opts = {
+      library = {
+        -- See the configuration section for more details
+        -- Load luvit types when the `vim.uv` word is found
+        { path = "${3rd}/luv/library", words = { "vim%.uv" } },
+      },
+    },
   },
 
   {
@@ -495,10 +559,16 @@ return {
         documentation = { auto_show = true, auto_show_delay_ms = 500 },
       },
 
-      -- Default list of enabled providers defined so that you can extend it
-      -- elsewhere in your config, without redefining it, due to `opts_extend`
       sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { "lazydev", "lsp", "path", "snippets", "buffer" },
+        providers = {
+          lazydev = {
+            name = "LazyDev",
+            module = "lazydev.integrations.blink",
+            -- make lazydev completions top priority (see `:h blink.cmp`)
+            score_offset = 100,
+          },
+        },
       },
 
       -- (Default) Rust fuzzy matcher for typo resistance and significantly better performance
@@ -591,9 +661,20 @@ return {
       picker = {
         name = "fzf-lua",
       },
+      note_id_func = function(title)
+        if title ~= nil then
+          return title
+        else
+          local suffix = ""
+          for _ = 1, 4 do
+            suffix = suffix .. string.char(math.random(65, 90))
+          end
+          return suffix
+        end
+      end,
       frontmatter = {
         func = function(note)
-          local out = { collections = "Uncategorised", tags = note.tags }
+          local out = { collection = "Uncategorised", tags = note.tags }
           if note.metadata ~= nil and not vim.tbl_isempty(note.metadata) then
             for k, v in pairs(note.metadata) do
               out[k] = v
@@ -630,15 +711,6 @@ return {
   },
 
   { "tpope/vim-eunuch" },
-
-  {
-    "kylechui/nvim-surround",
-    version = "*",
-    event = "VeryLazy",
-    config = function()
-      require("nvim-surround").setup {}
-    end,
-  },
 
   -- THEMES
   {

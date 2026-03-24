@@ -63,7 +63,7 @@ set.backup = false
 set.writebackup = false
 set.undofile = true -- Save undo history
 set.confirm = true -- prompt to save before destructive actions
--- set.updatetime = 1000 -- cursor update and swapfile write time. Do not set to 0
+set.updatetime = 400
 
 -- Search
 set.ignorecase = true -- Ignore case
