@@ -130,9 +130,8 @@ ex ()
 # Personnel aliases
 [[ -f ~/.zshrc-personal ]] && . ~/.zshrc-personal
 
-export GOPATH="$HOME/go"
-export PATH="$PATH:$GOPATH/bin"
-export PATH="$PATH:/usr/local/go/bin"
+# Dictionary API
+source ~/.config/scripts/define.sh
 
 export PATH="$PATH:$HOME/.cargo/bin"
 
