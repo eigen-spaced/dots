@@ -4,17 +4,13 @@ local M = {}
 function M.config()
   local icons = require("core.icons")
 
-  vim.lsp.handlers["textDocument/publishDiagnostics"] =
-    vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-      virtual_text = {
-        prefix = "▎", -- Could be '●', '▎', 'x'
-      },
-      update_in_insert = true,
-    })
-
   vim.diagnostic.config {
     severity_sort = true,
-    virtual_text = true,
+    update_in_insert = true,
+    underline = true,
+    virtual_text = {
+      prefix = "▎", -- Could be '●', '▎', 'x'
+    },
     signs = {
       text = {
         [vim.diagnostic.severity.ERROR] = icons.diagnostics.ERROR,
@@ -26,14 +22,12 @@ function M.config()
     float = {
       border = "rounded",
       format = function(d)
-        return ("%s (%s) [%s]"):format(
-          d.message,
-          d.source,
-          d.code or d.user_data.lsp.code
-        )
+        local code = d.code
+          or (d.user_data and d.user_data.lsp and d.user_data.lsp.code)
+          or "?"
+        return ("%s (%s) [%s]"):format(d.message, d.source or "unknown", code)
       end,
     },
-    underline = true,
     jump = {
       float = true,
     },
