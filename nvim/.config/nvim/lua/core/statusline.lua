@@ -267,7 +267,7 @@ end
 --- The buffer's filetype.
 ---@return string
 function M.filetype_component()
-  local devicons = require("nvim-web-devicons")
+  local mini_icons = require("mini.icons")
 
   -- Special icons for some filetypes.
   local special_icons = {
@@ -277,9 +277,9 @@ function M.filetype_component()
     -- OverseerList = { "󰦬", "Special" },
     -- ["ccc-ui"] = { "", "Comment" },
     -- ["grug-far"] = { icons.misc.search, "Constant" },
-    -- dapui_breakpoints = { icons.misc.bug, "DapUIRestart" },
-    -- dapui_scopes = { icons.misc.bug, "DapUIRestart" },
-    -- dapui_stacks = { icons.misc.bug, "DapUIRestart" },
+    dapui_breakpoints = { icons.misc.bug, "DapUIRestart" },
+    dapui_scopes = { icons.misc.bug, "DapUIRestart" },
+    dapui_stacks = { icons.misc.bug, "DapUIRestart" },
     fzf = { "", "Special" },
     gitcommit = { icons.misc.git, "Number" },
     gitrebase = { icons.misc.git, "Number" },
@@ -298,13 +298,12 @@ function M.filetype_component()
     icon, icon_hl = unpack(special_icons[filetype])
   else
     local buf_name = vim.api.nvim_buf_get_name(0)
-    local name, ext =
-      vim.fn.fnamemodify(buf_name, ":t"), vim.fn.fnamemodify(buf_name, ":e")
+    local ext = vim.fn.fnamemodify(buf_name, ":e")
 
-    icon, icon_hl = devicons.get_icon(name, ext)
+    icon, icon_hl = mini_icons.get("filetype", ext)
     if not icon then
       icon, icon_hl =
-        devicons.get_icon_by_filetype(filetype, { default = true })
+        mini_icons.get_icon_by_filetype(filetype, { default = true })
     end
   end
   icon_hl = M.get_or_create_hl(icon_hl)
