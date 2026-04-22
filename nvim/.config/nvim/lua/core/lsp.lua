@@ -211,36 +211,50 @@ function M.config()
     return
   end
 
-  local servers = {
-    -- "lua_ls",
+  -- Mason-managed servers
+  local mason_servers = {
     "cssls",
     "html",
     "svelte",
-    "basedpyright",
     "tailwindcss",
     "vimls",
     "bashls",
     "vue_ls",
-    "gopls",
     "astro",
     "harper_ls",
   }
 
+  -- Non-mason / external servers
+  local external_servers = {
+    "lua_la",
+    "ty",
+  }
   mason.setup()
+
   mason_lspconfig.setup {
-    ensure_installed = servers,
+    ensure_installed = mason_servers,
   }
 
-  vim.api.nvim_create_user_command("LspEnable", function()
-    for _, name in ipairs(servers) do
-      local ok, custom_config = pcall(require, "lsp." .. name)
+  -- Register configs (custom or default)
+  local function setup(server)
+    local ok, custom_config = pcall(require, "lsp." .. server)
+    vim.lsp.config(server, ok and custom_config or {})
+  end
 
-      -- Register the server configuration
-      vim.lsp.config[name] = ok and custom_config or {}
+  local all_servers =
+    vim.list_extend(vim.deepcopy(mason_servers), external_servers)
 
-      vim.lsp.enable(name)
-    end
-  end, { desc = "Initialize and Enable LSPs" })
+  -- Register + enable
+  for _, server in ipairs(all_servers) do
+    setup(server)
+    vim.lsp.enable(server)
+  end
+
+  vim.lsp.config("ty", {
+    cmd = { "ty", "server" },
+    filetypes = { "python" },
+    root_markers = { "pyproject.toml", ".git" },
+  })
 end
 
 return M

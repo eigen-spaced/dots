@@ -17,7 +17,6 @@ keymap.set("n", "<leader>hs", "<cmd>set hlsearch!<CR>")
 keymap.set("i", "jk", "<Esc>")
 keymap.set("i", "kj", "<Esc>")
 
--- I added this much later in my VIM journey. How did I not think of this?
 keymap.set("n", "H", "^")
 keymap.set("n", "L", "$")
 

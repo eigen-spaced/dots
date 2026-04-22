@@ -9,6 +9,156 @@ return {
       require("mini.surround").setup()
       require("mini.icons").setup()
       require("mini.misc").setup()
+
+      local combine_groups = function(groups)
+        local parts = vim.tbl_map(function(s)
+          if type(s) == "string" then
+            return s
+          end
+          if type(s) ~= "table" then
+            return ""
+          end
+
+          local string_arr = vim.tbl_filter(function(x)
+            return type(x) == "string" and x ~= ""
+          end, s.strings or {})
+          local str = table.concat(string_arr, " ")
+
+          -- Use previous highlight group
+          if s.hl == nil then
+            return " " .. str .. " "
+          end
+
+          -- Allow using this highlight group later
+          if str:len() == 0 then
+            return "%#" .. s.hl .. "#"
+          end
+
+          return string.format("%%#%s#%s", s.hl, str)
+        end, groups)
+
+        return table.concat(parts, "")
+      end
+
+      local function hex(n)
+        return n and string.format("#%06x", n) or "NONE"
+      end
+      local function bg_of(name)
+        return hex(vim.api.nvim_get_hl(0, { name = name, link = false }).bg)
+      end
+
+      local function define_caps()
+        local sl_bg = bg_of("StatusLine")
+        local sections = {
+          "MiniStatuslineModeNormal",
+          "MiniStatuslineModeInsert",
+          "MiniStatuslineModeVisual",
+          "MiniStatuslineModeReplace",
+          "MiniStatuslineModeCommand",
+          "MiniStatuslineModeOther",
+          "MiniStatuslineDevinfo",
+          "MiniStatuslineFileinfo",
+          "MiniStatuslineFilename",
+        }
+        for _, s in ipairs(sections) do
+          vim.api.nvim_set_hl(0, s .. "Cap", { fg = bg_of(s), bg = sl_bg })
+        end
+      end
+
+      define_caps()
+      vim.api.nvim_create_autocmd("ColorScheme", { callback = define_caps })
+
+      require("mini.statusline").setup {
+        content = {
+          -- Content for active window
+          active = function()
+            local mode, mode_hl =
+              MiniStatusline.section_mode { trunc_width = 120 }
+            local git = MiniStatusline.section_git { trunc_width = 40 }
+            local diff = MiniStatusline.section_diff { trunc_width = 75 }
+            local diagnostics =
+              MiniStatusline.section_diagnostics { trunc_width = 75 }
+            local lsp = MiniStatusline.section_lsp { trunc_width = 75 }
+            local filename =
+              MiniStatusline.section_filename { trunc_width = 140 }
+            local fileinfo =
+              MiniStatusline.section_fileinfo { trunc_width = 120 }
+            local location =
+              MiniStatusline.section_location { trunc_width = 75 }
+            local search =
+              MiniStatusline.section_searchcount { trunc_width = 75 }
+
+            local L = ""
+            local R = ""
+
+            local tab = {
+              { hl = mode_hl .. "Cap", strings = { L } },
+              { hl = mode_hl, strings = { mode } },
+              { hl = mode_hl .. "Cap", strings = { R } },
+              "%<",
+            }
+
+            if table.concat({ git, diff, diagnostics, lsp }):len() > 0 then
+              table.insert(
+                tab,
+                { hl = "MiniStatuslineDevinfoCap", strings = { L } }
+              )
+              table.insert(tab, {
+                hl = "MiniStatuslineDevinfo",
+                strings = { git, diff, diagnostics, lsp },
+              })
+              table.insert(
+                tab,
+                { hl = "MiniStatuslineDevinfoCap", strings = { R } }
+              )
+              table.insert(tab, "%<")
+            end
+
+            table.insert(
+              tab,
+              { hl = "MiniStatuslineFilenameCap", strings = { L } }
+            )
+            table.insert(tab, {
+              hl = "MiniStatuslineFilename",
+              strings = { " ", filename, " " },
+            })
+            table.insert(
+              tab,
+              { hl = "MiniStatuslineFilenameCap", strings = { R } }
+            )
+
+            table.insert(tab, "%=")
+
+            if fileinfo:len() > 0 then
+              table.insert(
+                tab,
+                { hl = "MiniStatuslineFileinfoCap", strings = { L } }
+              )
+              table.insert(
+                tab,
+                { hl = "MiniStatuslineFileinfo", strings = { fileinfo } }
+              )
+              table.insert(
+                tab,
+                { hl = "MiniStatuslineFileinfoCap", strings = { R } }
+              )
+            end
+
+            table.insert(tab, { hl = mode_hl .. "Cap", strings = { L } })
+            table.insert(tab, {
+              hl = mode_hl,
+              strings = { search, location },
+            })
+            table.insert(tab, { hl = mode_hl .. "Cap", strings = { R } })
+
+            return combine_groups(tab)
+          end,
+          -- Content for inactive window(s)
+          inactive = nil,
+        },
+        use_icons = vim.g.have_nerd_font,
+        set_vim_settings = true,
+      }
     end,
   },
 
@@ -33,17 +183,12 @@ return {
           c = { "clang-format" },
           lua = { "stylua" },
           go = { "goimports", "gofmt" },
-          python = function(bufnr)
-            if
-              require("conform").get_formatter_info("ruff_format", bufnr).available
-            then
-              return { "ruff_format" }
-            else
-              return { "isort", "black" }
-            end
-          end, -- Conform will run multiple formatters sequentially
+          python = {
+            "ruff_fix",
+            "ruff_format",
+            "ruff_organize_imports",
+          },
           rust = { "rustfmt", lsp_format = "fallback" },
-          -- Conform will run the first available formatter
           javascript = { "prettierd", "prettier", stop_after_first = true },
           javascriptreact = {
             "prettierd",
@@ -111,39 +256,60 @@ return {
   -- TREESITTER ECOSYSTEM
   {
     "nvim-treesitter/nvim-treesitter",
+    branch = "main",
     lazy = false,
-    cmd = {
-      "TSInstall",
-      "TSInstallInfo",
-      "TSInstallSync",
-      "TSUninstall",
-      "TSUpdate",
-      "TSUpdateSync",
-      "TSDisableAll",
-      "TSEnableAll",
-    },
-    -- branch = "main",
-    -- dependencies = {
-    --   {
-    --     "nvim-treesitter/nvim-treesitter-textobjects",
-    --   },
-    -- },
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").install {
+      local ts = require("nvim-treesitter")
+      ts.install {
         "c",
-        "vim",
         "lua",
+        "vim",
         "vimdoc",
-        "astro",
-        "html",
+        "go",
+        "gomod",
+        "gowork",
+        "gotmpl",
         "python",
         "javascript",
         "typescript",
-        "clojure",
-        "fennel",
+        "html",
       }
+
+      vim.api.nvim_create_autocmd("FileType", {
+        group = vim.api.nvim_create_augroup(
+          "TreesitterHighlight",
+          { clear = true }
+        ),
+        callback = function(args)
+          local bufnr = args.buf
+          local ft = vim.bo[bufnr].filetype
+
+          local ignore_ft = {
+            "fzf",
+            "TelescopePrompt",
+            "qf",
+            "netrw",
+            "lazy",
+            "mason",
+            "notify",
+          }
+          if vim.tbl_contains(ignore_ft, ft) then
+            return
+          end
+
+          local lang = vim.treesitter.language.get_lang(ft) or ft
+
+          -- We pass the function, then the arguments: pcall(fn, arg1, arg2)
+          local ok, err = pcall(vim.treesitter.start, bufnr, lang)
+        end,
+      })
     end,
+  },
+
+  {
+    "davidmh/mdx.nvim",
+    dependencies = { "nvim-treesitter/nvim-treesitter" },
   },
 
   {
@@ -546,8 +712,6 @@ return {
     ---@type blink.cmp.Config
     opts = {
       keymap = {
-        -- ["tab"] = { "select_next" },
-        -- ["<s-tab>"] = { "select_prev" },
         ["<CR>"] = { "select_and_accept", "fallback" },
         ["<c-e>"] = { "hide", "show", "fallback" },
         ["<c-n>"] = { "select_next", "show", "fallback" },
@@ -756,13 +920,6 @@ return {
     init = function()
       -- VimTeX configuration goes here, e.g.
       vim.g.vimtex_view_method = "zathura"
-    end,
-  },
-
-  {
-    "ggandor/leap.nvim",
-    config = function()
-      require("leap").add_default_mappings()
     end,
   },
 
