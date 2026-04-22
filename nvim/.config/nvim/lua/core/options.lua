@@ -1,4 +1,4 @@
-local fn, set, cmd, api = vim.fn, vim.opt, vim.cmd, vim.api
+local fn, set = vim.fn, vim.opt
 
 local executable = function(e)
   return fn.executable(e) > 0
@@ -73,7 +73,19 @@ set.scrolloff = 5 -- Lines of context
 set.sidescrolloff = 8 -- Columns of context
 set.showmatch = true
 set.inccommand = "nosplit"
--- cmd("set nohlsearch")
+
+-- Auto-toggle hlsearch: on while typing /?, or pressing n N * #; off otherwise.
+local hl_ns = vim.api.nvim_create_namespace("auto_hlsearch")
+local search_keys = { "/", "?", "n", "N", "*", "#" }
+vim.on_key(function(char)
+  if vim.fn.mode() ~= "n" then
+    return
+  end
+  local wanted = vim.tbl_contains(search_keys, vim.fn.keytrans(char))
+  if vim.o.hlsearch ~= wanted then
+    vim.o.hlsearch = wanted
+  end
+end, hl_ns)
 
 -- Use faster grep alternatives if possible
 if executable("rg") then
