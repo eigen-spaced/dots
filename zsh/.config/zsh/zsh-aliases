@@ -180,3 +180,7 @@ alias pip='python -m pip'
 # Python fo system paths
 alias syspy='/usr/bin/python3'
 alias syspip='/usr/bin/pip3'
+
+# gcc
+alias gcc="gcc-15"
+alias g++="g++-15"
