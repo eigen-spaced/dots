@@ -138,12 +138,7 @@ alias riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | n
 #Cleanup orphaned packages
 alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
 
-#get the error messages from journalctl
-alias jctl="journalctl -p 3 -xb"
-
-#nano for important configration files
-#know what you do in these files
-alias nlightdm="sudo nano /etc/lightdm/lightdm.conf"
+# nano for important configration files
 alias npacman="sudo nano /etc/pacman.conf"
 alias ngrub="sudo nano /etc/default/grub"
 alias nmkinitcpio="sudo nano /etc/mkinitcpio.conf"
@@ -162,20 +157,26 @@ alias gpg-retrieve="gpg2 --keyserver-options auto-key-retrieve --receive-keys"
 alias ssn="sudo shutdown now"
 alias sr="sudo reboot"
 
-# vim and neovim
-alias vi="nvim"
-alias vim="nvim"
-alias nv="nvim"
+# neovide
+alias nv='neovide'
+alias vi='nvim'
 
-alias luamake="/home/magnuscake/.config/nvim/lua-language-server/3rd/luamake/luamake"
+# Ensure 'vim' always refers to the original vim, not neovim
+# Using the full path /usr/bin/vim is the safest way to bypass other aliases
+if [ -f "/usr/bin/vim" ]; then
+    alias vim='/usr/bin/vim'
+else
+    alias vim='vim'
+fi
 
 # easy edit config files
 alias zconf="cd ~/.config/zsh && nvim ~/.config/zsh/.zshrc"
 alias nconf="cd ~/.config/nvim && nvim init.lua"
-alias xconf="nvim ~/.config/xmonad/xmonad.hs"
 
-alias csi="chicken-csi"
-alias csc="chicken-csc"
+# Set py as a shorthand for the mise-managed python
+alias py='python'
+alias pip='python -m pip'
 
-alias py=/usr/bin/python3
-alias pip=/usr/bin/pip3
+# Python fo system paths
+alias syspy='/usr/bin/python3'
+alias syspip='/usr/bin/pip3'
