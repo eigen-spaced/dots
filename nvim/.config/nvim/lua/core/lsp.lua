@@ -89,7 +89,7 @@ function M.config()
       keymap.set("n", "<leader>q", vim.diagnostic.setloclist)
 
       local troubleHelper = function(mode)
-        require("trouble").open { mode = mode }
+        require("trouble").toggle { mode = mode, focus = true }
       end
 
       keymap.set("n", "<leader>xx", "<cmd>Trouble<CR>")

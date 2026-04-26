@@ -184,3 +184,9 @@ alias syspip='/usr/bin/pip3'
 # gcc
 alias gcc="gcc-15"
 alias g++="g++-15"
+
+# mkdir and cd into the dir
+mkcd () {
+  \mkdir -p "$1"
+  cd "$1"
+}

@@ -137,6 +137,13 @@ export PATH="$PATH:$HOME/.cargo/bin"
 
 eval "$(mise activate zsh)"
 
+# pip and python
+export PIP_REQUIRE_VIRTUALENV=true
+
+gpip() {
+  PIP_REQUIRE_VIRTUALENV=false python -m pip "$@"
+}
+
 # pnpm
 export PNPM_HOME="/Users/sunny/Library/pnpm"
 case ":$PATH:" in
@@ -147,3 +154,10 @@ esac
 
 # uv
 export PATH="/Users/sunny/.local/bin:$PATH"
+
+function chpwd() {
+  if [[ -f "Cargo.toml" ]]; then
+    echo "🦀 Warming rust-analyzer cache..."
+    nohup cargo check &> /dev/null &!
+  fi
+}

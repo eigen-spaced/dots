@@ -44,5 +44,22 @@ return {
       end,
       mode = { "n", "x" },
     },
+    {
+      "<leader>fd",
+      function()
+        require("fzf-lua").fzf_exec("fd --type d --hidden --exclude .git", {
+          prompt = "Directories> ",
+          actions = {
+            ["default"] = function(selected)
+              if selected and selected[1] then
+                require("oil").toggle_float(selected[1])
+              end
+            end,
+          },
+        })
+      end,
+      desc = "Open directory in oil",
+      mode = { "n" },
+    },
   },
 }
