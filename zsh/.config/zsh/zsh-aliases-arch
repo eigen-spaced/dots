@@ -1,0 +1,56 @@
+# ~/.config/zsh/zsh-aliases-arch
+# Arch Linux-only aliases. Sourced from .zshrc when $IS_ARCH is set.
+
+# --- pacman / yay -----------------------------------------------------------
+alias pacman='sudo pacman --color auto'
+alias update='sudo pacman -Syyu'
+alias udpate='sudo pacman -Syyu'   # typo
+alias upate='sudo pacman -Syyu'    # typo
+alias unlock='sudo rm /var/lib/pacman/db.lck'
+alias pksyua='yay -Syu --noconfirm'
+alias upall='yay -Syu --noconfirm'
+alias yayskip='yay -S --mflags --skipinteg'
+alias trizenskip='trizen -S --skipinteg'
+alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
+
+# --- mirrors (reflector) ----------------------------------------------------
+alias mirror='sudo reflector -f 30 -l 30 --number 10 --verbose --save /etc/pacman.d/mirrorlist'
+alias mirrord='sudo reflector --latest 50 --number 20 --sort delay --save /etc/pacman.d/mirrorlist'
+alias mirrors='sudo reflector --latest 50 --number 20 --sort score --save /etc/pacman.d/mirrorlist'
+alias mirrora='sudo reflector --latest 50 --number 20 --sort age --save /etc/pacman.d/mirrorlist'
+
+# --- recently installed -----------------------------------------------------
+alias rip="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -200 | nl"
+alias riplong="expac --timefmt='%Y-%m-%d %T' '%l\t%n %v' | sort | tail -3000 | nl"
+
+# --- quick-edit important configs -------------------------------------------
+alias npacman='sudo nano /etc/pacman.conf'
+alias ngrub='sudo nano /etc/default/grub'
+alias nmkinitcpio='sudo nano /etc/mkinitcpio.conf'
+alias nslim='sudo nano /etc/slim.conf'
+alias noblogout='sudo nano /etc/oblogout.conf'
+alias nmirrorlist='sudo nano /etc/pacman.d/mirrorlist'
+alias nconfgrub='sudo nano /boot/grub/grub.cfg'
+
+# --- system maintenance -----------------------------------------------------
+alias update-grub='sudo grub-mkconfig -o /boot/grub/grub.cfg'
+alias update-fc='sudo fc-cache -fv'
+alias microcode='grep . /sys/devices/system/cpu/vulnerabilities/*'
+alias hw='hwinfo --short'
+
+# --- skel / backups ---------------------------------------------------------
+alias skel='cp -Rf ~/.config ~/.config-backup-$(date +%Y.%m.%d-%H.%M.%S) && cp -rf /etc/skel/* ~'
+alias bupskel='cp -Rf /etc/skel ~/.skel-backup-$(date +%Y.%m.%d-%H.%M.%S)'
+alias cz='sudo cp /etc/skel/.zshrc ~/.zshrc && source ~/.zshrc'
+
+# --- X11 / window managers --------------------------------------------------
+alias merge='xrdb -merge ~/.Xresources'
+alias kc='killall conky'
+alias vbm='sudo /usr/local/bin/arcolinux-vbox-share'
+
+# --- shell switching --------------------------------------------------------
+alias tobash="sudo chsh $USER -s /bin/bash && echo 'Now log out.'"
+alias tozsh="sudo chsh $USER -s /bin/zsh && echo 'Now log out.'"
+
+# --- misc -------------------------------------------------------------------
+alias uac='sh ~/.bin/main/000*'

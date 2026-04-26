@@ -1,0 +1,6 @@
+# ~/.config/zsh/zsh-aliases-mac
+# macOS-only aliases. Sourced from .zshrc when $IS_MAC is set.
+
+# Homebrew installs gcc/g++ with version suffix; expose the unversioned name
+alias gcc='gcc-15'
+alias g++='g++-15'

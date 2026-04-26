@@ -1,29 +1,67 @@
-# bindkey -e will be emacs mode
+# ~/.config/zsh/zsh-vim
+# Vi-mode for the zsh line editor.
+#
+# Why this file is the way it is:
+# `bindkey -v` switches the keymap to vi-style. As a side effect it WIPES the
+# emacs-style bindings most shells ship with — so without explicit re-binding,
+# you lose things like arrow-up history, Ctrl-A/E/R/U/W, and so on. That is
+# the most common reason vi-mode "feels broken" in zsh. Everything below the
+# `bindkey -v` line restores those, so insert mode behaves like a normal
+# shell *plus* gives you the vicmd escape hatch.
+
 bindkey -v
+# Hundredths of a second. 1 = 10ms — short enough that pressing Esc feels
+# instant and the `jk` mapping below won't false-fire on normal typing.
 export KEYTIMEOUT=1
 
-# Use vim keys in tab complete menu:
+# --- Restore familiar emacs-style edits inside insert mode ------------------
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^R' history-incremental-search-backward
+bindkey -M viins '^P' up-line-or-history
+bindkey -M viins '^N' down-line-or-history
+bindkey -M viins '^U' backward-kill-line
+bindkey -M viins '^W' backward-kill-word
+bindkey -M viins '^?' backward-delete-char     # Backspace
+bindkey -M viins '^H' backward-delete-char     # Ctrl-H Backspace
+
+# Arrow keys -> history-substring-search in BOTH keymaps
+bindkey -M viins '^[[A' history-substring-search-up
+bindkey -M viins '^[[B' history-substring-search-down
+bindkey -M vicmd '^[[A' history-substring-search-up
+bindkey -M vicmd '^[[B' history-substring-search-down
+
+# Delete key
+bindkey -M viins '^[[3~' delete-char
+bindkey -M vicmd '^[[3~' delete-char
+
+# --- Completion-menu navigation ---------------------------------------------
 bindkey -M menuselect '^h' vi-backward-char
 bindkey -M menuselect '^k' vi-up-line-or-history
 bindkey -M menuselect '^l' vi-forward-char
 bindkey -M menuselect '^j' vi-down-line-or-history
-bindkey -M menuselect '^[[Z' vi-up-line-or-history
-bindkey -v '^?' backward-delete-char
+bindkey -M menuselect '^[[Z' reverse-menu-complete   # Shift-Tab
 
+# --- Fast escape from insert mode -------------------------------------------
+# `jk` instead of `jj` — `jk` almost never appears as adjacent letters in
+# code/prose, so false-fires are rarer than `jj`.
 bindkey -M viins 'jk' vi-cmd-mode
 
-# Change cursor shape for different vi modes.
-function zle-keymap-select () {
+# --- Cursor shape per mode --------------------------------------------------
+# Block (\e[1 q) in normal/cmd mode, beam (\e[5 q) in insert mode.
+function zle-keymap-select() {
     case $KEYMAP in
-        vicmd) echo -ne '\e[1 q';;      # block
-        viins|main) echo -ne '\e[5 q';; # beam
+        vicmd)      printf '\e[1 q' ;;
+        viins|main) printf '\e[5 q' ;;
     esac
 }
 zle -N zle-keymap-select
+
 zle-line-init() {
-    zle -K viins # initiate `vi insert` as keymap (can be removed if `bindkey -V` has been set elsewhere)
-    echo -ne "\e[5 q"
+    zle -K viins                 # always start each prompt in insert mode
+    printf '\e[5 q'
 }
 zle -N zle-line-init
-echo -ne '\e[5 q' # Use beam shape cursor on startup.
-preexec() { echo -ne '\e[5 q' ;} # Use beam shape cursor for each new prompt.
+
+printf '\e[5 q'                  # beam on shell start
+preexec() { printf '\e[5 q' }    # beam before each command runs

@@ -1,14 +1,30 @@
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
+# ~/.config/zsh/.zshrc
+# Sourced for every interactive zsh. Keep it lean — feature blocks live in
+# zsh-functions, zsh-vim, zsh-aliases, zsh-aliases-{mac,arch}, zsh-prompt.
 
-# User configuration
-# some useful options (man zshoptions)
-setopt autocd extendedglob nomatch menucomplete
-setopt noautomenu
-setopt nomenucomplete
-setopt interactive_comments
+# --- OS detection -----------------------------------------------------------
+unset IS_MAC IS_ARCH
+case "$OSTYPE" in
+    darwin*) IS_MAC=1 ;;
+    linux*)  [[ -f /etc/arch-release ]] && IS_ARCH=1 ;;
+esac
+
+# --- PATH (deduped) ---------------------------------------------------------
+typeset -U path
+path=(
+    $HOME/.bin
+    $HOME/.local/bin
+    $HOME/.cargo/bin
+    $path
+)
+
+# --- History ----------------------------------------------------------------
+HISTFILE="$HOME/.config/zsh/zsh_history"
+HISTSIZE=10000
+SAVEHIST=10000
 setopt APPEND_HISTORY
 setopt EXTENDED_HISTORY
+setopt SHARE_HISTORY
 setopt HIST_EXPIRE_DUPS_FIRST
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_IGNORE_DUPS
@@ -16,148 +32,82 @@ setopt HIST_IGNORE_SPACE
 setopt HIST_REDUCE_BLANKS
 setopt HIST_SAVE_NO_DUPS
 setopt HIST_VERIFY
-setopt AUTOPARAMSLASH # tab completing directory appends a slash
-setopt SHARE_HISTORY # Share your history across all your terminal windows
-HISTSIZE=10000
-SAVEHIST=10000
-HISTFILE="$HOME"/.config/zsh/zsh_history
+
+# --- Shell options ----------------------------------------------------------
+setopt autocd extendedglob interactive_comments
+setopt AUTO_PARAM_SLASH      # tab-completing a directory appends a /
+setopt GLOB_DOTS             # globs match dotfiles
+unsetopt BEEP
+unsetopt nomatch             # let unmatched globs pass through literally
+unsetopt MENU_COMPLETE       # don't auto-insert first match on tab
+unsetopt AUTO_MENU           # don't open menu on second tab automatically
+
+# Word boundaries for ^W and friends (slash is removed by my-backward-delete-word)
+WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
 
 zle_highlight=('paste:none')
 
-unsetopt BEEP
-unsetopt nomatch
-
-zle -N history-substring-search-up
-zle -N history-substring-search-down
-bindkey "^[[A" history-substring-search-up
-bindkey "^[[B" history-substring-search-down
-
-bindkey "^[[3~" delete-char
-
-WORDCHARS='*?_-.[]~=&;!#$%^(){}<>'
-
-my-backward-delete-word() {
-    local WORDCHARS=${WORDCHARS/\//}
-    zle backward-delete-word
-}
-zle -N my-backward-delete-word
-bindkey '^W' my-backward-delete-word
-
-# completions
+# --- Completion -------------------------------------------------------------
 autoload -U compinit && compinit -u
-zstyle ':completion:*' menu select
-# Auto complete with case insenstivity
-zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
-# zstyle ':completion::complete:lsof:*' menu yes select
 zmodload zsh/complist
-# compinit
-_comp_options+=(globdots)		# Include hidden files.
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}' 'r:|[._-]=* r:|=*' 'l:|=* r:|=*'
+_comp_options+=(globdots)    # let completion see hidden files
 
-# Useful functions
+# --- Modular config (loader helpers + utility funcs come first) -------------
 source "$ZDOTDIR/zsh-functions"
 
-# Normal files to source
-# zsh_add_file "zsh-exports"
-# zsh_add_file "zsh-vim"
+zsh_add_file "zsh-vim"
 zsh_add_file "zsh-aliases"
+[[ -n $IS_MAC  ]] && zsh_add_file "zsh-aliases-mac"
+[[ -n $IS_ARCH ]] && zsh_add_file "zsh-aliases-arch"
 zsh_add_file "zsh-prompt"
 
+# --- Plugins ----------------------------------------------------------------
 zsh_add_plugin "zsh-users/zsh-autosuggestions"
 zsh_add_plugin "zsh-users/zsh-syntax-highlighting"
 zsh_add_plugin "zsh-users/zsh-history-substring-search"
 zsh_add_plugin "hlissner/zsh-autopair"
-# For more plugins: https://github.com/unixorn/awesome-zsh-plugins
-# More completions https://github.com/zsh-users/zsh-completions
+# More plugins:    https://github.com/unixorn/awesome-zsh-plugins
+# More completions: https://github.com/zsh-users/zsh-completions
 
-# disable underlining in syntax highlighting
+# Disable underline styling on paths in syntax highlighting
 (( ${+ZSH_HIGHLIGHT_STYLES} )) || typeset -A ZSH_HIGHLIGHT_STYLES
 ZSH_HIGHLIGHT_STYLES[path]=none
 ZSH_HIGHLIGHT_STYLES[path_prefix]=none
 
-# Preferred editor for local and remote sessions
+# Bindings whose targets are defined in zsh-functions / plugins
+bindkey '^W' my-backward-delete-word
+
+# --- Editor -----------------------------------------------------------------
 if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR='vim'
+    export EDITOR='vim'
 else
-  export EDITOR='nvim'
+    export EDITOR='nvim'
 fi
 
-# Compilation flags
-# export ARCHFLAGS="-arch x86_64"
-
-setopt GLOB_DOTS
-
-# If not running interactively, don't do anything
-[[ $- != *i* ]] && return
-
-export HISTCONTROL=ignoreboth:erasedups
-
-#PS1='[\u@\h \W]\$ '
-
-if [ -d "$HOME/.bin" ] ;
-  then PATH="$HOME/.bin:$PATH"
-fi
-
-if [ -d "$HOME/.local/bin" ] ;
-  then PATH="$HOME/.local/bin:$PATH"
-fi
-
-# # ex = EXtractor for all kinds of archives
-# # usage: ex <file>
-ex ()
-{
-  if [ -f $1 ] ; then
-    case $1 in
-      *.tar.bz2)   tar xjf $1   ;;
-      *.tar.gz)    tar xzf $1   ;;
-      *.bz2)       bunzip2 $1   ;;
-      *.rar)       unrar x $1   ;;
-      *.gz)        gunzip $1    ;;
-      *.tar)       tar xf $1    ;;
-      *.tbz2)      tar xjf $1   ;;
-      *.tgz)       tar xzf $1   ;;
-      *.zip)       unzip $1     ;;
-      *.Z)         uncompress $1;;
-      *.7z)        7z x $1      ;;
-      *.deb)       ar x $1      ;;
-      *.tar.xz)    tar xf $1    ;;
-      *)           echo "'$1' cannot be extracted via ex()" ;;
-    esac
-  else
-    echo "'$1' is not a valid file"
-  fi
-}
-
-# Personnel aliases
-[[ -f ~/.zshrc-personal ]] && . ~/.zshrc-personal
-
-# Dictionary API
-source ~/.config/scripts/define.sh
-
-export PATH="$PATH:$HOME/.cargo/bin"
-
+# --- Tool integrations ------------------------------------------------------
+# mise — runtime version manager
 eval "$(mise activate zsh)"
 
-# pip and python
+# pip safety: require a virtualenv unless gpip is used (defined in zsh-functions)
 export PIP_REQUIRE_VIRTUALENV=true
 
-gpip() {
-  PIP_REQUIRE_VIRTUALENV=false python -m pip "$@"
-}
+# pnpm (path differs by OS)
+if [[ -n $IS_MAC ]]; then
+    export PNPM_HOME="$HOME/Library/pnpm"
+elif [[ -n $IS_ARCH ]]; then
+    export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
+if [[ -n "$PNPM_HOME" ]]; then
+    case ":$PATH:" in
+        *":$PNPM_HOME:"*) ;;
+        *) export PATH="$PNPM_HOME:$PATH" ;;
+    esac
+fi
 
-# pnpm
-export PNPM_HOME="/Users/sunny/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME:"*) ;;
-  *) export PATH="$PNPM_HOME:$PATH" ;;
-esac
-# pnpm end
+# Optional: dictionary helper if you have it installed
+[[ -f "$HOME/.config/scripts/define.sh" ]] && source "$HOME/.config/scripts/define.sh"
 
-# uv
-export PATH="/Users/sunny/.local/bin:$PATH"
-
-function chpwd() {
-  if [[ -f "Cargo.toml" ]]; then
-    echo "🦀 Warming rust-analyzer cache..."
-    nohup cargo check &> /dev/null &!
-  fi
-}
+# Personal/private overrides — not committed
+[[ -f "$HOME/.zshrc-personal" ]] && source "$HOME/.zshrc-personal"
