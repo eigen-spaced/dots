@@ -82,3 +82,7 @@ alias ytv-best='youtube-dl -f bestvideo+bestaudio '
 
 # --- jokes ------------------------------------------------------------------
 alias ':q'="echo \"You're not editing a file dumbass\""
+
+# gcc
+alias gcc="gcc-15"
+alias g++="g++-15"

@@ -106,8 +106,13 @@ if [[ -n "$PNPM_HOME" ]]; then
     esac
 fi
 
-# Optional: dictionary helper if you have it installed
+# Dictionary helper
 [[ -f "$HOME/.config/scripts/define.sh" ]] && source "$HOME/.config/scripts/define.sh"
+
+# Dictionary helper
+export PATH="$HOME/.config/scripts:$PATH"
 
 # Personal/private overrides — not committed
 [[ -f "$HOME/.zshrc-personal" ]] && source "$HOME/.zshrc-personal"
+
+eval "$(zoxide init zsh)"
