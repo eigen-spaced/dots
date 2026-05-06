@@ -9,8 +9,9 @@ return {
     },
     float = {
       -- Padding around the floating window
-      max_width = 80,
-      border = "single",
+      max_width = 50,
+      max_height = 0.5,
+      border = "double",
       win_options = {
         winblend = 10,
       },

@@ -81,7 +81,7 @@ return {
     completeUnimported = true,
     clangdFileStatus = true,
   },
-  filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+  filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
   root_markers = {
     ".clangd",
     ".clang-tidy",

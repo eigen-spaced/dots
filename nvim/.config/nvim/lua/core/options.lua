@@ -127,6 +127,12 @@ vim.filetype.add {
   },
 }
 
+vim.filetype.add {
+  extension = {
+    mdx = "mdx",
+  },
+}
+
 -- netrw
 -- do not display info on the top of window
 vim.g.netrw_banner = 0

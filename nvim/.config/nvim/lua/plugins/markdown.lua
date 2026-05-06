@@ -5,7 +5,7 @@ return {
   ---@type render.md.UserConfig
   opts = {
     heading = {
-      enabled = false,
+      enabled = true,
     },
   },
 }

@@ -30,6 +30,14 @@ return {
     },
 
     {
+      "<c-_>",
+      function()
+        require("fzf-lua").live_grep()
+      end,
+      mode = { "n", "x" },
+    },
+
+    {
       "<c-/>",
       function()
         require("fzf-lua").live_grep()

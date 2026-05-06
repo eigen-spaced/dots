@@ -2,7 +2,14 @@
 
 return {
   cmd = { "harper-ls", "--stdio" },
-  filetypes = { "markdown", "mdx", "markdown.mdx", "text", "gitcommit" },
+  filetypes = {
+    "astro-markdown",
+    "markdown",
+    "mdx",
+    "markdown.mdx",
+    "text",
+    "gitcommit",
+  },
   settings = {
     ["harper-ls"] = {
       linters = {

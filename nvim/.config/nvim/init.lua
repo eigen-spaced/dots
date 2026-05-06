@@ -136,6 +136,13 @@ vim.api.nvim_create_autocmd("BufWritePost", {
 
 vim.opt.cmdheight = 1
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = { "markdown", "mdx" },
+  callback = function()
+    vim.opt_local.conceallevel = 0
+  end,
+})
+
 vim.api.nvim_create_autocmd("CmdlineEnter", {
   group = vim.api.nvim_create_augroup(
     "cmdheight_1_on_cmdlineenter",
