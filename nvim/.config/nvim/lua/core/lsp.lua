@@ -28,9 +28,6 @@ function M.config()
         return ("%s (%s) [%s]"):format(d.message, d.source or "unknown", code)
       end,
     },
-    jump = {
-      float = true,
-    },
   }
 
   local au = vim.api.nvim_create_augroup("LspAttach", { clear = true })
@@ -111,6 +108,18 @@ function M.config()
     end,
   })
 
+  vim.api.nvim_create_autocmd("LspAttach", {
+    callback = function(event)
+      vim.keymap.set("n", "K", function()
+        vim.lsp.buf.hover {
+          border = "rounded",
+          max_width = 90,
+          max_height = 25,
+        }
+      end, { buffer = event.buf, desc = "LSP hover" })
+    end,
+  })
+
   -- Prevent race conditions and conflicts between volar and tsserver
   vim.api.nvim_create_autocmd("LspAttach", {
     group = au,
@@ -167,33 +176,37 @@ function M.config()
     end,
   })
 
-  vim.api.nvim_create_autocmd("LspAttach", {
-    group = au,
-    desc = "LSP format",
+  local format_au = vim.api.nvim_create_augroup("format_on_save", {
+    clear = true,
+  })
+
+  vim.api.nvim_create_autocmd("BufWritePre", {
+    group = format_au,
+    pattern = "*",
+
     callback = function(args)
-      local bufnr = args.buf
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      if client and client.server_capabilities.documentFormattingProvider then
-        local augroup_lsp_format = "lsp_format"
-        vim.api.nvim_create_augroup(augroup_lsp_format, { clear = false })
-        vim.api.nvim_create_autocmd("BufWritePre", {
-          group = augroup_lsp_format,
-          buffer = bufnr,
-          callback = function()
-            require("conform").format {
-              -- async = true,
-              filter = function(server)
-                local disabled_servers = {
-                  "lua_ls",
-                  "eslint",
-                  "tsserver",
-                }
-                return not vim.tbl_contains(disabled_servers, server.name)
-              end,
-            }
-          end,
-        })
-      end
+      require("conform").format {
+        bufnr = args.buf,
+        timeout_ms = 1000,
+
+        -- Use Conform formatters first.
+        -- Only fall back to LSP formatting if no Conform formatter exists.
+        lsp_format = "fallback",
+
+        filter = function(client)
+          local disabled_servers = {
+            "lua_ls",
+            "eslint",
+            "tsserver",
+            "pyright",
+            "basedpyright",
+            "ty",
+            "pyrefly",
+          }
+
+          return not vim.tbl_contains(disabled_servers, client.name)
+        end,
+      }
     end,
   })
 
@@ -216,11 +229,12 @@ function M.config()
     "vue_ls",
     "astro",
     "harper_ls",
+    "pyrefly",
   }
 
   -- Non-mason / external servers
   local external_servers = {
-    "lua_la",
+    "lua_ls",
     "ty",
   }
   mason.setup()
@@ -248,6 +262,9 @@ function M.config()
     cmd = { "ty", "server" },
     filetypes = { "python" },
     root_markers = { "pyproject.toml", ".git" },
+    on_attach = function(client, bufnr)
+      client.server_capabilities.hoverProvider = false
+    end,
   })
 end
 
