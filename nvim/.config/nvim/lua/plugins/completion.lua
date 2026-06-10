@@ -9,12 +9,12 @@ return {
     ---@type blink.cmp.Config
     opts = {
       keymap = {
-        ["<CR>"] = { "select_and_accept", "fallback" },
+        ["<CR>"] = { "accept", "fallback" },
         ["<c-e>"] = { "hide", "show", "fallback" },
         ["<c-n>"] = { "select_next", "show", "fallback" },
         ["<c-p>"] = { "select_prev", "show", "fallback" },
-        ["<c-j>"] = { "select_next", "fallback" },
-        ["<c-k>"] = { "select_prev", "fallback" },
+        ["<Tab>"] = { "select_next", "fallback" },
+        ["<S-Tab>"] = { "select_prev", "fallback" },
       },
       completion = {
         documentation = { auto_show = true, auto_show_delay_ms = 500 },

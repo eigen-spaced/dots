@@ -9,9 +9,9 @@ return {
         lua = { "stylua" },
         go = { "goimports", "gofmt" },
         python = {
+          "ruff_organize_imports",
           "ruff_fix",
           "ruff_format",
-          "ruff_organize_imports",
         },
         rust = { "rustfmt", lsp_format = "fallback" },
         javascript = { "prettierd", "prettier", stop_after_first = true },
@@ -37,8 +37,7 @@ return {
         prettierd = {
           env = {
             PRETTIERD_DEFAULT_CONFIG = vim.fn.expand(
-              vim.fn.stdpath("config")
-                .. "/lua/conf/envconfig/.prettierrc.json"
+              vim.fn.stdpath("config") .. "/lua/conf/envconfig/.prettierrc.json"
             ),
           },
         },

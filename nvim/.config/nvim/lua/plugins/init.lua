@@ -19,8 +19,33 @@ return {
 
   {
     "mrcjkb/rustaceanvim",
-    version = "^6",
+    version = "^9",
     lazy = false,
+    init = function()
+      vim.g.rustaceanvim = {
+        server = {
+          cmd = { "rust-analyzer", "--log-file", "/tmp/ra.log" },
+          default_settings = {
+            ["rust-analyzer"] = {
+              check = {
+                command = "check",
+              },
+              cachePriming = {
+                enable = true,
+                numThreads = 4, -- Adjust to your CPU core count
+              },
+              checkOnSave = true,
+              cargo = {
+                allTargets = false,
+              },
+              files = {
+                watcher = "server",
+              },
+            },
+          },
+        },
+      }
+    end,
   },
 
   {

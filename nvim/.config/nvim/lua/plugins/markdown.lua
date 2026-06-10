@@ -7,5 +7,8 @@ return {
     heading = {
       enabled = true,
     },
+    latex = {
+      enabled = false,
+    },
   },
 }
