@@ -70,11 +70,3 @@ ex() {
         *)           echo "'$1' cannot be extracted via ex()" ;;
     esac
 }
-
-# Warm rust-analyzer's cache when entering a Cargo project
-chpwd() {
-    if [[ -f "Cargo.toml" ]]; then
-        echo "🦀 Warming rust-analyzer cache..."
-        nohup cargo check &> /dev/null &!
-    fi
-}
