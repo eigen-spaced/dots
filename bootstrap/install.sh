@@ -41,7 +41,7 @@ elif ! $dotfiles_ready; then
     echo "Skipping stow step: dotfiles unavailable."
 else
     cd "$DOTFILES_DIR"
-    for pkg in nvim ghostty tmux zsh; do
+    for pkg in nvim ghostty tmux zsh scripts; do
         if [[ -d "$pkg" ]]; then
             read -rp "Stow $pkg? [y/N] " ans
             if [[ "$ans" =~ ^[Yy]$ ]]; then
@@ -52,4 +52,102 @@ else
         fi
     done
     cd - >/dev/null
+fi
+
+# --- launchd: Emacs daemon (macOS only) ---------------------------------------
+# emacs-plus ships a brew service, but `brew services` doesn't expose it for this
+# tap ("has not implemented #service"), so we run the daemon from our own agent.
+if [[ "$OSTYPE" == "darwin"* ]] && command -v emacs &>/dev/null; then
+    echo
+    echo "The Emacs daemon runs as a launchd agent (com.sunny.emacs-daemon):"
+    echo "it starts 'emacs --fg-daemon' at login and keeps it alive, so the"
+    echo "Emacs.app launcher (emacsclient) always has a daemon to attach to."
+    read -rp "Install the Emacs daemon agent? [y/N] " ans
+    if [[ "$ans" =~ ^[Yy]$ ]]; then
+        emacs_label="com.sunny.emacs-daemon"
+        emacs_plist="$HOME/Library/LaunchAgents/$emacs_label.plist"
+        mkdir -p "$HOME/Library/LaunchAgents"
+        cat > "$emacs_plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$emacs_label</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/emacs</string>
+        <string>--fg-daemon</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/emacs-daemon.stdout.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/emacs-daemon.stderr.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>
+EOF
+        launchctl bootout "gui/$(id -u)/$emacs_label" 2>/dev/null || true
+        if launchctl bootstrap "gui/$(id -u)" "$emacs_plist"; then
+            echo "Installed $emacs_label (starts the Emacs daemon at login)."
+        else
+            echo "WARN: failed to load $emacs_label — plist written to $emacs_plist."
+        fi
+    else
+        echo "Skipped Emacs daemon agent."
+    fi
+fi
+
+# --- launchd: update-all reminder (macOS only) --------------------------------
+# Runs after the stow step so ~/.config/scripts/update-all exists.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo
+    echo "The update reminder is a launchd agent (com.sunny.update-reminder)."
+    echo "It runs a check daily at 11:00 and shows a notification when"
+    echo "'update-all' hasn't been run for 14+ days. It only notifies —"
+    echo "it never installs or updates anything by itself."
+    read -rp "Install the launchd reminder agent? [y/N] " ans
+    if [[ "$ans" =~ ^[Yy]$ ]]; then
+        agent_label="com.sunny.update-reminder"
+        agent_plist="$HOME/Library/LaunchAgents/$agent_label.plist"
+        mkdir -p "$HOME/Library/LaunchAgents"
+        cat > "$agent_plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$agent_label</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>$HOME/.config/scripts/update-all</string>
+        <string>--remind</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>11</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+</dict>
+</plist>
+EOF
+        launchctl bootout "gui/$(id -u)/$agent_label" 2>/dev/null || true
+        if launchctl bootstrap "gui/$(id -u)" "$agent_plist"; then
+            echo "Installed $agent_label (daily 11:00 check)."
+        else
+            echo "WARN: failed to load $agent_label — plist written to $agent_plist."
+        fi
+    else
+        echo "Skipped launchd reminder agent."
+    fi
 fi

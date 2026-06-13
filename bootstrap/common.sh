@@ -9,10 +9,16 @@ fi
 
 eval "$(mise activate bash)"  # or zsh
 
-mise install node@latest python@latest go@latest uv@latest
+mise install node@latest python@latest go@latest uv@latest pnpm@latest
 
-# --- npm globals ------------------------------------------------------------
-npm install -g \
+# --- pnpm globals -------------------------------------------------------------
+# pnpm (mise-managed) owns global JS tools. minimumReleaseAge refuses packages
+# published less than a week ago, as a guard against npm supply-chain attacks.
+export PNPM_HOME="$HOME/Library/pnpm"
+export PATH="$PNPM_HOME/bin:$PATH"
+pnpm config set --global minimumReleaseAge 10080
+
+pnpm add -g \
     @fsouza/prettierd \
     neovim \
     @tailwindcss/language-server \
