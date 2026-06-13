@@ -15,8 +15,9 @@
 set -u
 
 EMACSCLIENT="${EMACSCLIENT:-/opt/homebrew/bin/emacsclient}"
-SCRIPT_DIR="$(cd "$(dirname "$(readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")")" 2>/dev/null && pwd)"
-[ -z "${SCRIPT_DIR:-}" ] && SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Absolute path to this script, used for fzf's preview/reload subshells.
+SELF="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(dirname "$SELF")"
 EXPORTER="$SCRIPT_DIR/doomkeys-export.el"
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/doomkeys"
 CACHE="$CACHE_DIR/keys.tsv"
@@ -48,23 +49,37 @@ stale() {
 
 ensure_cache() { stale && rebuild; :; }
 
-# format the cached TSV into fzf display lines: an aligned visible field, then a
-# hidden tab-separated bare command for the preview/selection helpers to parse.
+# Format the cached TSV into fzf lines. Field 1 is the colored, fixed-width
+# display (keys | group/state | command | summary). Fields 2 and 3 are the bare
+# keys and command, hidden from view (--with-nth=1) but used by the preview and
+# the selection output. Color codes sit outside the %-Ns specifiers so padding
+# stays correct, and --ansi/--no-hscroll keep the keys column anchored left.
+# Optional first arg = a group name to scope to (empty = all groups).
 feed() {
-    awk -F'\t' '{ printf "%-18s %-22s %-34s %s\t%s\n", $3, $1"/"$2, $4, $5, $4 }' "$CACHE"
+    local only="${1:-}"
+    awk -F'\t' -v only="$only" '
+        only=="" || $1==only {
+            k=$3; g=$1"/"$2; c=$4; s=$5;
+            if (length(s) > 76) s = substr(s, 1, 75) "…";
+            printf "\033[1;36m%-16s\033[0m \033[2m%-20s\033[0m \033[33m%-30s\033[0m %s\t%s\t%s\n", \
+                   k, g, c, s, k, c
+        }' "$CACHE"
 }
+
+is_group() { cut -f1 "$CACHE" | grep -qxF "$1"; }
 
 # --- hidden helpers (invoked by fzf) -----------------------------------------
 case "${1:-}" in
     __doc)   # render a command's full docstring in the preview pane
         line="${2:-}"; cmd="${line##*$'\t'}"
         [ -z "$cmd" ] && exit 0
-        printf '\033[1m%s\033[0m\n\n' "$cmd"
-        "$EMACSCLIENT" -e "(or (documentation '$cmd) \"(no docstring)\")" 2>/dev/null \
-            | sed -e 's/^"//' -e 's/"$//' -e 's/\\n/\n/g' -e 's/\\"/"/g' -e 's/\\\\/\\/g'
+        printf '\033[1;33m%s\033[0m\n\n' "$cmd"
+        doc=$("$EMACSCLIENT" -e "(or (ignore-errors (substring-no-properties (documentation '$cmd))) \"(no docstring)\")" 2>/dev/null \
+                | sed -e 's/^"//' -e 's/"$//' -e 's/\\n/\n/g' -e 's/\\"/"/g' -e 's/\\\\/\\/g')
+        printf '%s\n' "${doc:-(could not reach the Emacs daemon for docs)}"
         exit 0 ;;
-    __feed)   feed; exit 0 ;;
-    __reload) rebuild >/dev/null 2>&1; feed; exit 0 ;;
+    __feed)   feed "${2:-}"; exit 0 ;;
+    __reload) rebuild >/dev/null 2>&1; feed "${2:-}"; exit 0 ;;
 esac
 
 # --- arg parsing -------------------------------------------------------------
@@ -85,12 +100,16 @@ case "${1:-}" in
 doomkeys — a searchable index of your *live* Doom Emacs keybindings.
 
   doomkeys                fuzzy-search every binding (fzf)
-  doomkeys dired          fzf, pre-filtered to "dired"  (the "dired index")
-  doomkeys dired rename   fzf, pre-filtered to those words
+  doomkeys dired          the dired index (scoped to the "dired" group)
+  doomkeys dired rename   dired group, fuzzy-filtered to "rename" -> R
+  doomkeys rename         fuzzy "rename" across ALL groups
   doomkeys -g <group>     print a group's index as plain text (no fzf)
   doomkeys -l             list all groups (packages/modes) with counts
   doomkeys -r             force-rebuild the index from the running daemon
   doomkeys -h             this help
+
+A leading word that exactly names a group (see `doomkeys -l`) scopes the
+search to that group; remaining words filter within it.
 
 In fzf: type to filter · Enter shows the binding · Ctrl-R reindexes · Esc quits.
 The index comes from the running Emacs daemon (reflects your real config) and
@@ -109,21 +128,25 @@ fi
 
 command -v fzf >/dev/null 2>&1 || die "fzf not found. Install it, or use: doomkeys -g <group>"
 
+# If the first word is an exact group name, scope to that group (the "dired
+# index" model) and use the remaining words as the query; otherwise fuzzy-match
+# all words across every group.
+scope=""
+if [ "$#" -gt 0 ] && is_group "$1"; then
+    scope="$1"; shift
+fi
 query="$*"
-# fzf searches the whole line (group/keys/cmd/summary all match) but displays
-# only the formatted first field (--with-nth=1); the trailing field is the bare
-# command, used by the preview and the selection output below.
-self="$0"
-feed \
-  | fzf --delimiter=$'\t' --with-nth=1 \
+
+# fzf searches the whole line (keys/group/command/summary all match) but shows
+# only the colored first field. --no-hscroll keeps the keys column pinned to the
+# left instead of scrolling away to reveal a match mid-line. Fields 2 (keys) and
+# 3 (command) are hidden and reused for the preview and the final output.
+feed "$scope" \
+  | fzf --ansi --delimiter=$'\t' --with-nth=1 --no-hscroll \
         --query="$query" \
-        --prompt='keys> ' \
+        --prompt="${scope:-keys}> " \
         --header='enter: show binding   ·   ctrl-r: reindex   ·   esc: quit' \
-        --bind="ctrl-r:reload($self __reload)" \
-        --preview="$self __doc {}" \
-        --preview-window='right:55%:wrap' \
-  | awk -F'\t' '{
-        line=$1; cmd=$2;
-        keys=line; sub(/  +.*/, "", keys);
-        printf "\033[1mPress:\033[0m %s\n\033[1mRuns:\033[0m  %s\n", keys, cmd
-    }'
+        --bind="ctrl-r:reload($SELF __reload $scope)" \
+        --preview="$SELF __doc {}" \
+        --preview-window='right:48%:wrap' \
+  | awk -F'\t' '{ printf "\033[1mPress:\033[0m %s\n\033[1mRuns:\033[0m  %s\n", $2, $3 }'
