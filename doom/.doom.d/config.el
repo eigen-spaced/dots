@@ -271,6 +271,17 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
   ;; whenever the status string is updated.
   (advice-add 'smudge-controller-update-player-status :after
               (lambda (&rest _) (force-mode-line-update t)))
+  ;; smudge's list-buffer keys (l = load more / next page, g = reload) are in its
+  ;; mode-maps, but in Doom these buffers come up in evil normal state where l/g
+  ;; are evil motions, so they never reach smudge. Re-bind for evil normal state
+  ;; so pagination works as documented. (smudge also binds a/r/f/u/k, likewise
+  ;; shadowed by evil — add here too if you start using them.)
+  (evil-define-key 'normal smudge-playlist-search-mode-map
+    "l" #'smudge-playlist-load-more
+    "g" #'smudge-playlist-reload)
+  (evil-define-key 'normal smudge-track-search-mode-map
+    "l" #'smudge-track-load-more
+    "g" #'smudge-track-reload)
   ;; Feb-2026 Spotify Web API compatibility shims (smudge is unmaintained).
   ;; Kept in a separate file so it's easy to migrate into a fork later.
   (load! "smudge-2026")
