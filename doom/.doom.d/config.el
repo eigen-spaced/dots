@@ -115,6 +115,20 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;;; //                   Misc                  //
 ;;; ---------------------------------------------
 
+;; ~/.doom.d is stow symlinks into ~/dotfiles, and `doom/find-file-in-private-config'
+;; (SPC f p) lists files via projectile's `find', which skips symlinks — so it
+;; came up empty. Reimplement it symlink-aware with `directory-files-recursively'
+;; (which includes symlinked files but doesn't chase symlinked dirs).
+(defun doom/find-file-in-private-config ()
+  "Find a file under `doom-user-dir' (symlink-aware; our config is stowed)."
+  (interactive)
+  (let* ((dir doom-user-dir)
+         (rel (mapcar (lambda (f) (file-relative-name f dir))
+                      (directory-files-recursively dir "" nil))))
+    (find-file (expand-file-name
+                (completing-read "Find file in config: " rel nil t)
+                dir))))
+
 (after! rustic
   (setq rustic-lsp-client 'lsp-mode))
 
