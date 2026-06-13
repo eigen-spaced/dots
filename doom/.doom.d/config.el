@@ -287,6 +287,17 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
   ;; line stays, and now-playing still shows in other buffers' mode-lines.
   (dolist (hook '(smudge-playlist-search-mode-hook smudge-track-search-mode-hook))
     (add-hook hook (lambda () (setq-local mode-line-format nil))))
+  ;; `l' (load-more) reprints the whole tabulated list and dumps point at the
+  ;; top despite remember-pos. Save/restore the line around the reprint so paging
+  ;; keeps you where you were. (Named advice => idempotent across config reloads.)
+  (defun cust/smudge-preserve-point (orig &rest args)
+    "Keep point on the same line when smudge reprints a list buffer."
+    (let ((line (line-number-at-pos)))
+      (apply orig args)
+      (goto-char (point-min))
+      (forward-line (1- line))))
+  (advice-add 'smudge-track-search-print    :around #'cust/smudge-preserve-point)
+  (advice-add 'smudge-playlist-search-print :around #'cust/smudge-preserve-point)
   ;; Feb-2026 Spotify Web API compatibility shims (smudge is unmaintained).
   ;; Kept in a separate file so it's easy to migrate into a fork later.
   (load! "smudge-2026")
