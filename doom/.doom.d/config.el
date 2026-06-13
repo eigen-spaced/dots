@@ -257,6 +257,23 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
         (sec (auth-source-pick-first-password :host "smudge" :user "client-secret")))
     (when id  (setq smudge-oauth2-client-id id))
     (when sec (setq smudge-oauth2-client-secret sec)))
+  ;; smudge's first Web-API call runs an OAuth flow that busy-waits (blocking
+  ;; Emacs) until you authorize in the browser — and it hides its own "waiting"
+  ;; message. Surface a clear instruction so the block isn't mistaken for a hang.
+  ;; Once authorized, the token persists (~/.emacs.d/.local/cache/oauth2.plstore)
+  ;; and later calls don't block.
+  (advice-add 'smudge-api-oauth2-auth :before
+              (lambda (&rest _)
+                (message "Smudge: a browser is opening — authorize Spotify there; Emacs resumes once you do.")))
+  ;; smudge refreshes its mode-line status var on a 5s poll timer but never calls
+  ;; `force-mode-line-update', so the indicator only repaints on the next user
+  ;; action — it looks stale after a direct play/pause in Spotify. Force a repaint
+  ;; whenever the status string is updated.
+  (advice-add 'smudge-controller-update-player-status :after
+              (lambda (&rest _) (force-mode-line-update t)))
+  ;; Feb-2026 Spotify Web API compatibility shims (smudge is unmaintained).
+  ;; Kept in a separate file so it's easy to migrate into a fork later.
+  (load! "smudge-2026")
   (global-smudge-remote-mode 1))
 
 ;; SPC o M -> Spotify (SPC o m is already `=mu4e', the mail launcher). smudge is
