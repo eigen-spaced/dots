@@ -4,6 +4,9 @@
 # Modes:
 #   (default)    session/window navigator: open sessions (MRU first, current
 #                last) with their windows nested underneath
+#   --quick      quick window switcher: a centered native menu of the current
+#                session's windows; pressing a window's number jumps to it
+#                instantly (esc closes). Labels match the status bar.
 #   --rename     rename the current session in a small popup (fzf as the
 #                input field, pre-filled with the current name)
 #   --projects   project picker: projectile-style discovery under
@@ -118,6 +121,29 @@ preview() {  # $1 = meta field
   esac
 }
 
+## Quick window switcher #####################################################
+
+quick_switch() {  # $1 = client name (passed by the binding for menu display)
+  local client=${1:-} menu=() idx pid cmd dir auto name active label key
+  while IFS=$'\t' read -r idx pid cmd dir auto name active; do
+    if [[ $auto == 1 ]]; then
+      (( ${#dir} > 12 )) && dir="${dir:0:12}…"
+      label="$("${0%/*}/tmux-label.sh" "$pid" "$cmd")·$dir"
+    else
+      label=$name
+    fi
+    [[ $active == 1 ]] && label="$label  ◂"
+    key=$idx; (( idx > 9 )) && key=''
+    menu+=("$label" "$key" "select-window -t :$idx")
+  done < <(tmux list-windows \
+    -F "#{window_index}	#{pane_pid}	#{pane_current_command}	#{b:pane_current_path}	#{?automatic-rename,1,0}	#{window_name}	#{?window_active,1,0}")
+  if [[ -n $client ]]; then
+    tmux display-menu -c "$client" -T ' windows ' -x C -y C "${menu[@]}"
+  else
+    printf '%s\n' "${menu[@]}"  # dry run for testing
+  fi
+}
+
 ## Rename ####################################################################
 
 rename_session() {
@@ -137,6 +163,7 @@ rename_session() {
 case ${1:-} in
   --preview) preview "$2"; exit 0 ;;
   --rename)  rename_session; exit 0 ;;
+  --quick)   quick_switch "${2:-}"; exit 0 ;;
 esac
 
 MODE=sessions LIST_ONLY=0
