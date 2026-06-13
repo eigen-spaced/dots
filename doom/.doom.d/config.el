@@ -281,7 +281,12 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
     "g" #'smudge-playlist-reload)
   (evil-define-key 'normal smudge-track-search-mode-map
     "l" #'smudge-track-load-more
-    "g" #'smudge-track-reload)
+    "g" #'smudge-track-reload
+    (kbd "RET") #'smudge-track-select) ; play track-at-point (smudge only binds M-RET)
+  ;; Declutter smudge's list buffers by dropping the mode-line. The column header
+  ;; line stays, and now-playing still shows in other buffers' mode-lines.
+  (dolist (hook '(smudge-playlist-search-mode-hook smudge-track-search-mode-hook))
+    (add-hook hook (lambda () (setq-local mode-line-format nil))))
   ;; Feb-2026 Spotify Web API compatibility shims (smudge is unmaintained).
   ;; Kept in a separate file so it's easy to migrate into a fork later.
   (load! "smudge-2026")
