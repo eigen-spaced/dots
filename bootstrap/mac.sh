@@ -19,4 +19,15 @@ brew install --cask ghostty
 # separately; run `doom sync` after install so the native-comp cache matches.
 brew install d12frosted/emacs-plus/emacs-plus@30
 
+# libvips ships `vipsthumbnail', which Doom's dirvish uses to render image/
+# video/pdf thumbnails in the file manager.
+brew install vips
+
+# Hammerspoon: scriptable global macOS hotkeys (Lua) that fire
+# `emacsclient -e (...)' at the Emacs daemon — the deep-Emacs-integration layer
+# (open org folder, dirvish, etc.). Config is the `hammerspoon' stow package
+# (~/.hammerspoon/init.lua). Edit-anywhere (emacs-everywhere) would additionally
+# need an Accessibility-permission grant for Hammerspoon in System Settings.
+brew install --cask hammerspoon
+
 source "$SCRIPT_DIR/common.sh"

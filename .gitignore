@@ -19,3 +19,7 @@ zsh/.config/zsh/.zcompdump
 
 .lsp
 .clj-kondo
+
+# Doom: machine-local personal values (name/email). Tracked template lives in
+# doom/.doom.d/private.el.example.
+doom/.doom.d/private.el

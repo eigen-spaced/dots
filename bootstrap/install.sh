@@ -41,11 +41,14 @@ elif ! $dotfiles_ready; then
     echo "Skipping stow step: dotfiles unavailable."
 else
     cd "$DOTFILES_DIR"
-    for pkg in nvim ghostty tmux zsh scripts; do
+    # --no-folding => individual file symlinks (never a directory symlink), so
+    # apps that write their own state into e.g. ~/.hammerspoon don't pollute the
+    # dotfiles repo.
+    for pkg in nvim ghostty tmux zsh scripts hammerspoon doom; do
         if [[ -d "$pkg" ]]; then
             read -rp "Stow $pkg? [y/N] " ans
             if [[ "$ans" =~ ^[Yy]$ ]]; then
-                stow --restow "$pkg"
+                stow --no-folding --restow "$pkg"
             fi
         else
             echo "Skipping $pkg (not found in $DOTFILES_DIR)."
@@ -150,4 +153,15 @@ EOF
     else
         echo "Skipped launchd reminder agent."
     fi
+fi
+
+# --- Post-install: Emacs integration (macOS only) -----------------------------
+# The mu4e/smudge/emacs-everywhere stack needs interactive, credential-bearing
+# steps (app password, Spotify creds, Accessibility grant) that can't be baked
+# into an unattended bootstrap. Run the guided helper when ready.
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo
+    echo "Emacs deep-integration (mu4e/smudge/emacs-everywhere) has interactive"
+    echo "setup steps. When ready, run:  bootstrap/setup-emacs-integration.sh"
+    echo "Reference: bootstrap/emacs-integration.md"
 fi

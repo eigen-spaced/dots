@@ -1,0 +1,7 @@
+;;; private.el.example -*- lexical-binding: t; -*-
+;; Template for the git-ignored private.el. On a new machine, copy this to
+;; private.el (same dir) and fill in your details, then `stow --no-folding doom'.
+;; config.el loads it via `(load! "private" nil t)'.
+
+(setq user-full-name   "Your Name"
+      user-mail-address "you@example.com")
