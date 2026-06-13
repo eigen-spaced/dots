@@ -93,19 +93,6 @@ eval "$(mise activate zsh)"
 # pip safety: require a virtualenv unless gpip is used (defined in zsh-functions)
 export PIP_REQUIRE_VIRTUALENV=true
 
-# pnpm (path differs by OS)
-if [[ -n $IS_MAC ]]; then
-    export PNPM_HOME="$HOME/Library/pnpm"
-elif [[ -n $IS_ARCH ]]; then
-    export PNPM_HOME="$HOME/.local/share/pnpm"
-fi
-if [[ -n "$PNPM_HOME" ]]; then
-    case ":$PATH:" in
-        *":$PNPM_HOME:"*) ;;
-        *) export PATH="$PNPM_HOME:$PATH" ;;
-    esac
-fi
-
 # Dictionary helper
 [[ -f "$HOME/.config/scripts/define.sh" ]] && source "$HOME/.config/scripts/define.sh"
 
@@ -116,3 +103,12 @@ export PATH="$HOME/.config/scripts:$PATH"
 [[ -f "$HOME/.zshrc-personal" ]] && source "$HOME/.zshrc-personal"
 
 eval "$(zoxide init zsh)"
+
+# pnpm — the binary itself is managed by mise; PNPM_HOME is only the
+# directory where `pnpm add -g` puts global package binaries.
+export PNPM_HOME="$HOME/Library/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
+# pnpm end
