@@ -88,7 +88,7 @@ vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
 api.nvim_create_autocmd("TextYankPost", {
   group = "bufcheck",
   callback = function()
-    vim.highlight.on_yank { higroup = "Search", timeout = 250, on_visual = true }
+    vim.hl.on_yank { higroup = "Search", timeout = 250, on_visual = true }
   end,
   pattern = "*",
 })
@@ -96,9 +96,9 @@ api.nvim_create_autocmd("TextYankPost", {
 -- Enable spell checking for certain filetypes
 api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
   group = "bufcheck",
-  pattern = { "*.txt", "*.md", "*.tex" },
+  pattern = { "*.txt", "*.md", "*.tex", "*.mdx" },
   callback = function()
-    local buf_path = vim.api.nvim_buf_get_name(1)
+    local buf_path = vim.api.nvim_buf_get_name(0)
     local config_path = vim.fn.stdpath("data")
 
     if config_path ~= nil then
@@ -141,32 +141,4 @@ vim.api.nvim_create_autocmd("FileType", {
   callback = function()
     vim.opt_local.conceallevel = 0
   end,
-})
-
-vim.api.nvim_create_autocmd("CmdlineEnter", {
-  group = vim.api.nvim_create_augroup(
-    "cmdheight_1_on_cmdlineenter",
-    { clear = true }
-  ),
-  desc = "Don't hide the status line when typing a command",
-  command = ":set cmdheight=1",
-})
-
-vim.api.nvim_create_autocmd("CmdlineLeave", {
-  group = vim.api.nvim_create_augroup(
-    "cmdheight_0_on_cmdlineleave",
-    { clear = true }
-  ),
-  desc = "Hide cmdline when not typing a command",
-  command = ":set cmdheight=0",
-})
-
-vim.api.nvim_create_autocmd("BufWritePost", {
-  group = vim.api.nvim_create_augroup(
-    "hide_message_after_write",
-    { clear = true }
-  ),
-  desc = "Get rid of message after writing a file",
-  pattern = { "*" },
-  command = "redrawstatus",
 })

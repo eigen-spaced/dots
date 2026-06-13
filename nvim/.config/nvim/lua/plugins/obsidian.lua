@@ -8,6 +8,7 @@ return {
   ---@module 'obsidian'
   ---@type obsidian.config
   opts = {
+    legacy_commands = false,
     workspaces = {
       {
         name = "main",
@@ -15,7 +16,6 @@ return {
       },
     },
     completion = {
-      nvim_cmp = false,
       min_chars = 0,
     },
     picker = {
