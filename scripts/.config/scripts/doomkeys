@@ -1,0 +1,129 @@
+#!/usr/bin/env bash
+# doomkeys — a searchable index of your *live* Doom Emacs keybindings.
+#
+#   doomkeys                  fuzzy-search every binding (fzf)
+#   doomkeys dired            fzf, pre-filtered to "dired"   (the "dired index")
+#   doomkeys dired rename     fzf, pre-filtered to those words
+#   doomkeys -g dired         print the dired index as plain text (no fzf)
+#   doomkeys -l               list all groups (packages/modes) with counts
+#   doomkeys -r               force-rebuild the index from the running daemon
+#
+# The index is generated from the *running* Emacs daemon, so it reflects your
+# actual loaded config (personal binds included). It auto-rebuilds when your
+# Doom config changes. TSV columns: group, state, keys, command, summary.
+
+set -u
+
+EMACSCLIENT="${EMACSCLIENT:-/opt/homebrew/bin/emacsclient}"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink "${BASH_SOURCE[0]}" || echo "${BASH_SOURCE[0]}")")" 2>/dev/null && pwd)"
+[ -z "${SCRIPT_DIR:-}" ] && SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+EXPORTER="$SCRIPT_DIR/doomkeys-export.el"
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/doomkeys"
+CACHE="$CACHE_DIR/keys.tsv"
+DOOMDIR="${DOOMDIR:-$HOME/.doom.d}"
+
+die() { printf '\033[31m%s\033[0m\n' "$*" >&2; exit 1; }
+
+daemon_up() { "$EMACSCLIENT" -e t >/dev/null 2>&1; }
+
+rebuild() {
+    daemon_up || die "Emacs daemon isn't running — start Emacs, then retry."
+    [ -f "$EXPORTER" ] || die "Missing exporter: $EXPORTER"
+    mkdir -p "$CACHE_DIR"
+    local n
+    n=$("$EMACSCLIENT" -e "(progn (load \"$EXPORTER\" nil t) (doomkeys-export \"$CACHE\"))" 2>/dev/null) \
+        || die "Export failed (is the daemon healthy?)."
+    printf '\033[32mIndexed %s bindings.\033[0m\n' "${n//\"/}" >&2
+}
+
+stale() {
+    # rebuild if cache is missing or older than any Doom config file
+    [ -f "$CACHE" ] || return 0
+    local f
+    for f in "$DOOMDIR/config.el" "$DOOMDIR/init.el" "$DOOMDIR/packages.el"; do
+        [ -f "$f" ] && [ "$f" -nt "$CACHE" ] && return 0
+    done
+    return 1
+}
+
+ensure_cache() { stale && rebuild; :; }
+
+# format the cached TSV into fzf display lines: an aligned visible field, then a
+# hidden tab-separated bare command for the preview/selection helpers to parse.
+feed() {
+    awk -F'\t' '{ printf "%-18s %-22s %-34s %s\t%s\n", $3, $1"/"$2, $4, $5, $4 }' "$CACHE"
+}
+
+# --- hidden helpers (invoked by fzf) -----------------------------------------
+case "${1:-}" in
+    __doc)   # render a command's full docstring in the preview pane
+        line="${2:-}"; cmd="${line##*$'\t'}"
+        [ -z "$cmd" ] && exit 0
+        printf '\033[1m%s\033[0m\n\n' "$cmd"
+        "$EMACSCLIENT" -e "(or (documentation '$cmd) \"(no docstring)\")" 2>/dev/null \
+            | sed -e 's/^"//' -e 's/"$//' -e 's/\\n/\n/g' -e 's/\\"/"/g' -e 's/\\\\/\\/g'
+        exit 0 ;;
+    __feed)   feed; exit 0 ;;
+    __reload) rebuild >/dev/null 2>&1; feed; exit 0 ;;
+esac
+
+# --- arg parsing -------------------------------------------------------------
+mode="fzf"
+group=""
+case "${1:-}" in
+    -r|--refresh) rebuild; exit 0 ;;
+    -l|--list)
+        ensure_cache
+        cut -f1 "$CACHE" | sort | uniq -c | sort -rn \
+            | awk '{printf "%6d  %s\n", $1, $2}'
+        exit 0 ;;
+    -g|--group)
+        [ -n "${2:-}" ] || die "Usage: doomkeys -g <group>"
+        mode="plain"; group="$2" ;;
+    -h|--help)
+        cat <<'EOF'
+doomkeys — a searchable index of your *live* Doom Emacs keybindings.
+
+  doomkeys                fuzzy-search every binding (fzf)
+  doomkeys dired          fzf, pre-filtered to "dired"  (the "dired index")
+  doomkeys dired rename   fzf, pre-filtered to those words
+  doomkeys -g <group>     print a group's index as plain text (no fzf)
+  doomkeys -l             list all groups (packages/modes) with counts
+  doomkeys -r             force-rebuild the index from the running daemon
+  doomkeys -h             this help
+
+In fzf: type to filter · Enter shows the binding · Ctrl-R reindexes · Esc quits.
+The index comes from the running Emacs daemon (reflects your real config) and
+auto-rebuilds when ~/.doom.d/{config,init,packages}.el change.
+EOF
+        exit 0 ;;
+esac
+
+ensure_cache
+
+if [ "$mode" = "plain" ]; then
+    awk -F'\t' -v g="$group" '$1==g {printf "%-20s %-9s %-34s %s\n", $3, $2, $4, $5}' "$CACHE" \
+        | sort
+    exit 0
+fi
+
+command -v fzf >/dev/null 2>&1 || die "fzf not found. Install it, or use: doomkeys -g <group>"
+
+query="$*"
+# fzf searches the whole line (group/keys/cmd/summary all match) but displays
+# only the formatted first field (--with-nth=1); the trailing field is the bare
+# command, used by the preview and the selection output below.
+self="$0"
+feed \
+  | fzf --delimiter=$'\t' --with-nth=1 \
+        --query="$query" \
+        --prompt='keys> ' \
+        --header='enter: show binding   ·   ctrl-r: reindex   ·   esc: quit' \
+        --bind="ctrl-r:reload($self __reload)" \
+        --preview="$self __doc {}" \
+        --preview-window='right:55%:wrap' \
+  | awk -F'\t' '{
+        line=$1; cmd=$2;
+        keys=line; sub(/  +.*/, "", keys);
+        printf "\033[1mPress:\033[0m %s\n\033[1mRuns:\033[0m  %s\n", keys, cmd
+    }'

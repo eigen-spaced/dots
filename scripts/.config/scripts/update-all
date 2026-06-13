@@ -1,0 +1,86 @@
+#!/bin/bash
+# update-all — upgrade every global package manager in one go.
+#
+#   update-all            run all updates; failures are reported but never
+#                         stop the remaining steps
+#   update-all --remind   notify (macOS notification) if the last run is
+#                         REMIND_DAYS old or more; used by the launchd agent
+#
+# Covers: brew, rustup, cargo-installed crates, mise-managed tools
+# (node, python, go, deno, uv, pnpm, ...), uv tools, pnpm globals,
+# npm globals.
+
+set -u
+
+REMIND_DAYS=14
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/update-all"
+STAMP="$STATE_DIR/last-run"
+
+# Make sure everything is reachable even from a non-interactive context.
+export PNPM_HOME="$HOME/Library/pnpm"
+export PATH="$PNPM_HOME/bin:$HOME/.local/share/mise/shims:$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# ---------------------------------------------------------------- reminder
+if [ "${1:-}" = "--remind" ]; then
+    if [ -f "$STAMP" ]; then
+        age_days=$(( ($(date +%s) - $(stat -f %m "$STAMP")) / 86400 ))
+        [ "$age_days" -lt "$REMIND_DAYS" ] && exit 0
+        msg="Last full update was $age_days days ago."
+    else
+        msg="No full update on record."
+    fi
+    osascript -e "display notification \"$msg Run update-all in a terminal.\" with title \"Package updates due\"" || true
+    exit 0
+fi
+
+# ----------------------------------------------------------------- updates
+failed=()
+
+step() {
+    local name="$1"; shift
+    printf '\n\033[1m━━━ %s\033[0m\n' "$name"
+    if "$@"; then
+        printf '\033[32m✓ %s\033[0m\n' "$name"
+    else
+        printf '\033[31m✗ %s failed — moving on\033[0m\n' "$name"
+        failed+=("$name")
+    fi
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+if have brew; then
+    step "brew update"  brew update
+    step "brew upgrade" brew upgrade
+    step "brew cleanup" brew cleanup
+fi
+
+have rustup && step "rustup update" rustup update
+
+if have cargo; then
+    # `cargo install` without --force is a no-op when already newest.
+    for crate in $(cargo install --list | sed -n 's/^\([A-Za-z0-9_-]*\) v[0-9].*:$/\1/p'); do
+        step "cargo: $crate" cargo install --locked "$crate"
+    done
+fi
+
+# mise-managed tools (node, python, go, deno, uv, pnpm, ...)
+have mise && step "mise upgrade" mise upgrade
+
+have uv && step "uv tools" uv tool upgrade --all
+
+# Global JS packages (pnpm respects minimumReleaseAge from global config)
+have pnpm && step "pnpm globals" pnpm update -g
+have npm  && step "npm globals"  npm update -g
+
+# ----------------------------------------------------------------- summary
+mkdir -p "$STATE_DIR" && touch "$STAMP"
+
+printf '\n\033[1m━━━ Summary\033[0m\n'
+if [ "${#failed[@]}" -eq 0 ]; then
+    printf '\033[32mAll updates completed successfully.\033[0m\n'
+else
+    printf '\033[31m%d step(s) failed:\033[0m\n' "${#failed[@]}"
+    printf '  - %s\n' "${failed[@]}"
+    exit 1
+fi
