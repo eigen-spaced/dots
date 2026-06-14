@@ -45,8 +45,12 @@
       "* %?\n%U" :empty-lines 1)
      ("l" "Task from here" entry (file ,(cust/org-file "inbox.org"))
       "* TODO %?\n%U\n%a" :empty-lines 1)
-     ("r" "Reading list"   entry (file ,(cust/org-file "reading.org"))
-      "* TODO %a\n%U\n%i%?" :empty-lines 1))
+     ("r" "Reading item"   entry (file ,(cust/org-file "reading.org"))
+      "* TODO %?\n%U" :empty-lines 1)
+     ;; Used by the browser bookmarklet via org-protocol. Saves the page's
+     ;; title+URL (and any selection) to the reading list instantly — no popup.
+     ("w" "Web → reading list" entry (file ,(cust/org-file "reading.org"))
+      "* TODO %:annotation\n%U\n%:initial" :immediate-finish t :empty-lines 1))
 
    ;; Clocking: keep clocks in a drawer, drop zero-time ones, persist history.
    org-clock-into-drawer t
@@ -84,3 +88,26 @@
 (map! :leader
       :desc "GTD dashboard" "o a g" (cmd! (org-agenda nil "g"))
       :desc "Reading list"  "o a r" (cmd! (org-agenda nil "r")))
+
+;; Make browser captures (org-protocol) work even before any org file has been
+;; opened this session: load org-protocol shortly after the daemon settles.
+;; (It's required in the `after! org' block too, for the in-Emacs path.)
+(run-with-idle-timer 2 nil (lambda () (require 'org-protocol nil t)))
+
+;; Insert a source block, choosing the language via completion (vertico).
+;; SPC m B in an org buffer.
+(defun cust/org-insert-src-block (lang)
+  "Insert an Org #+begin_src block for LANG and place point inside it."
+  (interactive
+   (list (completing-read
+          "Source block language: "
+          '("emacs-lisp" "shell" "bash" "python" "js" "typescript" "tsx" "json"
+            "yaml" "toml" "c" "cpp" "rust" "go" "clojure" "java" "ruby" "lua"
+            "sql" "html" "css" "scss" "graphql" "dockerfile" "makefile" "nix"
+            "markdown" "org" "text" "conf"))))
+  (insert (format "#+begin_src %s\n\n#+end_src\n" lang))
+  (forward-line -2)
+  (when (fboundp 'evil-insert-state) (evil-insert-state)))
+
+(map! :after org :map org-mode-map :localleader
+      :desc "Source block" "B" #'cust/org-insert-src-block)
