@@ -61,6 +61,9 @@
 
 (setq display-line-numbers-type t)
 
+;; Auto-compile missing tree-sitter grammars on first file open (no prompt).
+(setq treesit-auto-install-grammar 'always)
+
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
 
@@ -202,17 +205,17 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
         mu4e-sent-messages-behavior 'delete)
 
   (set-email-account! "gmail"
-    `((user-mail-address      . ,user-mail-address)
-      (user-full-name         . ,user-full-name)
-      (mu4e-sent-folder       . "/gmail/[Gmail]/Sent Mail")
-      (mu4e-drafts-folder     . "/gmail/[Gmail]/Drafts")
-      (mu4e-trash-folder      . "/gmail/[Gmail]/Trash")
-      (mu4e-refile-folder     . "/gmail/[Gmail]/All Mail")
-      (smtpmail-smtp-user     . ,user-mail-address)
-      (smtpmail-smtp-server   . "smtp.gmail.com")
-      (smtpmail-smtp-service  . 587)
-      (smtpmail-stream-type   . starttls))
-    t))
+                      `((user-mail-address      . ,user-mail-address)
+                        (user-full-name         . ,user-full-name)
+                        (mu4e-sent-folder       . "/gmail/[Gmail]/Sent Mail")
+                        (mu4e-drafts-folder     . "/gmail/[Gmail]/Drafts")
+                        (mu4e-trash-folder      . "/gmail/[Gmail]/Trash")
+                        (mu4e-refile-folder     . "/gmail/[Gmail]/All Mail")
+                        (smtpmail-smtp-user     . ,user-mail-address)
+                        (smtpmail-smtp-server   . "smtp.gmail.com")
+                        (smtpmail-smtp-service  . 587)
+                        (smtpmail-stream-type   . starttls))
+                      t))
 
 ;;; ---------------------------------------------
 ;;; //             Spotify (smudge)            //
@@ -303,15 +306,15 @@ No UI, and no OAuth needed for the AppleScript transport."
 ;; autoloaded, so these pull it in on first use.
 (map! :leader
       (:prefix ("o M" . "music")
-       :desc "Connect / wake"    "c"   #'cust/smudge-connect
-       :desc "Disconnect / hide" "C"   #'cust/smudge-disconnect
-       :desc "Track search"      "s"   #'smudge-track-search
-       :desc "Playlist search"   "p"   #'smudge-playlist-search
-       :desc "My playlists"      "m"   #'smudge-my-playlists
-       :desc "Add playing→playlist" "a" #'smudge-add-playing-track-to-playlist
-       :desc "Play/pause"        "SPC" #'smudge-controller-toggle-play
-       :desc "Next track"        "n"   #'smudge-controller-next-track
-       :desc "Previous track"    "N"   #'smudge-controller-previous-track))
+       :desc "Connect / wake"       "c"   #'cust/smudge-connect
+       :desc "Disconnect / hide"    "C"   #'cust/smudge-disconnect
+       :desc "Track search"         "s"   #'smudge-track-search
+       :desc "Playlist search"      "p"   #'smudge-playlist-search
+       :desc "My playlists"         "m"   #'smudge-my-playlists
+       :desc "Add playing→playlist" "a"   #'smudge-add-playing-track-to-playlist
+       :desc "Play/pause"           "SPC" #'smudge-controller-toggle-play
+       :desc "Next track"           "n"   #'smudge-controller-next-track
+       :desc "Previous track"       "N"   #'smudge-controller-previous-track))
 
 ;;; ---------------------------------------------
 ;;; //          emacs-everywhere (macOS)        //
