@@ -52,6 +52,13 @@
   (variable-pitch-mode 1))
 
 (add-hook 'org-mode-hook #'cust/org-prose-serif)
+
+;; Centered reading column in eww — OFF by default (eww keeps its normal width);
+;; toggle a centered, fixed-width column per-buffer with `SPC m c' (olivetti).
+(after! olivetti (setq olivetti-body-width 80))
+(map! :after eww :map eww-mode-map :localleader
+      :desc "Toggle centered column" "c" #'olivetti-mode)
+
 (setq display-line-numbers-type t)
 
 ;; `org-directory' must be set before org loads.

@@ -59,3 +59,6 @@
 ;; live dev; edits there are picked up by re-eval / `doom sync'.
 (package! smudge :recipe (:host github :repo "eigen-spaced/smudge"
                           :branch "main"))
+
+;; Centered, fixed-width reading column (used in eww for distraction-free reading).
+(package! olivetti)
