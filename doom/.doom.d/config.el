@@ -77,6 +77,9 @@
   ;; install pyright/pylsp when only pyrefly is present. `ty-ls' (Astral's `ty')
   ;; is also disabled so pyrefly is the sole type checker — but `ruff' stays on
   ;; (it's complementary: lint/format/imports, not type-checking).
+  ;; NOTE: pyrefly (v1.0) advertises no `semanticTokensProvider', so the
+  ;; semhl coloring above doesn't apply to Python — the tree-sitter rule below
+  ;; (`+python-ts-camelcase-types-h') covers the visible gap instead.
   (dolist (client '(pyright pyls mspyls ty-ls))
     (add-to-list 'lsp-disabled-clients client))
   (lsp-register-client
@@ -85,6 +88,32 @@
     :activation-fn (lsp-activate-on "python")
     :priority 2
     :server-id 'pyrefly)))
+
+;; python-ts-mode (unlike nvim-treesitter) doesn't color CamelCase identifiers
+;; as types, and pyrefly emits no semantic tokens — so imported class names
+;; (SentenceTransformer, CacheEntry, …) would render as plain variables. Add a
+;; tree-sitter rule for PEP 8's "CamelCase == class" convention: an identifier
+;; starting uppercase with at least one lowercase (excludes ALL_CAPS constants
+;; and snake_case). Mirrors what neovim shows.
+(after! python
+  (when (modulep! :lang python +tree-sitter)
+    (defun +python-ts-camelcase-types-h ()
+      "Fontify CamelCase identifiers as types in `python-ts-mode'."
+      (when (treesit-parser-list nil 'python)
+        (setq treesit-font-lock-settings
+              (append treesit-font-lock-settings
+                      (treesit-font-lock-rules
+                       :language 'python
+                       :feature 'cust-camel-type
+                       :override t
+                       '(((identifier) @font-lock-type-face
+                          (:match "\\`[A-Z][A-Za-z0-9_]*[a-z]" @font-lock-type-face))))))
+        (let ((fl (copy-tree treesit-font-lock-feature-list)))
+          (cl-pushnew 'cust-camel-type (nth 3 fl))
+          (setq treesit-font-lock-feature-list fl))
+        (treesit-font-lock-recompute-features)
+        (when font-lock-mode (font-lock-flush))))
+    (add-hook 'python-ts-mode-hook #'+python-ts-camelcase-types-h)))
 
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
