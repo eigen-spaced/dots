@@ -64,6 +64,13 @@
 ;; Auto-compile missing tree-sitter grammars on first file open (no prompt).
 (setq treesit-auto-install-grammar 'always)
 
+;; LSP semantic tokens: let clangd/rust-analyzer classify members, enum
+;; constants, namespaces, user types, etc. (things tree-sitter can't know from
+;; syntax alone), layered on top of *-ts-mode. The carbonfox theme colors the
+;; `lsp-face-semhl-*' faces to match. Costs a small clangd round-trip per edit.
+(after! lsp-mode
+  (setq lsp-semantic-tokens-enable t))
+
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
 

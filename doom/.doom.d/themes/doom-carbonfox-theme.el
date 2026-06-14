@@ -117,6 +117,46 @@ Can be an integer to determine the exact padding."
    (font-lock-regexp-grouping-backslash :foreground teal)
    (font-lock-regexp-grouping-construct :foreground teal)
 
+   ;;;; tree-sitter (Emacs 30 *-ts-mode) faces — faithful to carbonfox.nvim
+   ;; Mapped from nightfox's carbonfox spec (EdenEast/nightfox.nvim) onto the
+   ;; faces c/c++/rust-ts-mode actually emit at font-lock level 4:
+   ;;   functions & members  -> blue          (syn.func / syn.field)
+   ;;   types                 -> cyan, italic  (builtin types dominate; @type.builtin)
+   ;;   keywords              -> magenta, italic
+   ;;   namespaces/qualifiers -> cyan          (font-lock-constant-face: `std', `Foo::')
+   ;;   numbers               -> orange        (already, via `numbers')
+   ;;   operators & brackets  -> grey          (nightfox keeps these subdued)
+   ;; Function weight is bold — a deliberate nudge past nightfox for extra pop.
+   ((font-lock-function-name-face &override) :foreground blue :weight 'bold)
+   (font-lock-function-call-face :foreground blue :weight 'bold)
+   ((font-lock-type-face &override) :foreground cyan :slant 'italic)
+   ((font-lock-keyword-face &override) :slant 'italic)
+   ((font-lock-constant-face &override) :foreground cyan)
+   ((font-lock-property-use-face &override) :foreground blue)
+   ((font-lock-property-name-face &override) :foreground blue)
+   (font-lock-operator-face :foreground fg-alt)
+   (font-lock-bracket-face :foreground fg-alt)
+   (font-lock-delimiter-face :foreground fg-alt)
+   (font-lock-punctuation-face :foreground fg-alt)
+   (font-lock-misc-punctuation-face :foreground fg-alt)
+
+   ;;;; LSP semantic tokens (lsp-mode) — type-aware highlighting from the server.
+   ;; Layered over tree-sitter, these resolve what syntax can't: members, enum
+   ;; constants, namespaces, user-defined types. Colors match the carbonfox roles
+   ;; above. Enabled via `lsp-semantic-tokens-enable' in config.el.
+   (lsp-face-semhl-property  :foreground blue)              ; members: transport_, .playing
+   (lsp-face-semhl-member    :foreground blue)
+   (lsp-face-semhl-constant  :foreground red)               ; enum constants: memory_order_relaxed
+   (lsp-face-semhl-namespace :foreground cyan)              ; std, Foo::
+   (lsp-face-semhl-class     :foreground type :slant 'italic) ; user types: AudioEngine (teal)
+   (lsp-face-semhl-type      :foreground type :slant 'italic)
+   (lsp-face-semhl-enum      :foreground type :slant 'italic)
+   (lsp-face-semhl-struct    :foreground type :slant 'italic)
+   (lsp-face-semhl-interface :foreground type :slant 'italic)
+   (lsp-face-semhl-method    :foreground blue :weight 'bold)
+   (lsp-face-semhl-function  :foreground blue :weight 'bold)
+   (lsp-face-semhl-macro     :foreground pink-bright)
+
    (hl-line :background base2)
    (isearch :foreground fg :background sel1)
    (lazy-highlight :foreground fg :background base4)
