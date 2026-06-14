@@ -141,14 +141,22 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
         (save-buffer))
       (message "Reading list ← %s" title))))
 
+(defun cust/org-entry-url ()
+  "Return the first http(s) URL in the current org entry, or nil.
+Matches both bracket links ([[url][desc]]) and bare URLs, in the heading or
+body (the regex stops at \"]\", so it returns a bracket link's target cleanly)."
+  (save-excursion
+    (org-back-to-heading t)
+    (let ((end (save-excursion (org-end-of-subtree t t) (point))))
+      (when (re-search-forward "https?://[^][ \t\n\"<>]+" end t)
+        (match-string-no-properties 0)))))
+
 (defun cust/org-read-in-eww ()
-  "Open the link in the current org entry in eww, in a clean readable view."
+  "Open the first link in the current org entry in eww, in a clean readable view."
   (interactive)
   (require 'eww)
-  (let* ((heading (org-get-heading t t t t))
-         (url (and (string-match org-link-bracket-re heading)
-                   (match-string 1 heading))))
-    (unless url (user-error "No [[link]] in this entry"))
+  (let ((url (cust/org-entry-url)))
+    (unless url (user-error "No URL in this entry"))
     ;; Once the page first renders: switch to eww's readable (article) view and
     ;; maximize its window so the article opens full-frame instead of in a split.
     ;; (winner-mode is on, so `SPC w u' brings the previous layout back.)
@@ -160,6 +168,15 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
       (add-hook 'eww-after-render-hook hook))
     (eww url)))
 
+(defun cust/org-agenda-read-in-eww ()
+  "From an org-agenda line, open that entry's link in eww."
+  (interactive)
+  (org-agenda-with-point-at-orig-entry nil (cust/org-read-in-eww)))
+
 (map! :leader :desc "Add clipboard URL → reading" "o a R" #'cust/org-reading-add-from-clipboard)
 (map! :after org :map org-mode-map :localleader
       :desc "Read entry in eww" "R" #'cust/org-read-in-eww)
+;; In the agenda (e.g. SPC o a r), entries aren't org-mode, so bind a key there
+;; too: SPC m R reads the entry under point in eww.
+(map! :after org-agenda :map org-agenda-mode-map :localleader
+      :desc "Read entry in eww" "R" #'cust/org-agenda-read-in-eww)
