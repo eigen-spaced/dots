@@ -26,6 +26,9 @@
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
 
+;; GTD-lite org setup: agenda, capture, refile, reading list, roam, clocking.
+(load! "org-config")
+
 ;;; ---------------------------------------------
 ;;; //              Keybindings                //
 ;;; ---------------------------------------------
