@@ -40,6 +40,7 @@
   '(org-block org-block-begin-line org-block-end-line org-code org-verbatim
     org-table org-formula org-meta-line org-document-info-keyword
     org-special-keyword org-property-value org-drawer
+    font-lock-comment-face font-lock-comment-delimiter-face
     line-number line-number-current-line)
   "Org faces pinned to `fixed-pitch' (monospace) under `cust/org-prose-serif'.")
 
