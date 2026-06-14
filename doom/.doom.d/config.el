@@ -94,11 +94,20 @@
 ;; (SentenceTransformer, CacheEntry, …) would render as plain variables. Add a
 ;; tree-sitter rule for PEP 8's "CamelCase == class" convention: an identifier
 ;; starting uppercase with at least one lowercase (excludes ALL_CAPS constants
-;; and snake_case). Mirrors what neovim shows.
+;; and snake_case).
+;;
+;; carbonfox.nvim splits types two ways: builtin types (bool/str/int/float/…)
+;; are cyan, user/imported types (SentenceTransformer, Optional, …) are teal.
+;; python-ts-mode puts *both* on `font-lock-type-face' (cyan, set above), so the
+;; builtins are already right — this rule just repaints the CamelCase ones teal
+;; via a dedicated face (themed in doom-carbonfox-theme.el).
+(defface cust-python-user-type-face '((t :inherit font-lock-type-face))
+  "CamelCase (user-defined) types in `python-ts-mode'; themed teal in carbonfox."
+  :group 'doom-themes)
 (after! python
   (when (modulep! :lang python +tree-sitter)
     (defun +python-ts-camelcase-types-h ()
-      "Fontify CamelCase identifiers as types in `python-ts-mode'."
+      "Fontify CamelCase identifiers as user types in `python-ts-mode'."
       (when (treesit-parser-list nil 'python)
         (setq treesit-font-lock-settings
               (append treesit-font-lock-settings
@@ -106,8 +115,8 @@
                        :language 'python
                        :feature 'cust-camel-type
                        :override t
-                       '(((identifier) @font-lock-type-face
-                          (:match "\\`[A-Z][A-Za-z0-9_]*[a-z]" @font-lock-type-face))))))
+                       '(((identifier) @cust-python-user-type-face
+                          (:match "\\`[A-Z][A-Za-z0-9_]*[a-z]" @cust-python-user-type-face))))))
         (let ((fl (copy-tree treesit-font-lock-feature-list)))
           (cl-pushnew 'cust-camel-type (nth 3 fl))
           (setq treesit-font-lock-feature-list fl))

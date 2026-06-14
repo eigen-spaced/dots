@@ -140,6 +140,10 @@ Can be an integer to determine the exact padding."
    (font-lock-punctuation-face :foreground fg-alt)
    (font-lock-misc-punctuation-face :foreground fg-alt)
 
+   ;; CamelCase user types in python-ts-mode (see config.el): teal, to mirror
+   ;; carbonfox.nvim's @type vs @type.builtin split (builtins stay cyan above).
+   (cust-python-user-type-face :foreground type :slant 'italic)
+
    ;;;; LSP semantic tokens (lsp-mode) — type-aware highlighting from the server.
    ;; Layered over tree-sitter, these resolve what syntax can't: members, enum
    ;; constants, namespaces, user-defined types. Colors match the carbonfox roles
