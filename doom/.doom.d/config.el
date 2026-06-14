@@ -69,7 +69,22 @@
 ;; syntax alone), layered on top of *-ts-mode. The carbonfox theme colors the
 ;; `lsp-face-semhl-*' faces to match. Costs a small clangd round-trip per edit.
 (after! lsp-mode
-  (setq lsp-semantic-tokens-enable t))
+  (setq lsp-semantic-tokens-enable t)
+
+  ;; Python LSP via pyrefly (Meta's type checker; `uv tool install pyrefly').
+  ;; lsp-mode ships no pyrefly client, so register one for `pyrefly lsp'. High
+  ;; priority + disabling the bundled Python clients means lsp won't prompt to
+  ;; install pyright/pylsp when only pyrefly is present. `ty-ls' (Astral's `ty')
+  ;; is also disabled so pyrefly is the sole type checker — but `ruff' stays on
+  ;; (it's complementary: lint/format/imports, not type-checking).
+  (dolist (client '(pyright pyls mspyls ty-ls))
+    (add-to-list 'lsp-disabled-clients client))
+  (lsp-register-client
+   (make-lsp-client
+    :new-connection (lsp-stdio-connection '("pyrefly" "lsp"))
+    :activation-fn (lsp-activate-on "python")
+    :priority 2
+    :server-id 'pyrefly)))
 
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
