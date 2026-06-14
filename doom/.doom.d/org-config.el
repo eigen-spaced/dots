@@ -149,10 +149,14 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
          (url (and (string-match org-link-bracket-re heading)
                    (match-string 1 heading))))
     (unless url (user-error "No [[link]] in this entry"))
-    ;; auto-apply eww's readable (article) view once the page first renders
+    ;; Once the page first renders: switch to eww's readable (article) view and
+    ;; maximize its window so the article opens full-frame instead of in a split.
+    ;; (winner-mode is on, so `SPC w u' brings the previous layout back.)
     (letrec ((hook (lambda ()
                      (remove-hook 'eww-after-render-hook hook)
-                     (ignore-errors (eww-readable)))))
+                     (ignore-errors (eww-readable))
+                     (when-let ((win (get-buffer-window (current-buffer))))
+                       (delete-other-windows win)))))
       (add-hook 'eww-after-render-hook hook))
     (eww url)))
 
