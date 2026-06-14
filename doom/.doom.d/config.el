@@ -231,9 +231,8 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
       (forward-line (1- line))))
   (advice-add 'smudge-track-search-print    :around #'cust/smudge-preserve-point)
   (advice-add 'smudge-playlist-search-print :around #'cust/smudge-preserve-point)
-  ;; Feb-2026 Spotify Web API compatibility shims (smudge is unmaintained).
-  ;; Kept in a separate file so it's easy to migrate into a fork later.
-  (load! "smudge-2026")
+  ;; Feb-2026 Spotify Web API fixes now live in our fork (eigen-spaced/smudge,
+  ;; pinned in packages.el) rather than the old smudge-2026.el override shim.
   (global-smudge-remote-mode 1))
 
 ;; SPC o M -> Spotify (SPC o m is already `=mu4e', the mail launcher). smudge is
