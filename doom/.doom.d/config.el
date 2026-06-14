@@ -260,6 +260,19 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;; resource fork + FinderInfo), then recompile as a clean data-fork .scpt. Run
 ;; once per session: eagerly on load, and after the package's own compile step.
 (after! emacs-everywhere
+  ;; BUG in emacs-everywhere: `--ensure-oscascript-compiled' tests
+  ;; (file-exists-p "app-name") against the *caller's* default-directory (the
+  ;; package dir is only bound inside the body), so the test fails for any
+  ;; caller and it RE-COMPILES on every `app-info' call. Bind default-directory
+  ;; around it so the test is correct and it skips once the scripts exist.
+  (advice-add 'emacs-everywhere--ensure-oscascript-compiled :around
+              (lambda (orig &rest args)
+                (let ((default-directory emacs-everywhere--dir))
+                  (apply orig args))))
+  ;; And what it does compile uses `-t osas -r scpt:128', leaving an obsolete
+  ;; resource-fork script (errOSADataFormatObsolete / -1758). Recompile clean +
+  ;; strip the resource fork/FinderInfo. Once per session (the :around above
+  ;; stops the package from re-breaking it afterwards).
   (defvar cust/emacs-everywhere--osascripts-fixed nil)
   (defun cust/emacs-everywhere-recompile-osascripts (&rest _)
     (unless cust/emacs-everywhere--osascripts-fixed
@@ -269,14 +282,11 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
           (when (file-exists-p src)
             (when (file-exists-p out) (delete-file out))
             (call-process "osacompile" nil nil nil "-o" out src)
-            ;; Strip the resource fork + 'osas' FinderInfo so osascript reads the
-            ;; clean data-fork script (not the obsolete resource-fork one).
             (call-process "xattr" nil nil nil "-c" out))))
       (setq cust/emacs-everywhere--osascripts-fixed t)))
   (advice-add 'emacs-everywhere--ensure-oscascript-compiled
               :after #'cust/emacs-everywhere-recompile-osascripts)
-  ;; Fix immediately on load: ensure-compiled writes the sources, the advice
-  ;; then recompiles them cleanly.
+  ;; Fix immediately on load.
   (emacs-everywhere--ensure-oscascript-compiled))
 
 (after! lsp-mode
@@ -313,12 +323,9 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;;; ---------------------------------------------
 ;;; //        Global modeline (mini-modeline)   //
 ;;; ---------------------------------------------
-;; One modeline at the bottom of the frame (in the echo area) instead of one per
-;; window — the Emacs analog of neovim's `laststatus=3'. Reuse Doom's modeline
-;; content so it still shows the usual segments.
-(use-package! mini-modeline
-  :after doom-modeline
-  :config
-  (setq mini-modeline-l-format (default-value 'mode-line-format)
-        mini-modeline-r-format nil)
-  (mini-modeline-mode 1))
+;; A single global modeline (echo area, neovim laststatus=3 style) needs
+;; mini-modeline — but it conflicts with doom-modeline (doom keeps re-applying
+;; its per-window modelines, so you end up with both). Pending a decision:
+;; either disable doom-modeline and enable mini-modeline with a clean format, or
+;; keep doom-modeline per-window. Left disabled for now.
+;; (use-package! mini-modeline ...)
