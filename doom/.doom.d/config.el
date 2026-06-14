@@ -220,10 +220,6 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
     "l" #'smudge-track-load-more
     "g" #'smudge-track-reload
     (kbd "RET") #'smudge-track-select) ; play track-at-point (smudge only binds M-RET)
-  ;; Declutter smudge's list buffers by dropping the mode-line. The column header
-  ;; line stays, and now-playing still shows in other buffers' mode-lines.
-  (dolist (hook '(smudge-playlist-search-mode-hook smudge-track-search-mode-hook))
-    (add-hook hook (lambda () (setq-local mode-line-format nil))))
   ;; `l' (load-more) reprints the whole tabulated list and dumps point at the
   ;; top despite remember-pos. Save/restore the line around the reprint so paging
   ;; keeps you where you were. (Named advice => idempotent across config reloads.)
@@ -254,24 +250,34 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;;; ---------------------------------------------
 ;;; //          emacs-everywhere (macOS)        //
 ;;; ---------------------------------------------
-;; emacs-everywhere compiles its osascript helpers with
-;; `osacompile -t osas -r scpt:128', which on current macOS stuffs the compiled
-;; script into the file's *resource fork* and leaves the data fork EMPTY.
-;; `osascript <file>' reads the data fork, so it runs an empty script and dies
-;; with "script error -1758" — which breaks app detection and therefore the
-;; C-c C-c paste-back. Self-heal: after the package's own compile step,
-;; recompile (plain, data-fork) any helper whose data fork is empty. Idempotent,
-;; and re-fixes itself if the package is ever rebuilt.
+;; emacs-everywhere compiles its osascript helpers with `osacompile -t osas
+;; -r scpt:128', which on current macOS writes the script into the file's
+;; *resource fork* with an 'osas' FinderInfo type. `osascript' reads that
+;; resource-fork script, which is in an obsolete format, and dies with
+;; errOSADataFormatObsolete (-1758) — breaking app detection and the C-c C-c
+;; paste-back. A plain recompile isn't enough: the stale resource fork lingers
+;; and keeps shadowing the data fork. So DELETE each helper first (clearing the
+;; resource fork + FinderInfo), then recompile as a clean data-fork .scpt. Run
+;; once per session: eagerly on load, and after the package's own compile step.
 (after! emacs-everywhere
-  (defun cust/emacs-everywhere-fix-osascripts (&rest _)
-    (dolist (s '("app-name" "window-title" "window-geometry"))
-      (let ((src (expand-file-name (concat s ".applescript") emacs-everywhere--dir))
-            (out (expand-file-name s emacs-everywhere--dir)))
-        (when (and (file-exists-p src)
-                   (zerop (or (file-attribute-size (file-attributes out)) 0)))
-          (call-process "osacompile" nil nil nil "-o" out src)))))
+  (defvar cust/emacs-everywhere--osascripts-fixed nil)
+  (defun cust/emacs-everywhere-recompile-osascripts (&rest _)
+    (unless cust/emacs-everywhere--osascripts-fixed
+      (dolist (s '("app-name" "window-title" "window-geometry"))
+        (let ((src (expand-file-name (concat s ".applescript") emacs-everywhere--dir))
+              (out (expand-file-name s emacs-everywhere--dir)))
+          (when (file-exists-p src)
+            (when (file-exists-p out) (delete-file out))
+            (call-process "osacompile" nil nil nil "-o" out src)
+            ;; Strip the resource fork + 'osas' FinderInfo so osascript reads the
+            ;; clean data-fork script (not the obsolete resource-fork one).
+            (call-process "xattr" nil nil nil "-c" out))))
+      (setq cust/emacs-everywhere--osascripts-fixed t)))
   (advice-add 'emacs-everywhere--ensure-oscascript-compiled
-              :after #'cust/emacs-everywhere-fix-osascripts))
+              :after #'cust/emacs-everywhere-recompile-osascripts)
+  ;; Fix immediately on load: ensure-compiled writes the sources, the advice
+  ;; then recompiles them cleanly.
+  (emacs-everywhere--ensure-oscascript-compiled))
 
 (after! lsp-mode
   (setq lsp-log-io nil
@@ -303,3 +309,16 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;; corfu config
 (setq corfu-auto-prefix 2
       corfu-auto-delay 0.25)
+
+;;; ---------------------------------------------
+;;; //        Global modeline (mini-modeline)   //
+;;; ---------------------------------------------
+;; One modeline at the bottom of the frame (in the echo area) instead of one per
+;; window — the Emacs analog of neovim's `laststatus=3'. Reuse Doom's modeline
+;; content so it still shows the usual segments.
+(use-package! mini-modeline
+  :after doom-modeline
+  :config
+  (setq mini-modeline-l-format (default-value 'mode-line-format)
+        mini-modeline-r-format nil)
+  (mini-modeline-mode 1))
