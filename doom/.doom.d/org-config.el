@@ -168,15 +168,9 @@ body (the regex stops at \"]\", so it returns a bracket link's target cleanly)."
       (add-hook 'eww-after-render-hook hook))
     (eww url)))
 
-(defun cust/org-agenda-read-in-eww ()
-  "From an org-agenda line, open that entry's link in eww."
-  (interactive)
-  (org-agenda-with-point-at-orig-entry nil (cust/org-read-in-eww)))
-
 (map! :leader :desc "Add clipboard URL → reading" "o a R" #'cust/org-reading-add-from-clipboard)
 (map! :after org :map org-mode-map :localleader
       :desc "Read entry in eww" "R" #'cust/org-read-in-eww)
-;; In the agenda (e.g. SPC o a r), entries aren't org-mode, so bind a key there
-;; too: SPC m R reads the entry under point in eww.
-(map! :after org-agenda :map org-agenda-mode-map :localleader
-      :desc "Read entry in eww" "R" #'cust/org-agenda-read-in-eww)
+;; Note: deliberately NOT binding this under the agenda's localleader — SPC m R
+;; there is org-agenda-refile, which is worth keeping. From the reading-list
+;; agenda (SPC o a r), press TAB/RET to jump to the entry, then SPC m R.
