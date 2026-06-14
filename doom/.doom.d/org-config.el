@@ -111,3 +111,51 @@
 
 (map! :after org :map org-mode-map :localleader
       :desc "Source block" "B" #'cust/org-insert-src-block)
+
+;; --- reading list: quick add from clipboard + read in Emacs -----------------
+(defun cust/url-title (url)
+  "Fetch URL and return its <title> (whitespace-collapsed), or nil."
+  (ignore-errors
+    (with-current-buffer (url-retrieve-synchronously url t t 5)
+      (prog1
+          (progn
+            (goto-char (point-min))
+            (when (re-search-forward "<title[^>]*>\\(\\(?:.\\|\n\\)*?\\)</title>" nil t)
+              (string-trim (replace-regexp-in-string "[ \t\n\r]+" " " (match-string 1)))))
+        (kill-buffer)))))
+
+(defun cust/org-reading-add-from-clipboard ()
+  "Add the URL in the clipboard to the reading list, fetching its title.
+No capture buffer — copy a link anywhere, switch to Emacs, run this."
+  (interactive)
+  (let ((url (string-trim (or (ignore-errors (gui-get-selection 'CLIPBOARD))
+                              (current-kill 0) ""))))
+    (unless (string-match-p "\\`https?://" url)
+      (user-error "Clipboard isn't a URL: %S" url))
+    (let* ((title (replace-regexp-in-string "[][]" "" (or (cust/url-title url) url))))
+      (with-current-buffer (find-file-noselect (cust/org-file "reading.org"))
+        (goto-char (point-max))
+        (unless (bolp) (insert "\n"))
+        (insert (format "* TODO [[%s][%s]]\n%s\n" url title
+                        (format-time-string "[%Y-%m-%d %a %H:%M]")))
+        (save-buffer))
+      (message "Reading list ← %s" title))))
+
+(defun cust/org-read-in-eww ()
+  "Open the link in the current org entry in eww, in a clean readable view."
+  (interactive)
+  (require 'eww)
+  (let* ((heading (org-get-heading t t t t))
+         (url (and (string-match org-link-bracket-re heading)
+                   (match-string 1 heading))))
+    (unless url (user-error "No [[link]] in this entry"))
+    ;; auto-apply eww's readable (article) view once the page first renders
+    (letrec ((hook (lambda ()
+                     (remove-hook 'eww-after-render-hook hook)
+                     (ignore-errors (eww-readable)))))
+      (add-hook 'eww-after-render-hook hook))
+    (eww url)))
+
+(map! :leader :desc "Add clipboard URL → reading" "o a R" #'cust/org-reading-add-from-clipboard)
+(map! :after org :map org-mode-map :localleader
+      :desc "Read entry in eww" "R" #'cust/org-read-in-eww)
