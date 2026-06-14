@@ -20,12 +20,37 @@
       (add-hook 'after-make-frame-functions fn))))
 
 (setq doom-font (font-spec :family "Cascadia Code NF" :size 17))
-;; Serif face (used by mixed-pitch / fixed-pitch-serif, e.g. prose & readable views).
-;; NB: the static optical-size build registers its family as "Merriweather 24pt"
-;; (the 24pt = text-size cut), NOT "Merriweather" — using the wrong name leaves the
-;; font unset (and Doom complains at startup).
+;; `doom-serif-font' sets the `fixed-pitch-serif' face — which nothing uses by
+;; default. eww/shr and variable-pitch-mode render prose with the `variable-pitch'
+;; face instead, so we actually get serif by remapping THAT (below), buffer-locally.
+;; (Static optical-size family is "Merriweather 24pt", not "Merriweather".)
 (setq doom-serif-font (font-spec :family "Merriweather 24pt"))
 (setq doom-theme 'doom-carbonfox)
+
+;; --- Merriweather (serif) for reading prose, in eww + org only ---------------
+(defun cust/reading-serif ()
+  "Remap the current buffer's `variable-pitch' face to Merriweather."
+  (face-remap-add-relative 'variable-pitch :family "Merriweather 24pt"))
+
+;; eww: shr renders body text with `variable-pitch' → serif while reading.
+(add-hook 'eww-mode-hook #'cust/reading-serif)
+
+;; org: serif prose, but keep code blocks / tables / metadata monospace.
+(defvar cust/org-keep-mono-faces
+  '(org-block org-block-begin-line org-block-end-line org-code org-verbatim
+    org-table org-formula org-meta-line org-document-info-keyword
+    org-special-keyword org-property-value org-drawer
+    line-number line-number-current-line)
+  "Org faces pinned to `fixed-pitch' (monospace) under `cust/org-prose-serif'.")
+
+(defun cust/org-prose-serif ()
+  "Render org prose in Merriweather (serif); keep code/tables/metadata mono."
+  (cust/reading-serif)
+  (dolist (f cust/org-keep-mono-faces)
+    (face-remap-add-relative f 'fixed-pitch))
+  (variable-pitch-mode 1))
+
+(add-hook 'org-mode-hook #'cust/org-prose-serif)
 (setq display-line-numbers-type t)
 
 ;; `org-directory' must be set before org loads.
