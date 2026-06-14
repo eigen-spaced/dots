@@ -55,7 +55,3 @@
 ;; the macOS desktop app (AppleScript transport, no Premium needed). See the
 ;; `smudge' block in config.el.
 (package! smudge)
-
-;; A single global modeline at the bottom of the frame (echo area), like
-;; neovim's laststatus=3, instead of one per window. See config.el.
-(package! mini-modeline)

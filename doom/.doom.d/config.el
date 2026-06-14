@@ -319,13 +319,3 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;; corfu config
 (setq corfu-auto-prefix 2
       corfu-auto-delay 0.25)
-
-;;; ---------------------------------------------
-;;; //        Global modeline (mini-modeline)   //
-;;; ---------------------------------------------
-;; A single global modeline (echo area, neovim laststatus=3 style) needs
-;; mini-modeline — but it conflicts with doom-modeline (doom keeps re-applying
-;; its per-window modelines, so you end up with both). Pending a decision:
-;; either disable doom-modeline and enable mini-modeline with a clean format, or
-;; keep doom-modeline per-window. Left disabled for now.
-;; (use-package! mini-modeline ...)
