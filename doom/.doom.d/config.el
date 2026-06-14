@@ -239,12 +239,13 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;; autoloaded, so these pull it in on first use.
 (map! :leader
       (:prefix ("o M" . "music")
-       :desc "Track search"     "s"   #'smudge-track-search
-       :desc "Playlist search"  "p"   #'smudge-playlist-search
-       :desc "My playlists"     "m"   #'smudge-my-playlists
-       :desc "Play/pause"       "SPC" #'smudge-controller-toggle-play
-       :desc "Next track"       "n"   #'smudge-controller-next-track
-       :desc "Previous track"   "N"   #'smudge-controller-previous-track))
+       :desc "Track search"      "s"   #'smudge-track-search
+       :desc "Playlist search"   "p"   #'smudge-playlist-search
+       :desc "My playlists"      "m"   #'smudge-my-playlists
+       :desc "Add playing→playlist" "a" #'smudge-add-playing-track-to-playlist
+       :desc "Play/pause"        "SPC" #'smudge-controller-toggle-play
+       :desc "Next track"        "n"   #'smudge-controller-next-track
+       :desc "Previous track"    "N"   #'smudge-controller-previous-track))
 
 ;;; ---------------------------------------------
 ;;; //          emacs-everywhere (macOS)        //
