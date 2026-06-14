@@ -11,14 +11,20 @@ for turning those patches into a proper fork + upstream PR.
 
 ## How to migrate to the fork
 
-1. Fork `danielfm/smudge` → clone.
+Fork: **git@github.com:eigen-spaced/smudge.git**, cloned locally at
+**~/Documents/projects/smudge** (origin = the fork).
+
+1. Wire straight to the fork so edits are testable. Either point the recipe at
+   the fork — `(package! smudge :recipe (:host github :repo "eigen-spaced/smudge"))`
+   — and edit in `~/.emacs.d/.local/straight/repos/smudge`; OR symlink that path
+   to `~/Documents/projects/smudge` and edit there. Then `doom sync`.
 2. For each shim in `smudge-2026.el`, paste its **body** into the matching `defun`
    in `smudge-api.el` and delete the `advice-add` line. (Each shim is written as
    the fixed upstream function, so this is mechanical.)
 3. Apply the UX fixes below where they belong (most are upstreamable).
-4. Point `packages.el`'s smudge recipe at the fork; delete `(load! "smudge-2026")`
-   and the now-upstreamed bits from config.el.
-5. Test (checklist at the bottom), commit, open a PR.
+4. Delete `(load! "smudge-2026")` (and `smudge-2026.el`) + the now-upstreamed
+   bits from config.el once the fork carries them.
+5. Test (checklist at the bottom), commit, push to the fork, open a PR.
 
 ---
 
