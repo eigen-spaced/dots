@@ -54,10 +54,13 @@ end
 hs.hotkey.bind({ "cmd", "alt" }, "P", function() spotify("playpause") end)        -- ⌘⌥P play/pause
 hs.hotkey.bind({ "cmd", "alt" }, "]", function() spotify("next track") end)       -- ⌘⌥] next
 hs.hotkey.bind({ "cmd", "alt" }, "[", function() spotify("previous track") end)   -- ⌘⌥[ previous
-hs.hotkey.bind({ "cmd", "alt" }, "I", function()                                  -- ⌘⌥I now-playing
+-- ⌘⌥N now-playing.  (NOT ⌘⌥I — that's Firefox's web-inspector shortcut.)
+-- Uses hs.alert (an on-screen HUD) rather than hs.notify, which silently does
+-- nothing unless Hammerspoon has been granted Notification permission.
+hs.hotkey.bind({ "cmd", "alt" }, "N", function()                                  -- ⌘⌥N now-playing
   local ok, info = hs.osascript.applescript(
     'tell application "Spotify" to (name of current track) & " — " & (artist of current track)')
-  hs.notify.new({ title = "Now Playing", informativeText = ok and info or "Spotify isn't running" }):send()
+  hs.alert.show(ok and ("♪  " .. info) or "Spotify isn't running")
 end)
 
 -- --- Room to grow: mirror more of the blog as you want it --------------------
