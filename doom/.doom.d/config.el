@@ -20,6 +20,11 @@
       (add-hook 'after-make-frame-functions fn))))
 
 (setq doom-font (font-spec :family "Cascadia Code NF" :size 17))
+;; Serif face (used by mixed-pitch / fixed-pitch-serif, e.g. prose & readable views).
+;; NB: the static optical-size build registers its family as "Merriweather 24pt"
+;; (the 24pt = text-size cut), NOT "Merriweather" — using the wrong name leaves the
+;; font unset (and Doom complains at startup).
+(setq doom-serif-font (font-spec :family "Merriweather 24pt"))
 (setq doom-theme 'doom-carbonfox)
 (setq display-line-numbers-type t)
 
@@ -235,10 +240,38 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
   ;; pinned in packages.el) rather than the old smudge-2026.el override shim.
   (global-smudge-remote-mode 1))
 
+;; Wake up smudge without opening any UI. smudge is deferred and its transport
+;; commands (play/pause/next/prev) aren't autoloaded, so they're dead until the
+;; package loads — previously you had to open playlists (SPC o M m) and `q' out
+;; just to kick it alive. This loads smudge (which runs the :config above:
+;; transport, creds, global-smudge-remote-mode) so transport works immediately.
+(defun cust/smudge-connect ()
+  "Load + initialize smudge so transport (play/pause/next/prev) works.
+No UI, and no OAuth needed for the AppleScript transport."
+  (interactive)
+  (require 'smudge)
+  ;; Enable explicitly: smudge's :config only runs on first load, so after a
+  ;; `cust/smudge-disconnect' the mode would otherwise stay off.
+  (global-smudge-remote-mode 1)
+  (ignore-errors (smudge-controller-player-status))
+  (message "Smudge ready — transport active."))
+
+;; Inverse of the above: hide smudge's player info from the modeline and stop its
+;; status poll when you don't want it. Transport (play/pause/next/prev) keeps
+;; working if smudge is already loaded — this only affects the modeline display.
+(defun cust/smudge-disconnect ()
+  "Turn off smudge's modeline player info + status polling."
+  (interactive)
+  (when (bound-and-true-p global-smudge-remote-mode)
+    (global-smudge-remote-mode -1))
+  (message "Smudge: player info hidden."))
+
 ;; SPC o M -> Spotify (SPC o m is already `=mu4e', the mail launcher). smudge is
 ;; autoloaded, so these pull it in on first use.
 (map! :leader
       (:prefix ("o M" . "music")
+       :desc "Connect / wake"    "c"   #'cust/smudge-connect
+       :desc "Disconnect / hide" "C"   #'cust/smudge-disconnect
        :desc "Track search"      "s"   #'smudge-track-search
        :desc "Playlist search"   "p"   #'smudge-playlist-search
        :desc "My playlists"      "m"   #'smudge-my-playlists
