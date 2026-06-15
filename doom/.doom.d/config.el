@@ -25,7 +25,7 @@
 ;; face instead, so we actually get serif by remapping THAT (below), buffer-locally.
 ;; (Static optical-size family is "Merriweather 24pt", not "Merriweather".)
 (setq doom-serif-font (font-spec :family "Merriweather 24pt"))
-(setq doom-theme 'doom-carbonfox)
+(setq doom-theme 'doom-moonlight)
 
 ;; --- Merriweather (serif) for reading prose, in eww + org only ---------------
 (defun cust/reading-serif ()
@@ -66,8 +66,8 @@
 
 ;; LSP semantic tokens: let clangd/rust-analyzer classify members, enum
 ;; constants, namespaces, user types, etc. (things tree-sitter can't know from
-;; syntax alone), layered on top of *-ts-mode. The carbonfox theme colors the
-;; `lsp-face-semhl-*' faces to match. Costs a small clangd round-trip per edit.
+;; syntax alone), layered on top of *-ts-mode; the active theme colors the
+;; `lsp-face-semhl-*' faces. Costs a small clangd round-trip per edit.
 (after! lsp-mode
   (setq lsp-semantic-tokens-enable t)
 
@@ -77,9 +77,8 @@
   ;; install pyright/pylsp when only pyrefly is present. `ty-ls' (Astral's `ty')
   ;; is also disabled so pyrefly is the sole type checker — but `ruff' stays on
   ;; (it's complementary: lint/format/imports, not type-checking).
-  ;; NOTE: pyrefly (v1.0) advertises no `semanticTokensProvider', so the
-  ;; semhl coloring above doesn't apply to Python — the tree-sitter rule below
-  ;; (`+python-ts-camelcase-types-h') covers the visible gap instead.
+  ;; (pyrefly v1.0 advertises no `semanticTokensProvider', so Python gets
+  ;; tree-sitter highlighting only — no semhl layer, which is fine.)
   (dolist (client '(pyright pyls mspyls ty-ls))
     (add-to-list 'lsp-disabled-clients client))
   (lsp-register-client
@@ -88,51 +87,6 @@
     :activation-fn (lsp-activate-on "python")
     :priority 2
     :server-id 'pyrefly)))
-
-;; python-ts-mode is much coarser than nvim-treesitter, and pyrefly emits no
-;; semantic tokens — so two things neovim colors come out flat in Emacs. Close
-;; the gap with extra tree-sitter rules (run from `python-ts-mode-hook'):
-;;
-;;   1. CamelCase identifiers -> user type (teal). carbonfox.nvim splits types:
-;;      builtins (bool/str/int/float/…) cyan, user/imported types
-;;      (SentenceTransformer, Optional, …) teal. python-ts-mode puts *both* on
-;;      `font-lock-type-face' (cyan, set above); the builtins are lowercase so
-;;      this rule (uppercase + a lowercase; excludes ALL_CAPS and snake_case)
-;;      repaints only the user types, via a dedicated teal face.
-;;   2. Class fields + `self.x' attributes -> property (blue). python-ts-mode
-;;      lumps fields, params, attributes and locals all onto
-;;      `font-lock-variable-name-face'. These rules match only annotated field
-;;      declarations and assignment targets (never read positions), so method
-;;      calls keep `font-lock-function-call-face' and plain locals stay neutral.
-(defface cust-python-user-type-face '((t :inherit font-lock-type-face))
-  "CamelCase (user-defined) types in `python-ts-mode'; themed teal in carbonfox."
-  :group 'doom-themes)
-(after! python
-  (when (modulep! :lang python +tree-sitter)
-    (defun +python-ts-extra-faces-h ()
-      "Add carbonfox-matching tree-sitter rules to `python-ts-mode'."
-      (when (treesit-parser-list nil 'python)
-        (setq treesit-font-lock-settings
-              (append treesit-font-lock-settings
-                      (treesit-font-lock-rules
-                       :language 'python
-                       :feature 'cust-camel-type
-                       :override t
-                       '(((identifier) @cust-python-user-type-face
-                          (:match "\\`[A-Z][A-Za-z0-9_]*[a-z]" @cust-python-user-type-face))))
-                      (treesit-font-lock-rules
-                       :language 'python
-                       :feature 'cust-py-field
-                       :override t
-                       '((assignment left: (identifier) @font-lock-property-use-face type: (_))
-                         (assignment left: (attribute attribute: (identifier) @font-lock-property-use-face))))))
-        (let ((fl (copy-tree treesit-font-lock-feature-list)))
-          (cl-pushnew 'cust-camel-type (nth 3 fl))
-          (cl-pushnew 'cust-py-field (nth 3 fl))
-          (setq treesit-font-lock-feature-list fl))
-        (treesit-font-lock-recompute-features)
-        (when font-lock-mode (font-lock-flush))))
-    (add-hook 'python-ts-mode-hook #'+python-ts-extra-faces-h)))
 
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
