@@ -49,14 +49,10 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 
-;; Spotify control from Emacs: search/playlists via the Web API, playback via
-;; the macOS desktop app (AppleScript transport, no Premium needed). See the
-;; `smudge' block in config.el.
-;; Pinned to our fork (eigen-spaced/smudge), which carries the Feb-2026 Spotify
-;; Web API fixes. repos/smudge is symlinked to ~/Documents/projects/smudge for
-;; live dev; edits there are picked up by re-eval / `doom sync'.
+;; Spotify control (config in config.el). Our fork carries the Feb-2026 Web API
+;; fixes; repos/smudge is symlinked to ~/Documents/projects/smudge for live dev.
 (package! smudge :recipe (:host github :repo "eigen-spaced/smudge"
                           :branch "main"))
 
-;; Centered, fixed-width reading column (used in eww for distraction-free reading).
+;; Centered reading column for eww.
 (package! olivetti)

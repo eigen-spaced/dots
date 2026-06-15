@@ -1,38 +1,26 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
-
-;; Fit new frames to the screen as a normal maximized window (daemon/
-;; emacsclient frames included). For native macOS fullscreen (own Space),
-;; use '(fullscreen . fullboth) instead.
+;; Open new frames maximized (use '(fullscreen . fullboth) for native fullscreen).
 (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
-;; In daemon mode Doom only loads the theme/fonts via
-;; `server-after-make-frame-hook', which fires for `emacsclient -c/-t' frames
-;; but NOT for frames created by `emacsclient -e "(make-frame ...)"' (how the
-;; Emacs.app launcher opens a focused frame). Without this, launcher frames come
-;; up unthemed (white) with the wrong font. `doom-init-theme-h' is idempotent
-;; and themes/fonts are global, so running it on the first such frame is enough.
+;; Launcher frames made via `emacsclient -e (make-frame)' skip Doom's theme/font
+;; init hook and come up unthemed — re-run it on the first such frame.
 (when (daemonp)
   (dolist (fn '(doom-init-theme-h doom-init-fonts-h))
     (when (fboundp fn)
       (add-hook 'after-make-frame-functions fn))))
 
 (setq doom-font (font-spec :family "Cascadia Code NF" :size 17))
-;; `doom-serif-font' sets the `fixed-pitch-serif' face — which nothing uses by
-;; default. eww/shr and variable-pitch-mode render prose with the `variable-pitch'
-;; face instead, so we actually get serif by remapping THAT (below), buffer-locally.
-;; (Static optical-size family is "Merriweather 24pt", not "Merriweather".)
+;; fixed-pitch-serif is unused by default; prose serif comes from the
+;; `variable-pitch' remap below. (Static family name is "Merriweather 24pt".)
 (setq doom-serif-font (font-spec :family "Merriweather 24pt"))
 (setq doom-theme 'doom-moonlight)
 
-;; --- Merriweather (serif) for reading prose, in eww + org only ---------------
+;; Merriweather (serif) for reading prose, in eww + org only.
 (defun cust/reading-serif ()
   "Remap the current buffer's `variable-pitch' face to Merriweather."
   (face-remap-add-relative 'variable-pitch :family "Merriweather 24pt"))
 
-;; eww: shr renders body text with `variable-pitch' → serif while reading.
 (add-hook 'eww-mode-hook #'cust/reading-serif)
 
 ;; org: serif prose, but keep code blocks / tables / metadata monospace.
@@ -53,8 +41,7 @@
 
 (add-hook 'org-mode-hook #'cust/org-prose-serif)
 
-;; Centered reading column in eww — OFF by default (eww keeps its normal width);
-;; toggle a centered, fixed-width column per-buffer with `SPC m c' (olivetti).
+;; Centered reading column in eww, off by default; toggle with `SPC m c'.
 (after! olivetti (setq olivetti-body-width 80))
 (map! :after eww :map eww-mode-map :localleader
       :desc "Toggle centered column" "c" #'olivetti-mode)
@@ -64,21 +51,14 @@
 ;; Auto-compile missing tree-sitter grammars on first file open (no prompt).
 (setq treesit-auto-install-grammar 'always)
 
-;; LSP semantic tokens: let clangd/rust-analyzer classify members, enum
-;; constants, namespaces, user types, etc. (things tree-sitter can't know from
-;; syntax alone), layered on top of *-ts-mode; the active theme colors the
-;; `lsp-face-semhl-*' faces. Costs a small clangd round-trip per edit.
+;; LSP semantic tokens: type-aware highlighting (members, enums, namespaces) over
+;; tree-sitter; the theme colors the `lsp-face-semhl-*' faces.
 (after! lsp-mode
   (setq lsp-semantic-tokens-enable t)
 
-  ;; Python LSP via pyrefly (Meta's type checker; `uv tool install pyrefly').
-  ;; lsp-mode ships no pyrefly client, so register one for `pyrefly lsp'. High
-  ;; priority + disabling the bundled Python clients means lsp won't prompt to
-  ;; install pyright/pylsp when only pyrefly is present. `ty-ls' (Astral's `ty')
-  ;; is also disabled so pyrefly is the sole type checker — but `ruff' stays on
-  ;; (it's complementary: lint/format/imports, not type-checking).
-  ;; (pyrefly v1.0 advertises no `semanticTokensProvider', so Python gets
-  ;; tree-sitter highlighting only — no semhl layer, which is fine.)
+  ;; Python LSP: pyrefly (`uv tool install pyrefly'); lsp-mode has no built-in
+  ;; client. Disable the other type checkers so pyrefly is sole; ruff stays for
+  ;; lint/format. (pyrefly has no semantic tokens, so Python is tree-sitter-only.)
   (dolist (client '(pyright pyls mspyls ty-ls))
     (add-to-list 'lsp-disabled-clients client))
   (lsp-register-client
@@ -97,29 +77,20 @@
 ;;; ---------------------------------------------
 ;;; //              Keybindings                //
 ;;; ---------------------------------------------
-;; Switch to a window based on key binding in normal mode (Evil mode)
+;; Window navigation (evil normal state).
 (map! :n
       "C-h" #'evil-window-left
       "C-l" #'evil-window-right
       "C-k" #'evil-window-up
       "C-j" #'evil-window-down)
 
-;; Split-opening of files is now handled by the embark C-v / C-s bindings below
-;; (works in any vertico finder), so the old split-first commands are gone and
-;; SPC f s reverts to Doom's `save-buffer'.
 (after! evil
-  ;; Doom bundles evil-escape and enables `evil-escape-mode' (doom-first-input
-  ;; hook), but defaults the sequence to nil (escape = C-g). Set "jk" — that's
-  ;; the only non-default bit; the mode itself is already on.
   (setq evil-escape-key-sequence "jk")
   (map! :n "C-b" #'consult-buffer
         :n "C-p" #'projectile-find-file))
 
-;;; fzf-lua-style splits from the minibuffer (embark).
-;; With a file/buffer candidate highlighted in ANY vertico finder (find-file,
-;; projectile, consult-buffer, …), C-v opens it in a vertical split and C-s in a
-;; horizontal one, then closes the minibuffer — mirroring fzf-lua's C-v / C-s.
-;; embark resolves the candidate (and its directory), so paths are always right.
+;;; fzf-lua-style splits: with a candidate highlighted in any vertico finder,
+;;; C-v opens it in a vsplit and C-s an hsplit (via embark).
 (after! embark
   (defun cust/embark-find-file-vsplit (file)
     "Open FILE in a vertical split (embark action)."
@@ -161,10 +132,7 @@ single minibuffer keypress act on the highlighted candidate."
   (define-key vertico-map (kbd "C-s")
               (lambda () (interactive) (cust/embark-act-key "C-s"))))
 
-;;; Quick access: org folder + dirvish.
-;; These same commands are also fired by the global Hammerspoon hotkeys
-;; (~/.hammerspoon/init.lua) via `emacsclient -e', so the leader keys and the
-;; system-wide hotkeys do exactly the same thing.
+;;; Quick access: org folder + dirvish (also fired by Hammerspoon hotkeys).
 (defun cust/dirvish-org ()
   "Open the org directory (`org-directory') in Dirvish."
   (interactive)
@@ -185,10 +153,8 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;;; //                   Misc                  //
 ;;; ---------------------------------------------
 
-;; ~/.doom.d is stow symlinks into ~/dotfiles, and `doom/find-file-in-private-config'
-;; (SPC f p) lists files via projectile's `find', which skips symlinks — so it
-;; came up empty. Reimplement it symlink-aware with `directory-files-recursively'
-;; (which includes symlinked files but doesn't chase symlinked dirs).
+;; Stow-symlinked config: Doom's SPC f p skips symlinks, so reimplement it
+;; symlink-aware.
 (defun doom/find-file-in-private-config ()
   "Find a file under `doom-user-dir' (symlink-aware; our config is stowed)."
   (interactive)
@@ -202,25 +168,18 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 (after! rustic
   (setq rustic-lsp-client 'lsp-mode))
 
-;; Machine-local, *git-ignored* personal values (name + email) live in
-;; private.el, loaded here if present (3rd arg = noerror). Keeps your address
-;; out of this tracked file; a fresh clone simply skips it. See
-;; private.el.example for the template to recreate it on a new machine.
+;; Machine-local, git-ignored name/email (see private.el.example). 3rd arg = noerror.
 (load! "private" nil t)
 
-;; Read secrets (Gmail app password, Spotify client id/secret) from the macOS
-;; Keychain so nothing sensitive lives in this (repo-tracked) file.
+;; Read secrets (Gmail app password, Spotify creds) from the macOS Keychain.
 (after! auth-source
   (add-to-list 'auth-sources 'macos-keychain-internet))
 
 ;;; ---------------------------------------------
 ;;; //               Email (mu4e)              //
 ;;; ---------------------------------------------
-;; `mbsync' (isync) syncs Gmail into ~/.mail; `mu' indexes it. The Gmail *app
-;; password* is read from the macOS Keychain — via auth-source here (SMTP) and
-;; via `PassCmd' in ~/.mbsyncrc (IMAP) — so no secret is stored in this file.
-;; Name/address come from private.el (`user-mail-address' / `user-full-name').
-;; First-time setup steps live in the comment block at the end of ~/.mbsyncrc.
+;; mbsync (isync) syncs Gmail into ~/.mail; mu indexes it. Secrets via Keychain
+;; (auth-source for SMTP, PassCmd in ~/.mbsyncrc for IMAP); identity in private.el.
 (after! mu4e
   (setq mu4e-root-maildir "~/.mail"
         mu4e-get-mail-command "mbsync -a"
@@ -246,11 +205,9 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 ;;; ---------------------------------------------
 ;;; //             Spotify (smudge)            //
 ;;; ---------------------------------------------
-;; Search / playlist browsing use the Spotify Web API (needs a free developer
-;; app — client id/secret, kept in the Keychain, see setup notes), while
-;; play/pause/next drive the local macOS app via AppleScript
-;; (`smudge-transport' = 'apple) so no Premium is required for transport.
-;; The same transport is also exposed as global ⌘⌥ hotkeys in ~/.hammerspoon.
+;; Search/playlists via the Spotify Web API (creds in Keychain); play/pause/next
+;; via the local macOS app over AppleScript (no Premium). Same transport is also
+;; bound to global ⌘⌥ hotkeys in ~/.hammerspoon.
 (use-package! smudge
   :defer t
   :init
@@ -261,25 +218,17 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
         (sec (auth-source-pick-first-password :host "smudge" :user "client-secret")))
     (when id  (setq smudge-oauth2-client-id id))
     (when sec (setq smudge-oauth2-client-secret sec)))
-  ;; smudge's first Web-API call runs an OAuth flow that busy-waits (blocking
-  ;; Emacs) until you authorize in the browser — and it hides its own "waiting"
-  ;; message. Surface a clear instruction so the block isn't mistaken for a hang.
-  ;; Once authorized, the token persists (~/.emacs.d/.local/cache/oauth2.plstore)
-  ;; and later calls don't block.
+  ;; smudge's first Web-API call busy-waits (blocking Emacs) for browser OAuth and
+  ;; hides its own message — surface a clear one so it's not mistaken for a hang.
   (advice-add 'smudge-api-oauth2-auth :before
               (lambda (&rest _)
                 (message "Smudge: a browser is opening — authorize Spotify there; Emacs resumes once you do.")))
-  ;; smudge refreshes its mode-line status var on a 5s poll timer but never calls
-  ;; `force-mode-line-update', so the indicator only repaints on the next user
-  ;; action — it looks stale after a direct play/pause in Spotify. Force a repaint
-  ;; whenever the status string is updated.
+  ;; smudge polls status every 5s but never forces a mode-line repaint, so the
+  ;; indicator looks stale after a direct play/pause — force it.
   (advice-add 'smudge-controller-update-player-status :after
               (lambda (&rest _) (force-mode-line-update t)))
-  ;; smudge's list-buffer keys (l = load more / next page, g = reload) are in its
-  ;; mode-maps, but in Doom these buffers come up in evil normal state where l/g
-  ;; are evil motions, so they never reach smudge. Re-bind for evil normal state
-  ;; so pagination works as documented. (smudge also binds a/r/f/u/k, likewise
-  ;; shadowed by evil — add here too if you start using them.)
+  ;; smudge's list keys (l = load more, g = reload) live in its mode-maps, but in
+  ;; Doom these buffers open in evil normal state, which shadows them — re-bind.
   (evil-define-key 'normal smudge-playlist-search-mode-map
     "l" #'smudge-playlist-load-more
     "g" #'smudge-playlist-reload)
@@ -287,9 +236,7 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
     "l" #'smudge-track-load-more
     "g" #'smudge-track-reload
     (kbd "RET") #'smudge-track-select) ; play track-at-point (smudge only binds M-RET)
-  ;; `l' (load-more) reprints the whole tabulated list and dumps point at the
-  ;; top despite remember-pos. Save/restore the line around the reprint so paging
-  ;; keeps you where you were. (Named advice => idempotent across config reloads.)
+  ;; `l' reprints the whole list and dumps point at the top; save/restore the line.
   (defun cust/smudge-preserve-point (orig &rest args)
     "Keep point on the same line when smudge reprints a list buffer."
     (let ((line (line-number-at-pos)))
@@ -298,29 +245,21 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
       (forward-line (1- line))))
   (advice-add 'smudge-track-search-print    :around #'cust/smudge-preserve-point)
   (advice-add 'smudge-playlist-search-print :around #'cust/smudge-preserve-point)
-  ;; Feb-2026 Spotify Web API fixes now live in our fork (eigen-spaced/smudge,
-  ;; pinned in packages.el) rather than the old smudge-2026.el override shim.
   (global-smudge-remote-mode 1))
 
-;; Wake up smudge without opening any UI. smudge is deferred and its transport
-;; commands (play/pause/next/prev) aren't autoloaded, so they're dead until the
-;; package loads — previously you had to open playlists (SPC o M m) and `q' out
-;; just to kick it alive. This loads smudge (which runs the :config above:
-;; transport, creds, global-smudge-remote-mode) so transport works immediately.
+;; Wake smudge without opening UI: its transport commands aren't autoloaded, so
+;; they stay dead until the package loads. This loads it (runs the :config above).
 (defun cust/smudge-connect ()
   "Load + initialize smudge so transport (play/pause/next/prev) works.
 No UI, and no OAuth needed for the AppleScript transport."
   (interactive)
   (require 'smudge)
-  ;; Enable explicitly: smudge's :config only runs on first load, so after a
-  ;; `cust/smudge-disconnect' the mode would otherwise stay off.
+  ;; :config only runs on first load, so re-connecting after a disconnect needs this.
   (global-smudge-remote-mode 1)
   (ignore-errors (smudge-controller-player-status))
   (message "Smudge ready — transport active."))
 
-;; Inverse of the above: hide smudge's player info from the modeline and stop its
-;; status poll when you don't want it. Transport (play/pause/next/prev) keeps
-;; working if smudge is already loaded — this only affects the modeline display.
+;; Hide smudge's modeline info + stop the status poll; transport keeps working.
 (defun cust/smudge-disconnect ()
   "Turn off smudge's modeline player info + status polling."
   (interactive)
@@ -328,8 +267,7 @@ No UI, and no OAuth needed for the AppleScript transport."
     (global-smudge-remote-mode -1))
   (message "Smudge: player info hidden."))
 
-;; SPC o M -> Spotify (SPC o m is already `=mu4e', the mail launcher). smudge is
-;; autoloaded, so these pull it in on first use.
+;; SPC o M -> Spotify (SPC o m is mu4e).
 (map! :leader
       (:prefix ("o M" . "music")
        :desc "Connect / wake"       "c"   #'cust/smudge-connect
@@ -345,29 +283,17 @@ No UI, and no OAuth needed for the AppleScript transport."
 ;;; ---------------------------------------------
 ;;; //          emacs-everywhere (macOS)        //
 ;;; ---------------------------------------------
-;; emacs-everywhere compiles its osascript helpers with `osacompile -t osas
-;; -r scpt:128', which on current macOS writes the script into the file's
-;; *resource fork* with an 'osas' FinderInfo type. `osascript' reads that
-;; resource-fork script, which is in an obsolete format, and dies with
-;; errOSADataFormatObsolete (-1758) — breaking app detection and the C-c C-c
-;; paste-back. A plain recompile isn't enough: the stale resource fork lingers
-;; and keeps shadowing the data fork. So DELETE each helper first (clearing the
-;; resource fork + FinderInfo), then recompile as a clean data-fork .scpt. Run
-;; once per session: eagerly on load, and after the package's own compile step.
+;; emacs-everywhere compiles its osascript helpers into the resource fork in an
+;; obsolete format, so osascript dies with errOSADataFormatObsolete (-1758).
+;; Delete each helper first (clears the resource fork), then recompile clean.
 (after! emacs-everywhere
-  ;; BUG in emacs-everywhere: `--ensure-oscascript-compiled' tests
-  ;; (file-exists-p "app-name") against the *caller's* default-directory (the
-  ;; package dir is only bound inside the body), so the test fails for any
-  ;; caller and it RE-COMPILES on every `app-info' call. Bind default-directory
-  ;; around it so the test is correct and it skips once the scripts exist.
+  ;; BUG: `--ensure-oscascript-compiled' checks file-exists against the caller's
+  ;; default-directory, so it recompiles on every call — bind default-directory.
   (advice-add 'emacs-everywhere--ensure-oscascript-compiled :around
               (lambda (orig &rest args)
                 (let ((default-directory emacs-everywhere--dir))
                   (apply orig args))))
-  ;; And what it does compile uses `-t osas -r scpt:128', leaving an obsolete
-  ;; resource-fork script (errOSADataFormatObsolete / -1758). Recompile clean +
-  ;; strip the resource fork/FinderInfo. Once per session (the :around above
-  ;; stops the package from re-breaking it afterwards).
+  ;; Recompile clean + strip the resource fork/FinderInfo, once per session.
   (defvar cust/emacs-everywhere--osascripts-fixed nil)
   (defun cust/emacs-everywhere-recompile-osascripts (&rest _)
     (unless cust/emacs-everywhere--osascripts-fixed
@@ -381,7 +307,6 @@ No UI, and no OAuth needed for the AppleScript transport."
       (setq cust/emacs-everywhere--osascripts-fixed t)))
   (advice-add 'emacs-everywhere--ensure-oscascript-compiled
               :after #'cust/emacs-everywhere-recompile-osascripts)
-  ;; Fix immediately on load.
   (emacs-everywhere--ensure-oscascript-compiled))
 
 (after! lsp-mode
