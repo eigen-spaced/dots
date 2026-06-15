@@ -16,7 +16,7 @@
 (setq doom-serif-font (font-spec :family "Merriweather 24pt"))
 (setq doom-theme 'doom-moonlight)
 
-;; Merriweather (serif) for reading prose, in eww + org only.
+;; Merriweather (serif) for reading prose, in eww + org + mu4e.
 (defun cust/reading-serif ()
   "Remap the current buffer's `variable-pitch' face to Merriweather."
   (face-remap-add-relative 'variable-pitch :family "Merriweather 24pt"))
@@ -41,6 +41,15 @@
 
 (add-hook 'org-mode-hook #'cust/org-prose-serif)
 
+;; mu4e message view: serif body, like eww/org. (Headers list stays mono so its
+;; columns keep aligning.)
+(defun cust/mu4e-prose-serif ()
+  "Render the mu4e message view in Merriweather (serif)."
+  (cust/reading-serif)
+  (variable-pitch-mode 1))
+
+(add-hook 'mu4e-view-mode-hook #'cust/mu4e-prose-serif)
+
 ;; Centered reading column in eww, off by default; toggle with `SPC m c'.
 (after! olivetti (setq olivetti-body-width 80))
 (map! :after eww :map eww-mode-map :localleader
@@ -57,8 +66,8 @@
   (setq lsp-semantic-tokens-enable t)
 
   ;; Python LSP: pyrefly (`uv tool install pyrefly'); lsp-mode has no built-in
-  ;; client. Disable the other type checkers so pyrefly is sole; ruff stays for
-  ;; lint/format. (pyrefly has no semantic tokens, so Python is tree-sitter-only.)
+  ;; client. Disable the other type checkers so pyrefly is sole; 
+  ;; (pyrefly has no semantic tokens, so Python is tree-sitter-only.)
   (dolist (client '(pyright pyls mspyls ty-ls))
     (add-to-list 'lsp-disabled-clients client))
   (lsp-register-client
