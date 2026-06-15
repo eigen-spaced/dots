@@ -109,6 +109,20 @@ EOF
     fi
 fi
 
+# --- Emacs Dock launcher applet (macOS only) ----------------------------------
+# /Applications/Emacs.app is a small applet that opens a daemon frame via
+# `emacsclient -c' — clicking the real headless daemon just shows an empty
+# window. build-emacs-launcher.sh compiles it with a modern icon (emacs-icon.png).
+if [[ "$OSTYPE" == "darwin"* ]] && command -v emacsclient &>/dev/null; then
+    echo
+    read -rp "Build the Emacs Dock launcher applet (/Applications/Emacs.app)? [y/N] " ans
+    if [[ "$ans" =~ ^[Yy]$ ]]; then
+        "$SCRIPT_DIR/build-emacs-launcher.sh"
+    else
+        echo "Skipped Emacs Dock launcher."
+    fi
+fi
+
 # --- launchd: update-all reminder (macOS only) --------------------------------
 # Runs after the stow step so ~/.config/scripts/update-all exists.
 if [[ "$OSTYPE" == "darwin"* ]]; then
