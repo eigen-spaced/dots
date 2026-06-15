@@ -348,3 +348,10 @@ No UI, and no OAuth needed for the AppleScript transport."
 ;; corfu config
 (setq corfu-auto-prefix 2
       corfu-auto-delay 0.25)
+
+;;; ---------------------------------------------
+;;; //          Document reader (reader)        //
+;;; ---------------------------------------------
+;; MuPDF-backed reader for PDF/EPUB/CBZ/MOBI/…; reader-mode is auto-registered
+;; for those extensions (needs `brew install mupdf'). `SPC o D' opens any doc.
+(map! :leader :desc "Open document (reader)" "o D" #'reader-open-doc)

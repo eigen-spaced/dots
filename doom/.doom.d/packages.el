@@ -56,3 +56,11 @@
 
 ;; Centered reading column for eww.
 (package! olivetti)
+
+;; The Reader: MuPDF-backed document reader (PDF/EPUB/CBZ/MOBI/…). Builds a
+;; native module at install (`make all' → render-core.dylib); needs `brew
+;; install mupdf'. Config in config.el.
+(package! reader
+  :recipe (:host codeberg :repo "MonadicSheep/emacs-reader"
+           :files (:defaults "render-core.dylib")
+           :pre-build ("make" "all")))
