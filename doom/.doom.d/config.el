@@ -89,25 +89,28 @@
     :priority 2
     :server-id 'pyrefly)))
 
-;; python-ts-mode (unlike nvim-treesitter) doesn't color CamelCase identifiers
-;; as types, and pyrefly emits no semantic tokens — so imported class names
-;; (SentenceTransformer, CacheEntry, …) would render as plain variables. Add a
-;; tree-sitter rule for PEP 8's "CamelCase == class" convention: an identifier
-;; starting uppercase with at least one lowercase (excludes ALL_CAPS constants
-;; and snake_case).
+;; python-ts-mode is much coarser than nvim-treesitter, and pyrefly emits no
+;; semantic tokens — so two things neovim colors come out flat in Emacs. Close
+;; the gap with extra tree-sitter rules (run from `python-ts-mode-hook'):
 ;;
-;; carbonfox.nvim splits types two ways: builtin types (bool/str/int/float/…)
-;; are cyan, user/imported types (SentenceTransformer, Optional, …) are teal.
-;; python-ts-mode puts *both* on `font-lock-type-face' (cyan, set above), so the
-;; builtins are already right — this rule just repaints the CamelCase ones teal
-;; via a dedicated face (themed in doom-carbonfox-theme.el).
+;;   1. CamelCase identifiers -> user type (teal). carbonfox.nvim splits types:
+;;      builtins (bool/str/int/float/…) cyan, user/imported types
+;;      (SentenceTransformer, Optional, …) teal. python-ts-mode puts *both* on
+;;      `font-lock-type-face' (cyan, set above); the builtins are lowercase so
+;;      this rule (uppercase + a lowercase; excludes ALL_CAPS and snake_case)
+;;      repaints only the user types, via a dedicated teal face.
+;;   2. Class fields + `self.x' attributes -> property (blue). python-ts-mode
+;;      lumps fields, params, attributes and locals all onto
+;;      `font-lock-variable-name-face'. These rules match only annotated field
+;;      declarations and assignment targets (never read positions), so method
+;;      calls keep `font-lock-function-call-face' and plain locals stay neutral.
 (defface cust-python-user-type-face '((t :inherit font-lock-type-face))
   "CamelCase (user-defined) types in `python-ts-mode'; themed teal in carbonfox."
   :group 'doom-themes)
 (after! python
   (when (modulep! :lang python +tree-sitter)
-    (defun +python-ts-camelcase-types-h ()
-      "Fontify CamelCase identifiers as user types in `python-ts-mode'."
+    (defun +python-ts-extra-faces-h ()
+      "Add carbonfox-matching tree-sitter rules to `python-ts-mode'."
       (when (treesit-parser-list nil 'python)
         (setq treesit-font-lock-settings
               (append treesit-font-lock-settings
@@ -116,13 +119,20 @@
                        :feature 'cust-camel-type
                        :override t
                        '(((identifier) @cust-python-user-type-face
-                          (:match "\\`[A-Z][A-Za-z0-9_]*[a-z]" @cust-python-user-type-face))))))
+                          (:match "\\`[A-Z][A-Za-z0-9_]*[a-z]" @cust-python-user-type-face))))
+                      (treesit-font-lock-rules
+                       :language 'python
+                       :feature 'cust-py-field
+                       :override t
+                       '((assignment left: (identifier) @font-lock-property-use-face type: (_))
+                         (assignment left: (attribute attribute: (identifier) @font-lock-property-use-face))))))
         (let ((fl (copy-tree treesit-font-lock-feature-list)))
           (cl-pushnew 'cust-camel-type (nth 3 fl))
+          (cl-pushnew 'cust-py-field (nth 3 fl))
           (setq treesit-font-lock-feature-list fl))
         (treesit-font-lock-recompute-features)
         (when font-lock-mode (font-lock-flush))))
-    (add-hook 'python-ts-mode-hook #'+python-ts-camelcase-types-h)))
+    (add-hook 'python-ts-mode-hook #'+python-ts-extra-faces-h)))
 
 ;; `org-directory' must be set before org loads.
 (setq org-directory "~/org/")
