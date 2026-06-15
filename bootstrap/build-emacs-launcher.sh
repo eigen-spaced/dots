@@ -44,6 +44,10 @@ if [[ -n "$ICON_SRC" && -f "$ICON_SRC" ]]; then
     done
     iconutil -c icns "$iset" -o "$APP/Contents/Resources/applet.icns"
     rm -rf "$stage"
+    # macOS 26's osacompile compiles the (generic) applet icon into an asset
+    # catalog that overrides CFBundleIconFile. Drop it so our applet.icns wins.
+    /usr/libexec/PlistBuddy -c 'Delete :CFBundleIconName' "$APP/Contents/Info.plist" 2>/dev/null || true
+    rm -f "$APP/Contents/Resources/Assets.car"
 else
     echo "WARN: no icon source found — applet keeps the generic icon."
 fi
@@ -56,6 +60,7 @@ lsreg=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/La
 touch "$APP"
 "$lsreg" -f "$APP" 2>/dev/null || true
 find "$(getconf DARWIN_USER_CACHE_DIR)" -maxdepth 1 -name 'com.apple.iconservices*' -exec rm -rf {} + 2>/dev/null || true
+qlmanage -r cache >/dev/null 2>&1 || true
 killall Dock 2>/dev/null || true
 
 echo "Done."
