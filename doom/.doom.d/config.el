@@ -95,8 +95,7 @@
 
 (after! evil
   (setq evil-escape-key-sequence "jk")
-  (map! :n "C-b" #'consult-buffer
-        :n "C-p" #'projectile-find-file))
+  (map! :n "C-p" #'projectile-find-file))
 
 ;;; fzf-lua-style splits: with a candidate highlighted in any vertico finder,
 ;;; C-v opens it in a vsplit and C-s an hsplit (via embark).
@@ -157,6 +156,11 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 (map! :leader
       :desc "Dirvish (here)"        "o d" #'dirvish
       :desc "Org folder (Dirvish)"  "o n" #'cust/dirvish-org)
+
+;; `SPC m w' in dired toggles wdired (editable filenames; `:%s'/visual-block to
+;; bulk-rename, `C-c C-c' to apply). Same as the built-in `C-x C-q'.
+(map! :after dired :map dired-mode-map :localleader
+      :desc "Edit filenames (wdired)" "w" #'dired-toggle-read-only)
 
 ;;; ---------------------------------------------
 ;;; //                   Misc                  //
