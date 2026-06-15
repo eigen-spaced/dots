@@ -108,8 +108,10 @@
 ;; (works in any vertico finder), so the old split-first commands are gone and
 ;; SPC f s reverts to Doom's `save-buffer'.
 (after! evil
+  ;; Doom bundles evil-escape and enables `evil-escape-mode' (doom-first-input
+  ;; hook), but defaults the sequence to nil (escape = C-g). Set "jk" — that's
+  ;; the only non-default bit; the mode itself is already on.
   (setq evil-escape-key-sequence "jk")
-  (evil-escape-mode)
   (map! :n "C-b" #'consult-buffer
         :n "C-p" #'projectile-find-file))
 

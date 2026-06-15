@@ -49,8 +49,6 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 
-(package! evil-escape)
-
 ;; Spotify control from Emacs: search/playlists via the Web API, playback via
 ;; the macOS desktop app (AppleScript transport, no Premium needed). See the
 ;; `smudge' block in config.el.
