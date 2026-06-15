@@ -47,6 +47,9 @@ hs.hotkey.bind({ "cmd", "alt" }, "E", function()
   hs.task.new(EMACSCLIENT, nil, { "-e", "(emacs-everywhere)" }):start()
 end)
 
+-- ⌘⌥C  →  zero-decision capture into inbox.org (small floating frame)
+hs.hotkey.bind({ "cmd", "alt" }, "C", function() emacs("(my/capture-frame)") end)
+
 -- --- Spotify transport (AppleScript → the desktop app) -----------------------
 -- Global media hotkeys that drive the local Spotify app from any context — no
 -- API key or Premium needed. smudge in Emacs uses this same AppleScript layer
@@ -226,10 +229,6 @@ local function switchShow()
 end
 
 hs.hotkey.bind({ "alt" }, "space", switchShow)   -- ⌥Space  window/buffer switcher
-
--- --- Room to grow: mirror more of the blog as you want it --------------------
--- Global org-capture:
---   hs.hotkey.bind({ "cmd", "alt" }, "C", function() emacsPopup("org-capture") end)
 
 -- Auto-reload on config change, plus ⌘⌥R to reload by hand.
 local function reloadOnLua(files)

@@ -74,6 +74,71 @@
 
   (org-clock-persistence-insinuate))
 
+;; --- Zero-decision global capture (⌘⌥C via Hammerspoon) ---------------------
+;; Dedicated inbox template, let-bound to stay out of the SPC X menu; cleanup is
+;; frame-name-gated so normal captures aren't deleted.
+(defun my/capture-frame ()
+  "Pop a centered floating frame and capture one entry straight into inbox.org."
+  (interactive)
+  ;; `(fullscreen . nil)' overrides the maximized default-frame-alist; ns = GUI
+  ;; frame even from a cold daemon.
+  (let ((frame (make-frame '((name . "org-capture")
+                             (window-system . ns)
+                             (fullscreen . nil)
+                             (width . 100) (height . 30)))))
+    (select-frame-set-input-focus frame)
+    (cust/center-frame frame)
+    (let ((org-capture-templates
+           `(("i" "Inbox (fast)" entry (file ,(cust/org-file "inbox.org"))
+              "* %?\n%U\n" :prepend t :empty-lines 0))))
+      (condition-case nil
+          (progn (org-capture nil "i")
+                 (delete-other-windows))   ; only the capture buffer
+        (error (delete-frame frame))))))
+
+(defun my/capture-frame-cleanup ()
+  "Delete the capture frame on finalize/abort (only the named one)."
+  (when (equal (frame-parameter nil 'name) "org-capture")
+    (delete-frame)))
+(add-hook 'org-capture-after-finalize-hook #'my/capture-frame-cleanup)
+
+;; --- Inbox decay ------------------------------------------------------------
+;; Archive (not delete) top-level inbox entries older than the threshold, by
+;; their %U timestamp. Age-based ≈ "survived two reviews unacted" — simpler than
+;; tracking real reviews (the tradeoff). Manual; untimestamped entries skipped.
+(defvar my/org-inbox-stale-days 14
+  "Archive inbox entries older than this many days (`my/org-inbox-archive-stale').")
+
+(defun my/org-inbox-archive-stale ()
+  "Archive top-level inbox.org entries older than `my/org-inbox-stale-days'."
+  (interactive)
+  (let ((cutoff (- (float-time) (* my/org-inbox-stale-days 86400)))
+        (markers '()) (n 0))
+    (with-current-buffer (find-file-noselect (cust/org-file "inbox.org"))
+      (org-with-wide-buffer
+       (goto-char (point-min))
+       (while (re-search-forward "^\\* " nil t)
+         (let* ((beg (line-beginning-position))
+                (end (save-excursion (org-end-of-subtree t t) (point)))
+                (ts  (save-excursion
+                       (goto-char beg)
+                       (when (re-search-forward
+                              "[[<]\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}[^]>]*\\)[]>]" end t)
+                         (ignore-errors
+                           (float-time (org-time-string-to-time (match-string 1))))))))
+           (when (and ts (< ts cutoff)) (push (copy-marker beg) markers))
+           (goto-char end)))
+       ;; bottom-up so earlier markers stay valid
+       (dolist (m (sort markers (lambda (a b) (> (marker-position a) (marker-position b)))))
+         (goto-char m)
+         (org-archive-subtree)
+         (setq n (1+ n))))
+      (save-buffer))
+    (message "Archived %d stale inbox entr%s (older than %d days)."
+             n (if (= n 1) "y" "ies") my/org-inbox-stale-days)))
+
+(map! :leader :desc "Archive stale inbox" "o a x" #'my/org-inbox-archive-stale)
+
 ;; --- org-roam: linked notes + daily journal --------------------------------
 ;; `org-roam-directory' must be set before org-roam loads.
 (setq org-roam-directory (cust/org-file "roam")
@@ -132,7 +197,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
                               (current-kill 0) ""))))
     (unless (string-match-p "\\`https?://" url)
       (user-error "Clipboard isn't a URL: %S" url))
-    (let* ((title (replace-regexp-in-string "[][]" "" (or (cust/url-title url) url))))
+    (let ((title (replace-regexp-in-string "[][]" "" (or (cust/url-title url) url))))
       (with-current-buffer (find-file-noselect (cust/org-file "reading.org"))
         (goto-char (point-max))
         (unless (bolp) (insert "\n"))

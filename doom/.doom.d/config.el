@@ -153,6 +153,14 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
   (select-frame-set-input-focus (make-frame '((window-system . ns))))
   (call-interactively command))
 
+(defun cust/center-frame (frame)
+  "Center FRAME on its monitor's workarea (never overflows the edges)."
+  (let* ((wa (frame-monitor-workarea frame))
+         (mx (nth 0 wa)) (my (nth 1 wa)) (mw (nth 2 wa)) (mh (nth 3 wa)))
+    (set-frame-position frame
+                        (+ mx (/ (- mw (frame-pixel-width frame)) 2))
+                        (+ my (/ (- mh (frame-pixel-height frame)) 2)))))
+
 (map! :leader
       :desc "Dirvish (here)"        "o d" #'dirvish
       :desc "Org folder (Dirvish)"  "o n" #'cust/dirvish-org)
@@ -320,7 +328,27 @@ No UI, and no OAuth needed for the AppleScript transport."
       (setq cust/emacs-everywhere--osascripts-fixed t)))
   (advice-add 'emacs-everywhere--ensure-oscascript-compiled
               :after #'cust/emacs-everywhere-recompile-osascripts)
-  (emacs-everywhere--ensure-oscascript-compiled))
+  (emacs-everywhere--ensure-oscascript-compiled)
+
+  ;; Open empty + centered: drop `insert-selection' (its ⌘C/yank fallback leaked a
+  ;; stray `c' + stale clipboard) and replace mouse-positioning with centering.
+  (defun cust/emacs-everywhere-center-frame ()
+    (cust/center-frame (selected-frame)))
+  (setq emacs-everywhere-init-hooks
+        (mapcar (lambda (h) (if (eq h 'emacs-everywhere-set-frame-position)
+                                #'cust/emacs-everywhere-center-frame h))
+                (remq 'emacs-everywhere-insert-selection
+                      emacs-everywhere-init-hooks)))
+
+  ;; With insert-selection gone the temp .org is empty, so file-templates drops a
+  ;; `#+title' into it (on `doom-switch-buffer-hook'). Make file-templates skip
+  ;; emacs-everywhere files outright — order-independent, unlike erasing after.
+  (defun cust/file-templates-skip-everywhere (orig &rest args)
+    (unless (and buffer-file-name
+                 (fboundp 'emacs-everywhere-file-p)
+                 (emacs-everywhere-file-p buffer-file-name))
+      (apply orig args)))
+  (advice-add '+file-templates-check-h :around #'cust/file-templates-skip-everywhere))
 
 (after! lsp-mode
   (setq lsp-log-io nil
