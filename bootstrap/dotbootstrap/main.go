@@ -50,7 +50,7 @@ func main() {
 		return
 	}
 
-	if _, err := tea.NewProgram(newModel(items, *dry), tea.WithAltScreen()).Run(); err != nil {
+	if _, err := tea.NewProgram(newModel(items, *dry, repo), tea.WithAltScreen()).Run(); err != nil {
 		fmt.Fprintln(os.Stderr, "dotbootstrap:", err)
 		os.Exit(1)
 	}

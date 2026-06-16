@@ -87,6 +87,49 @@
     (remove-hook 'window-selection-change-functions #'my/focus-width--apply)
     (balance-windows)))
 
+;; tmux-style fraction-snap window resize (the elisp twin of nvim's
+;; core/focus.lua `snap_resize'). An arrow drags the shared border in its own
+;; direction, snapping the focused window through 25/33/50/67/75% of the frame.
+;; Border-follows-arrow: a window on the far (right/bottom) edge only has its
+;; inner border to move, so grow/shrink flips for it — the divider still travels
+;; the way the arrow points regardless of which side is focused.
+(defconst my/snap-stops '(25 33 50 67 75)
+  "Fraction stops (percent of frame) the snap resizer steps through.")
+
+(defun my/snap--next-stop (pct grow)
+  "Return the next stop past PCT, upward when GROW else downward."
+  (if grow
+      (or (seq-find (lambda (s) (> s (+ pct 2))) my/snap-stops)
+          (car (last my/snap-stops)))
+    (or (seq-find (lambda (s) (< s (- pct 2))) (reverse my/snap-stops))
+        (car my/snap-stops))))
+
+(defun my/snap-resize (axis toward-far)
+  "Snap-resize the selected window along AXIS (`x' or `y').
+TOWARD-FAR means the arrow points right/down. The shared border follows the
+arrow; see `my/snap-stops'."
+  (let* ((win (selected-window))
+         (horizontal (eq axis 'x))
+         (at-far (window-at-side-p win (if horizontal 'right 'bottom)))
+         (at-near (window-at-side-p win (if horizontal 'left 'top))))
+    (unless (and at-far at-near) ; only window on this axis: nothing to push against
+      (let* ((total (if horizontal (frame-width) (1- (frame-height)))) ; -1 echo area
+             (cur (if horizontal
+                      (window-total-width win)
+                    (window-total-height win)))
+             (grow (if at-far (not toward-far) toward-far)) ; far edge moves its inner border
+             (pct (/ (* cur 100) total))
+             (target (/ (* total (my/snap--next-stop pct grow)) 100)))
+        (ignore-errors (window-resize win (- target cur) horizontal))))))
+
+;; Bound to the same window-resize keys as before (Doom's `SPC w' prefix),
+;; mirroring nvim's <leader>w >/</+/-.
+(map! :leader
+      :desc "Snap split border right" "w >" (cmd! (my/snap-resize 'x t))
+      :desc "Snap split border left"  "w <" (cmd! (my/snap-resize 'x nil))
+      :desc "Snap split border down"  "w +" (cmd! (my/snap-resize 'y t))
+      :desc "Snap split border up"    "w -" (cmd! (my/snap-resize 'y nil)))
+
 ;; LSP semantic tokens: type-aware highlighting (members, enums, namespaces) over
 ;; tree-sitter; the theme colors the `lsp-face-semhl-*' faces.
 (after! lsp-mode

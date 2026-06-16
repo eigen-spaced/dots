@@ -42,10 +42,11 @@ type model struct {
 	spin    spinner.Model
 	prog    progress.Model
 
+	repo          string
 	width, height int
 }
 
-func newModel(items []item, dry bool) model {
+func newModel(items []item, dry bool, repo string) model {
 	sel := make([]bool, len(items))
 	for i := range items {
 		sel[i] = items[i].def
@@ -57,7 +58,7 @@ func newModel(items []item, dry bool) model {
 	pr.Width = 50
 	return model{
 		items: items, selected: sel, installed: make([]bool, len(items)),
-		dry: dry, st: stateChecking, spin: sp, prog: pr, width: 80, height: 24,
+		dry: dry, st: stateChecking, spin: sp, prog: pr, repo: repo, width: 80, height: 24,
 	}
 }
 
@@ -357,6 +358,14 @@ func (m model) doneView() string {
 			}
 		}
 	}
+	// The secret-bearing Emacs flow (Gmail app password → Keychain, ~/.mbsyncrc,
+	// first mbsync/mu index) is deliberately NOT a task here — it's interactive.
+	// Point the user at it once the installs are done.
+	b.WriteString("\n" + groupStyle.Render("Next: Emacs mail / integrations") + "\n")
+	b.WriteString(descStyle.Render(" Secrets aren't installed automatically. To finish mu4e (Gmail) etc.:") + "\n")
+	b.WriteString(" read   " + m.repo + "/bootstrap/emacs/emacs-integration.md\n")
+	b.WriteString(" run    " + m.repo + "/bootstrap/emacs/setup-emacs-integration.sh\n")
+
 	b.WriteString("\n" + helpStyle.Render("enter/q to exit"))
 	return b.String()
 }

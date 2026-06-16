@@ -6,7 +6,7 @@ import (
 )
 
 func TestRunViewShowsProgress(t *testing.T) {
-	m := newModel(registry("/tmp"), true)
+	m := newModel(registry("/tmp"), true, "/tmp")
 	m.st = stateRun
 	m.runList = []int{0, 1, 2, 3}
 	m.runPos = 2
@@ -19,7 +19,7 @@ func TestRunViewShowsProgress(t *testing.T) {
 // The select list must never render more lines than the terminal height, and
 // the cursor item must be visible from the start (the overflow bug).
 func TestSelectViewWindowsToHeight(t *testing.T) {
-	m := newModel(registry("/tmp"), false)
+	m := newModel(registry("/tmp"), false, "/tmp")
 	m.height = 12
 	m = m.clampScroll()
 	out := m.selectView()
@@ -32,7 +32,7 @@ func TestSelectViewWindowsToHeight(t *testing.T) {
 }
 
 func TestSelectViewScrollsToCursor(t *testing.T) {
-	m := newModel(registry("/tmp"), false)
+	m := newModel(registry("/tmp"), false, "/tmp")
 	m.height = 12
 	m.cursor = len(m.items) - 1
 	m = m.clampScroll()
