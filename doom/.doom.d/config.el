@@ -55,7 +55,7 @@
 (map! :after eww :map eww-mode-map :localleader
       :desc "Toggle centered column" "c" #'olivetti-mode)
 
-(setq display-line-numbers-type t)
+(setq display-line-numbers-type 'relative)
 
 ;; Auto-compile missing tree-sitter grammars on first file open (no prompt).
 (setq treesit-auto-install-grammar 'always)
