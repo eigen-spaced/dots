@@ -59,7 +59,7 @@ func registry(repo string) []item {
 			"mise install node@latest python@latest go@latest uv@latest pnpm@latest",
 			have("node") + " && " + have("pnpm") + " && " + have("go"), true},
 		{"Toolchains", "pnpm global config", "PNPM_HOME + minimumReleaseAge supply-chain guard",
-			"pnpm config set --global minimumReleaseAge 10080", "", true},
+			"pnpm config set --global minimumReleaseAge 7200", "", true}, // 5 days
 		{"Toolchains", "rustup", "stable toolchain + rust-src", rustupCmd, have("rustup"), true},
 
 		// --- Dev tools: Lua -------------------------------------------------
