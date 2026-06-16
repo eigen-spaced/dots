@@ -17,38 +17,38 @@
 (setq doom-theme 'doom-moonlight)
 
 ;; Merriweather (serif) for reading prose, in eww + org + mu4e.
-(defun cust/reading-serif ()
+(defun my/reading-serif ()
   "Remap the current buffer's `variable-pitch' face to Merriweather."
   (face-remap-add-relative 'variable-pitch :family "Merriweather 24pt"))
 
-(add-hook 'eww-mode-hook #'cust/reading-serif)
+(add-hook 'eww-mode-hook #'my/reading-serif)
 
 ;; org: serif prose, but keep code blocks / tables / metadata monospace.
-(defvar cust/org-keep-mono-faces
+(defvar my/org-keep-mono-faces
   '(org-block org-block-begin-line org-block-end-line org-code org-verbatim
     org-table org-formula org-meta-line org-document-info-keyword
     org-special-keyword org-property-value org-drawer
     font-lock-comment-face font-lock-comment-delimiter-face
     line-number line-number-current-line)
-  "Org faces pinned to `fixed-pitch' (monospace) under `cust/org-prose-serif'.")
+  "Org faces pinned to `fixed-pitch' (monospace) under `my/org-prose-serif'.")
 
-(defun cust/org-prose-serif ()
+(defun my/org-prose-serif ()
   "Render org prose in Merriweather (serif); keep code/tables/metadata mono."
-  (cust/reading-serif)
-  (dolist (f cust/org-keep-mono-faces)
+  (my/reading-serif)
+  (dolist (f my/org-keep-mono-faces)
     (face-remap-add-relative f 'fixed-pitch))
   (variable-pitch-mode 1))
 
-(add-hook 'org-mode-hook #'cust/org-prose-serif)
+(add-hook 'org-mode-hook #'my/org-prose-serif)
 
 ;; mu4e message view: serif body, like eww/org. (Headers list stays mono so its
 ;; columns keep aligning.)
-(defun cust/mu4e-prose-serif ()
+(defun my/mu4e-prose-serif ()
   "Render the mu4e message view in Merriweather (serif)."
-  (cust/reading-serif)
+  (my/reading-serif)
   (variable-pitch-mode 1))
 
-(add-hook 'mu4e-view-mode-hook #'cust/mu4e-prose-serif)
+(add-hook 'mu4e-view-mode-hook #'my/mu4e-prose-serif)
 
 ;; Centered reading column in eww, off by default; toggle with `SPC m c'.
 (after! olivetti (setq olivetti-body-width 80))
@@ -61,30 +61,30 @@
 (setq treesit-auto-install-grammar 'always)
 
 ;; On-demand "focus follows width": grow the selected window to
-;; `cust/focus-width' columns (enough that 80-col-formatted code never wraps)
+;; `my/focus-width' columns (enough that 80-col-formatted code never wraps)
 ;; and let the others shrink. Off by default; toggle with `M-x
-;; cust/focus-width-mode'. No package — just the built-in window resizer.
-(defcustom cust/focus-width 120
+;; my/focus-width-mode'. No package — just the built-in window resizer.
+(defcustom my/focus-width 120
   "Target total width (columns) for the focused window."
   :type 'integer :group 'convenience)
 
-(defun cust/focus-width--apply (&rest _)
-  "Widen the selected window toward `cust/focus-width' when the mode is on."
-  (when (and (bound-and-true-p cust/focus-width-mode)
+(defun my/focus-width--apply (&rest _)
+  "Widen the selected window toward `my/focus-width' when the mode is on."
+  (when (and (bound-and-true-p my/focus-width-mode)
              (not (window-minibuffer-p (selected-window)))
              (> (count-windows) 1))
-    (let ((delta (- cust/focus-width (window-total-width (selected-window)))))
+    (let ((delta (- my/focus-width (window-total-width (selected-window)))))
       (when (> delta 0)
         (ignore-errors (window-resize (selected-window) delta t)))))) ; t = horizontal
 
-(define-minor-mode cust/focus-width-mode
-  "Keep the focused window at least `cust/focus-width' columns wide."
+(define-minor-mode my/focus-width-mode
+  "Keep the focused window at least `my/focus-width' columns wide."
   :global t
-  (if cust/focus-width-mode
+  (if my/focus-width-mode
       (progn
-        (add-hook 'window-selection-change-functions #'cust/focus-width--apply)
-        (cust/focus-width--apply))
-    (remove-hook 'window-selection-change-functions #'cust/focus-width--apply)
+        (add-hook 'window-selection-change-functions #'my/focus-width--apply)
+        (my/focus-width--apply))
+    (remove-hook 'window-selection-change-functions #'my/focus-width--apply)
     (balance-windows)))
 
 ;; LSP semantic tokens: type-aware highlighting (members, enums, namespaces) over
@@ -127,32 +127,32 @@
 ;;; fzf-lua-style splits: with a candidate highlighted in any vertico finder,
 ;;; C-v opens it in a vsplit and C-s an hsplit (via embark).
 (after! embark
-  (defun cust/embark-find-file-vsplit (file)
+  (defun my/embark-find-file-vsplit (file)
     "Open FILE in a vertical split (embark action)."
     (interactive "FFile: ")
     (select-window (split-window-right))
     (find-file file))
-  (defun cust/embark-find-file-hsplit (file)
+  (defun my/embark-find-file-hsplit (file)
     "Open FILE in a horizontal split (embark action)."
     (interactive "FFile: ")
     (select-window (split-window-below))
     (find-file file))
-  (defun cust/embark-buffer-vsplit (buffer)
+  (defun my/embark-buffer-vsplit (buffer)
     "Display BUFFER in a vertical split (embark action)."
     (interactive "bBuffer: ")
     (select-window (split-window-right))
     (switch-to-buffer buffer))
-  (defun cust/embark-buffer-hsplit (buffer)
+  (defun my/embark-buffer-hsplit (buffer)
     "Display BUFFER in a horizontal split (embark action)."
     (interactive "bBuffer: ")
     (select-window (split-window-below))
     (switch-to-buffer buffer))
-  (define-key embark-file-map   (kbd "C-v") #'cust/embark-find-file-vsplit)
-  (define-key embark-file-map   (kbd "C-s") #'cust/embark-find-file-hsplit)
-  (define-key embark-buffer-map (kbd "C-v") #'cust/embark-buffer-vsplit)
-  (define-key embark-buffer-map (kbd "C-s") #'cust/embark-buffer-hsplit))
+  (define-key embark-file-map   (kbd "C-v") #'my/embark-find-file-vsplit)
+  (define-key embark-file-map   (kbd "C-s") #'my/embark-find-file-hsplit)
+  (define-key embark-buffer-map (kbd "C-v") #'my/embark-buffer-vsplit)
+  (define-key embark-buffer-map (kbd "C-s") #'my/embark-buffer-hsplit))
 
-(defun cust/embark-act-key (keystr)
+(defun my/embark-act-key (keystr)
   "Run `embark-act' on the current target, auto-choosing the action bound to
 KEYSTR in that target's action map (no action prompt appears). Used to make a
 single minibuffer keypress act on the highlighted candidate."
@@ -163,24 +163,24 @@ single minibuffer keypress act on the highlighted candidate."
 
 (after! vertico
   (define-key vertico-map (kbd "C-v")
-              (lambda () (interactive) (cust/embark-act-key "C-v")))
+              (lambda () (interactive) (my/embark-act-key "C-v")))
   (define-key vertico-map (kbd "C-s")
-              (lambda () (interactive) (cust/embark-act-key "C-s"))))
+              (lambda () (interactive) (my/embark-act-key "C-s"))))
 
 ;;; Quick access: org folder + dirvish (also fired by Hammerspoon hotkeys).
-(defun cust/dirvish-org ()
+(defun my/dirvish-org ()
   "Open the org directory (`org-directory') in Dirvish."
   (interactive)
   (dirvish org-directory))
 
-(defun cust/popup-frame (command)
+(defun my/popup-frame (command)
   "Create a focused macOS GUI frame and run COMMAND (a symbol) in it.
 Entry point for the global Hammerspoon hotkeys: the daemon has no frame of
 its own, so we make one, pull it to the foreground, then invoke COMMAND."
   (select-frame-set-input-focus (make-frame '((window-system . ns))))
   (call-interactively command))
 
-(defun cust/center-frame (frame)
+(defun my/center-frame (frame)
   "Center FRAME on its monitor's workarea (never overflows the edges)."
   (let* ((wa (frame-monitor-workarea frame))
          (mx (nth 0 wa)) (my (nth 1 wa)) (mw (nth 2 wa)) (mh (nth 3 wa)))
@@ -190,7 +190,7 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 
 (map! :leader
       :desc "Dirvish (here)"        "o d" #'dirvish
-      :desc "Org folder (Dirvish)"  "o n" #'cust/dirvish-org)
+      :desc "Org folder (Dirvish)"  "o n" #'my/dirvish-org)
 
 ;; `SPC m w' in dired toggles wdired (editable filenames; `:%s'/visual-block to
 ;; bulk-rename, `C-c C-c' to apply). Same as the built-in `C-x C-q'.
@@ -285,19 +285,19 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
     "g" #'smudge-track-reload
     (kbd "RET") #'smudge-track-select) ; play track-at-point (smudge only binds M-RET)
   ;; `l' reprints the whole list and dumps point at the top; save/restore the line.
-  (defun cust/smudge-preserve-point (orig &rest args)
+  (defun my/smudge-preserve-point (orig &rest args)
     "Keep point on the same line when smudge reprints a list buffer."
     (let ((line (line-number-at-pos)))
       (apply orig args)
       (goto-char (point-min))
       (forward-line (1- line))))
-  (advice-add 'smudge-track-search-print    :around #'cust/smudge-preserve-point)
-  (advice-add 'smudge-playlist-search-print :around #'cust/smudge-preserve-point)
+  (advice-add 'smudge-track-search-print    :around #'my/smudge-preserve-point)
+  (advice-add 'smudge-playlist-search-print :around #'my/smudge-preserve-point)
   (global-smudge-remote-mode 1))
 
 ;; Wake smudge without opening UI: its transport commands aren't autoloaded, so
 ;; they stay dead until the package loads. This loads it (runs the :config above).
-(defun cust/smudge-connect ()
+(defun my/smudge-connect ()
   "Load + initialize smudge so transport (play/pause/next/prev) works.
 No UI, and no OAuth needed for the AppleScript transport."
   (interactive)
@@ -308,7 +308,7 @@ No UI, and no OAuth needed for the AppleScript transport."
   (message "Smudge ready — transport active."))
 
 ;; Hide smudge's modeline info + stop the status poll; transport keeps working.
-(defun cust/smudge-disconnect ()
+(defun my/smudge-disconnect ()
   "Turn off smudge's modeline player info + status polling."
   (interactive)
   (when (bound-and-true-p global-smudge-remote-mode)
@@ -318,8 +318,8 @@ No UI, and no OAuth needed for the AppleScript transport."
 ;; SPC o M -> Spotify (SPC o m is mu4e).
 (map! :leader
       (:prefix ("o M" . "music")
-       :desc "Connect / wake"       "c"   #'cust/smudge-connect
-       :desc "Disconnect / hide"    "C"   #'cust/smudge-disconnect
+       :desc "Connect / wake"       "c"   #'my/smudge-connect
+       :desc "Disconnect / hide"    "C"   #'my/smudge-disconnect
        :desc "Track search"         "s"   #'smudge-track-search
        :desc "Playlist search"      "p"   #'smudge-playlist-search
        :desc "My playlists"         "m"   #'smudge-my-playlists
@@ -342,9 +342,9 @@ No UI, and no OAuth needed for the AppleScript transport."
                 (let ((default-directory emacs-everywhere--dir))
                   (apply orig args))))
   ;; Recompile clean + strip the resource fork/FinderInfo, once per session.
-  (defvar cust/emacs-everywhere--osascripts-fixed nil)
-  (defun cust/emacs-everywhere-recompile-osascripts (&rest _)
-    (unless cust/emacs-everywhere--osascripts-fixed
+  (defvar my/emacs-everywhere--osascripts-fixed nil)
+  (defun my/emacs-everywhere-recompile-osascripts (&rest _)
+    (unless my/emacs-everywhere--osascripts-fixed
       (dolist (s '("app-name" "window-title" "window-geometry"))
         (let ((src (expand-file-name (concat s ".applescript") emacs-everywhere--dir))
               (out (expand-file-name s emacs-everywhere--dir)))
@@ -352,30 +352,30 @@ No UI, and no OAuth needed for the AppleScript transport."
             (when (file-exists-p out) (delete-file out))
             (call-process "osacompile" nil nil nil "-o" out src)
             (call-process "xattr" nil nil nil "-c" out))))
-      (setq cust/emacs-everywhere--osascripts-fixed t)))
+      (setq my/emacs-everywhere--osascripts-fixed t)))
   (advice-add 'emacs-everywhere--ensure-oscascript-compiled
-              :after #'cust/emacs-everywhere-recompile-osascripts)
+              :after #'my/emacs-everywhere-recompile-osascripts)
   (emacs-everywhere--ensure-oscascript-compiled)
 
   ;; Open empty + centered: drop `insert-selection' (its ⌘C/yank fallback leaked a
   ;; stray `c' + stale clipboard) and replace mouse-positioning with centering.
-  (defun cust/emacs-everywhere-center-frame ()
-    (cust/center-frame (selected-frame)))
+  (defun my/emacs-everywhere-center-frame ()
+    (my/center-frame (selected-frame)))
   (setq emacs-everywhere-init-hooks
         (mapcar (lambda (h) (if (eq h 'emacs-everywhere-set-frame-position)
-                                #'cust/emacs-everywhere-center-frame h))
+                                #'my/emacs-everywhere-center-frame h))
                 (remq 'emacs-everywhere-insert-selection
                       emacs-everywhere-init-hooks)))
 
   ;; With insert-selection gone the temp .org is empty, so file-templates drops a
   ;; `#+title' into it (on `doom-switch-buffer-hook'). Make file-templates skip
   ;; emacs-everywhere files outright — order-independent, unlike erasing after.
-  (defun cust/file-templates-skip-everywhere (orig &rest args)
+  (defun my/file-templates-skip-everywhere (orig &rest args)
     (unless (and buffer-file-name
                  (fboundp 'emacs-everywhere-file-p)
                  (emacs-everywhere-file-p buffer-file-name))
       (apply orig args)))
-  (advice-add '+file-templates-check-h :around #'cust/file-templates-skip-everywhere))
+  (advice-add '+file-templates-check-h :around #'my/file-templates-skip-everywhere))
 
 (after! lsp-mode
   (setq lsp-log-io nil

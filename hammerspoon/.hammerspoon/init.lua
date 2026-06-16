@@ -7,7 +7,7 @@
 -- already running, so emacsclient just talks to its socket — no launcher or
 -- bash+sleep timing hack is needed.
 --
--- The elisp helper `cust/popup-frame' (defined in ~/.doom.d/config.el) makes a
+-- The elisp helper `my/popup-frame' (defined in ~/.doom.d/config.el) makes a
 -- focused macOS GUI frame and runs a command in it. The same commands are also
 -- bound under the Doom leader (SPC o d / SPC o n), so the system-wide hotkeys
 -- and the in-Emacs leader keys do exactly the same thing.
@@ -28,11 +28,11 @@ end
 
 -- Open COMMAND (an interactive command symbol) in a fresh, focused frame.
 local function emacsPopup(command)
-  emacs("(cust/popup-frame '" .. command .. ")")
+  emacs("(my/popup-frame '" .. command .. ")")
 end
 
 -- ⌘⌥O  →  org folder in Dirvish
-hs.hotkey.bind({ "cmd", "alt" }, "O", function() emacsPopup("cust/dirvish-org") end)
+hs.hotkey.bind({ "cmd", "alt" }, "O", function() emacsPopup("my/dirvish-org") end)
 
 -- ⌘⌥F  →  Dirvish (home / current default-directory of the new frame)
 hs.hotkey.bind({ "cmd", "alt" }, "F", function() emacsPopup("dirvish") end)

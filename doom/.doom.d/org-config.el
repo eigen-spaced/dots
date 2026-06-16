@@ -8,7 +8,7 @@
 ;;   - time clocking
 ;; Task/agenda files live in ~/org; roam notes in ~/org/roam.
 
-(defun cust/org-file (name)
+(defun my/org-file (name)
   "Absolute path of NAME under `org-directory'."
   (expand-file-name name org-directory))
 
@@ -18,7 +18,7 @@
   (setq
    ;; Files the agenda scans. someday.org is a refile target only (kept out of
    ;; the agenda on purpose).
-   org-agenda-files (mapcar #'cust/org-file
+   org-agenda-files (mapcar #'my/org-file
                             '("inbox.org" "projects.org" "calendar.org" "reading.org"))
 
    ;; Workflow states. NEXT = the single next actionable step; WAITING =
@@ -29,7 +29,7 @@
    org-log-into-drawer t
 
    ;; Refile inbox items into these (C-c C-w).
-   org-refile-targets (list (cons (mapcar #'cust/org-file
+   org-refile-targets (list (cons (mapcar #'my/org-file
                                           '("projects.org" "someday.org"
                                             "calendar.org" "reading.org"))
                                   '(:maxlevel . 3)))
@@ -39,17 +39,17 @@
 
    ;; Capture templates (SPC X). Journaling is org-roam-dailies (below).
    org-capture-templates
-   `(("t" "Task"           entry (file ,(cust/org-file "inbox.org"))
+   `(("t" "Task"           entry (file ,(my/org-file "inbox.org"))
       "* TODO %?\n%U" :empty-lines 1)
-     ("n" "Note"           entry (file ,(cust/org-file "inbox.org"))
+     ("n" "Note"           entry (file ,(my/org-file "inbox.org"))
       "* %?\n%U" :empty-lines 1)
-     ("l" "Task from here" entry (file ,(cust/org-file "inbox.org"))
+     ("l" "Task from here" entry (file ,(my/org-file "inbox.org"))
       "* TODO %?\n%U\n%a" :empty-lines 1)
-     ("r" "Reading item"   entry (file ,(cust/org-file "reading.org"))
+     ("r" "Reading item"   entry (file ,(my/org-file "reading.org"))
       "* TODO %?\n%U" :empty-lines 1)
      ;; Used by the browser bookmarklet via org-protocol. Saves the page's
      ;; title+URL (and any selection) to the reading list instantly — no popup.
-     ("w" "Web → reading list" entry (file ,(cust/org-file "reading.org"))
+     ("w" "Web → reading list" entry (file ,(my/org-file "reading.org"))
       "* TODO %:annotation\n%U\n%:initial" :immediate-finish t :empty-lines 1))
 
    ;; Clocking: keep clocks in a drawer, drop zero-time ones, persist history.
@@ -87,9 +87,9 @@
                              (fullscreen . nil)
                              (width . 100) (height . 30)))))
     (select-frame-set-input-focus frame)
-    (cust/center-frame frame)
+    (my/center-frame frame)
     (let ((org-capture-templates
-           `(("i" "Inbox (fast)" entry (file ,(cust/org-file "inbox.org"))
+           `(("i" "Inbox (fast)" entry (file ,(my/org-file "inbox.org"))
               "* %?\n%U\n" :prepend t :empty-lines 0))))
       (condition-case nil
           (progn (org-capture nil "i")
@@ -114,7 +114,7 @@
   (interactive)
   (let ((cutoff (- (float-time) (* my/org-inbox-stale-days 86400)))
         (markers '()) (n 0))
-    (with-current-buffer (find-file-noselect (cust/org-file "inbox.org"))
+    (with-current-buffer (find-file-noselect (my/org-file "inbox.org"))
       (org-with-wide-buffer
        (goto-char (point-min))
        (while (re-search-forward "^\\* " nil t)
@@ -141,7 +141,7 @@
 
 ;; --- org-roam: linked notes + daily journal --------------------------------
 ;; `org-roam-directory' must be set before org-roam loads.
-(setq org-roam-directory (cust/org-file "roam")
+(setq org-roam-directory (my/org-file "roam")
       org-roam-dailies-directory "daily/")
 (after! org-roam
   (setq org-roam-dailies-capture-templates
@@ -161,7 +161,7 @@
 
 ;; Insert a source block, choosing the language via completion (vertico).
 ;; SPC m B in an org buffer.
-(defun cust/org-insert-src-block (lang)
+(defun my/org-insert-src-block (lang)
   "Insert an Org #+begin_src block for LANG and place point inside it."
   (interactive
    (list (completing-read
@@ -175,10 +175,10 @@
   (when (fboundp 'evil-insert-state) (evil-insert-state)))
 
 (map! :after org :map org-mode-map :localleader
-      :desc "Source block" "B" #'cust/org-insert-src-block)
+      :desc "Source block" "B" #'my/org-insert-src-block)
 
 ;; --- reading list: quick add from clipboard + read in Emacs -----------------
-(defun cust/url-title (url)
+(defun my/url-title (url)
   "Fetch URL and return its <title> (whitespace-collapsed), or nil."
   (ignore-errors
     (with-current-buffer (url-retrieve-synchronously url t t 5)
@@ -189,7 +189,7 @@
               (string-trim (replace-regexp-in-string "[ \t\n\r]+" " " (match-string 1)))))
         (kill-buffer)))))
 
-(defun cust/org-reading-add-from-clipboard ()
+(defun my/org-reading-add-from-clipboard ()
   "Add the URL in the clipboard to the reading list, fetching its title.
 No capture buffer — copy a link anywhere, switch to Emacs, run this."
   (interactive)
@@ -197,8 +197,8 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
                               (current-kill 0) ""))))
     (unless (string-match-p "\\`https?://" url)
       (user-error "Clipboard isn't a URL: %S" url))
-    (let ((title (replace-regexp-in-string "[][]" "" (or (cust/url-title url) url))))
-      (with-current-buffer (find-file-noselect (cust/org-file "reading.org"))
+    (let ((title (replace-regexp-in-string "[][]" "" (or (my/url-title url) url))))
+      (with-current-buffer (find-file-noselect (my/org-file "reading.org"))
         (goto-char (point-max))
         (unless (bolp) (insert "\n"))
         (insert (format "* TODO [[%s][%s]]\n%s\n" url title
@@ -206,7 +206,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
         (save-buffer))
       (message "Reading list ← %s" title))))
 
-(defun cust/org-entry-url ()
+(defun my/org-entry-url ()
   "Return the first http(s) URL in the current org entry, or nil.
 Matches both bracket links ([[url][desc]]) and bare URLs, in the heading or
 body (the regex stops at \"]\", so it returns a bracket link's target cleanly)."
@@ -216,11 +216,11 @@ body (the regex stops at \"]\", so it returns a bracket link's target cleanly)."
       (when (re-search-forward "https?://[^][ \t\n\"<>]+" end t)
         (match-string-no-properties 0)))))
 
-(defun cust/org-read-in-eww ()
+(defun my/org-read-in-eww ()
   "Open the first link in the current org entry in eww, in a clean readable view."
   (interactive)
   (require 'eww)
-  (let ((url (cust/org-entry-url)))
+  (let ((url (my/org-entry-url)))
     (unless url (user-error "No URL in this entry"))
     ;; Once the page first renders: switch to eww's readable (article) view and
     ;; maximize its window so the article opens full-frame instead of in a split.
@@ -233,9 +233,9 @@ body (the regex stops at \"]\", so it returns a bracket link's target cleanly)."
       (add-hook 'eww-after-render-hook hook))
     (eww url)))
 
-(map! :leader :desc "Add clipboard URL → reading" "o a R" #'cust/org-reading-add-from-clipboard)
+(map! :leader :desc "Add clipboard URL → reading" "o a R" #'my/org-reading-add-from-clipboard)
 (map! :after org :map org-mode-map :localleader
-      :desc "Read entry in eww" "R" #'cust/org-read-in-eww)
+      :desc "Read entry in eww" "R" #'my/org-read-in-eww)
 ;; Note: deliberately NOT binding this under the agenda's localleader — SPC m R
 ;; there is org-agenda-refile, which is worth keeping. From the reading-list
 ;; agenda (SPC o a r), press TAB/RET to jump to the entry, then SPC m R.
