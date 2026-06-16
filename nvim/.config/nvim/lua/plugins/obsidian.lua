@@ -19,7 +19,7 @@ return {
       min_chars = 0,
     },
     picker = {
-      name = "fzf-lua",
+      name = "mini.pick",
     },
     note_id_func = function(title)
       if title ~= nil then

@@ -10,7 +10,8 @@ return {
     zen = { enabled = true },
     quickfile = { enabled = true },
     scope = { enabled = false },
-    picker = { enabled = true },
+    picker = { enabled = false },
+    explorer = { enabled = false },
     bigfile = {
       enabled = true,
       notify = false,

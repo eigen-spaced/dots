@@ -120,37 +120,6 @@ function M.config()
     end,
   })
 
-  -- Prevent race conditions and conflicts between volar and tsserver
-  vim.api.nvim_create_autocmd("LspAttach", {
-    group = au,
-    desc = "prevent tsserver and volar competing",
-    callback = function(args)
-      if not (args.data and args.data.client_id) then
-        return
-      end
-      local active_clients = vim.lsp.get_clients()
-      local client = vim.lsp.get_client_by_id(args.data.client_id)
-      -- prevent tsserver and volar competing
-      -- if client.name == "volar" or require("lspconfig").util.root_pattern("nuxt.config.ts")(vim.fn.getcwd()) then
-      -- OR
-      if client and client.name == "volar" then
-        for _, client_ in pairs(active_clients) do
-          -- stop tsserver if volar is already active
-          if client_.name == "tsserver" then
-            client_.stop()
-          end
-        end
-      elseif client and client.name == "tsserver" then
-        for _, client_ in pairs(active_clients) do
-          -- prevent tsserver from starting if volar is already active
-          if client_.name == "volar" then
-            client.stop()
-          end
-        end
-      end
-    end,
-  })
-
   vim.api.nvim_create_autocmd("LspAttach", {
     group = au,
     desc = "LSP highlight",
@@ -210,62 +179,51 @@ function M.config()
     end,
   })
 
-  local mason_status_ok, mason = pcall(require, "mason")
-  local mason_lspconfig_status_ok, mason_lspconfig =
-    pcall(require, "mason-lspconfig")
+  -- mason.nvim is kept only as a manual sandbox (`:MasonInstall`) for trying
+  -- out new languages. It no longer auto-installs (`ensure_installed`) or
+  -- auto-enables (mason-lspconfig) anything: the servers below are enabled
+  -- explicitly and their binaries come from each language's own ecosystem
+  -- (brew / pnpm -g / cargo / uv / mise). To adopt a new server: install its
+  -- binary (e.g. `:MasonInstall foo-ls`) and add it to `servers`.
+  -- PATH = "append" so mason's bin never shadows native tools: anything you
+  -- :MasonInstall to experiment with is found, but brew/pnpm/cargo/mise wins
+  -- whenever both exist.
+  pcall(function()
+    require("mason").setup { PATH = "append" }
+  end)
 
-  if not mason_status_ok or not mason_lspconfig_status_ok then
-    return
-  end
-
-  -- Mason-managed servers
-  local mason_servers = {
-    "cssls",
-    "html",
-    "svelte",
-    "tailwindcss",
-    "vimls",
-    "bashls",
-    "vue_ls",
-    "astro",
-    "harper_ls",
-    "pyrefly",
-  }
-
-  -- Non-mason / external servers
-  local external_servers = {
-    "lua_ls",
-    "ty",
-  }
-  mason.setup()
-
-  mason_lspconfig.setup {
-    ensure_installed = mason_servers,
-  }
-
-  -- Register configs (custom or default)
-  local function setup(server)
-    local ok, custom_config = pcall(require, "lsp." .. server)
-    vim.lsp.config(server, ok and custom_config or {})
-  end
-
-  local all_servers =
-    vim.list_extend(vim.deepcopy(mason_servers), external_servers)
-
-  -- Register + enable
-  for _, server in ipairs(all_servers) do
-    setup(server)
-    vim.lsp.enable(server)
-  end
-
+  -- `ty` has no bundled lspconfig (or after/lsp) config, so define it inline.
   vim.lsp.config("ty", {
     cmd = { "ty", "server" },
     filetypes = { "python" },
     root_markers = { "pyproject.toml", ".git" },
-    on_attach = function(client, bufnr)
+    on_attach = function(client, _)
       client.server_capabilities.hoverProvider = false
     end,
   })
+
+  -- Config for each comes from nvim-lspconfig's bundled `lsp/<name>.lua` merged
+  -- with our overrides in `after/lsp/<name>.lua`. rust-analyzer (rustaceanvim)
+  -- and the TS server (typescript-tools) are owned by their own plugins and are
+  -- intentionally not listed here.
+  local servers = {
+    "clangd", -- system /usr/bin/clangd
+    "gopls", -- mise (go: backend)
+    -- "clojure_lsp", -- brew install clojure-lsp/brew/clojure-lsp-native
+    "lua_ls", -- brew lua-language-server
+    "cssls", -- pnpm -g vscode-langservers-extracted
+    "html", -- pnpm -g vscode-langservers-extracted
+    "svelte", -- pnpm -g svelte-language-server
+    "tailwindcss", -- pnpm -g @tailwindcss/language-server
+    "vimls", -- pnpm -g vim-language-server
+    "bashls", -- pnpm -g bash-language-server
+    "vue_ls", -- pnpm -g @vue/language-server
+    "astro", -- pnpm -g @astrojs/language-server
+    "harper_ls", -- brew harper
+    "pyrefly", -- uv
+    "ty", -- uv
+  }
+  vim.lsp.enable(servers)
 end
 
 return M

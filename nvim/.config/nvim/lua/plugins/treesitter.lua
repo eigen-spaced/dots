@@ -31,7 +31,6 @@ return {
           local ft = vim.bo[bufnr].filetype
 
           local ignore_ft = {
-            "fzf",
             "TelescopePrompt",
             "qf",
             "netrw",

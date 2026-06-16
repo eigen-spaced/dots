@@ -7,6 +7,4 @@ return {
     },
     build = ":MasonUpdate", -- :MasonUpdate updates registry contents
   },
-
-  { "mason-org/mason-lspconfig.nvim" },
 }
