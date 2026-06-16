@@ -4,10 +4,8 @@ return {
     local keymap = vim.keymap
     local smart_splits = require("smart-splits")
 
-    keymap.set("n", "<M-Left>", smart_splits.resize_left)
-    keymap.set("n", "<M-Down>", smart_splits.resize_down)
-    keymap.set("n", "<M-Up>", smart_splits.resize_up)
-    keymap.set("n", "<M-Right>", smart_splits.resize_right)
+    -- Resize is handled in core/focus.lua (fraction-snapping, like the tmux
+    -- PREFIX-arrow resize). smart-splits keeps seamless nav + buffer swap.
     -- moving between splits
     keymap.set("n", "<C-h>", smart_splits.move_cursor_left)
     keymap.set("n", "<C-j>", smart_splits.move_cursor_down)

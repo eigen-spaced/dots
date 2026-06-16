@@ -4,6 +4,7 @@ require("core.options")
 require("core.colors")
 require("core.winbar")
 require("core.keymap")
+require("core.focus")
 
 -- Bootstrap lazy
 local plugins_ok, _ = pcall(require, "conf.lazy")

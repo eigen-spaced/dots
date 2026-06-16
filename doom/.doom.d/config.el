@@ -60,6 +60,33 @@
 ;; Auto-compile missing tree-sitter grammars on first file open (no prompt).
 (setq treesit-auto-install-grammar 'always)
 
+;; On-demand "focus follows width": grow the selected window to
+;; `cust/focus-width' columns (enough that 80-col-formatted code never wraps)
+;; and let the others shrink. Off by default; toggle with `M-x
+;; cust/focus-width-mode'. No package — just the built-in window resizer.
+(defcustom cust/focus-width 120
+  "Target total width (columns) for the focused window."
+  :type 'integer :group 'convenience)
+
+(defun cust/focus-width--apply (&rest _)
+  "Widen the selected window toward `cust/focus-width' when the mode is on."
+  (when (and (bound-and-true-p cust/focus-width-mode)
+             (not (window-minibuffer-p (selected-window)))
+             (> (count-windows) 1))
+    (let ((delta (- cust/focus-width (window-total-width (selected-window)))))
+      (when (> delta 0)
+        (ignore-errors (window-resize (selected-window) delta t)))))) ; t = horizontal
+
+(define-minor-mode cust/focus-width-mode
+  "Keep the focused window at least `cust/focus-width' columns wide."
+  :global t
+  (if cust/focus-width-mode
+      (progn
+        (add-hook 'window-selection-change-functions #'cust/focus-width--apply)
+        (cust/focus-width--apply))
+    (remove-hook 'window-selection-change-functions #'cust/focus-width--apply)
+    (balance-windows)))
+
 ;; LSP semantic tokens: type-aware highlighting (members, enums, namespaces) over
 ;; tree-sitter; the theme colors the `lsp-face-semhl-*' faces.
 (after! lsp-mode
