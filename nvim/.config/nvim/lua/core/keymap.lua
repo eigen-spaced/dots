@@ -8,8 +8,6 @@ vim.g.maplocalleader = " "
 -- disable Q/q for ex-mode
 keymap.set("", "Q", "", { noremap = true, silent = true })
 keymap.set("", "q:", "", { noremap = true, silent = true })
--- U.map('n', 'x', '"_x') --delete char without yank
--- U.map('x', 'x', '"_x') -- delete visual selection without yank
 
 -- Toggle highlighting
 keymap.set("n", "<leader>hs", "<cmd>set hlsearch!<CR>")
@@ -26,12 +24,8 @@ keymap.set("n", "<C-h>", "<C-w>h")
 keymap.set("n", "<C-j>", "<C-w>j")
 keymap.set("n", "<C-k>", "<C-w>k")
 keymap.set("n", "<C-l>", "<C-w>l")
--- Better resizing
-keymap.set("n", "<M-Left>", "5<C-W><")
-keymap.set("n", "<M-Right>", "5<C-W>>")
-keymap.set("n", "<M-Down>", "5<C-W>-")
-keymap.set("n", "<M-Up>", "5<C-W>+")
 
+-- Snap-resize splits lives in core/focus.lua (Ctrl+<arrow>).
 keymap.set("n", "<Space>=", "<C-W>=")
 
 keymap.set("n", "<Leader>o", "o<Esc>k")

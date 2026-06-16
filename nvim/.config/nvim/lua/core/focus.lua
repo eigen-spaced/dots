@@ -34,11 +34,11 @@ vim.api.nvim_create_user_command("FocusWidth", function()
   end
 end, { desc = "Toggle focus-follows window width (active window stays wide)" })
 
--- Size-based split resize (mirrors the tmux PREFIX-arrow resize): the arrow
--- drags the active window's divider in its direction, snapping to fraction
--- stops of the editor instead of stepping by N columns. A window glued to the
--- far edge (right/bottom) only has its inner border to drag, so grow/shrink
--- inverts for it. Replaces the stepwise smart-splits resize on <M-arrow>.
+-- Size-based split resize, matching the tmux PREFIX-arrow behaviour: the arrow
+-- drags the shared border in its own direction, snapping to fraction stops
+-- (25/33/50/67/75%). So <C-Right> always moves the divider right (left split
+-- grows, right shrinks) regardless of focus; <C-Up>/<C-Down> likewise for
+-- stacked splits. Bound to Ctrl+<arrow>. Replaces the stepwise resize.
 local STOPS = { 25, 33, 50, 67, 75 }
 
 local function next_stop(pct, grow)
@@ -58,8 +58,10 @@ local function next_stop(pct, grow)
   return STOPS[1]
 end
 
--- axis: "x" (width) or "y" (height); grow = move divider toward right/down.
-local function snap_resize(axis, grow)
+-- axis "x"/"y"; toward_far = arrow points right/down. The border follows the
+-- arrow, so a split on the far (right/bottom) edge — which only has its inner
+-- border to move — flips grow/shrink.
+local function snap_resize(axis, toward_far)
   local me = vim.fn.winnr()
   local at_far, at_near, total, get, set
   if axis == "x" then
@@ -82,24 +84,25 @@ local function snap_resize(axis, grow)
     end
   end
   if at_far and at_near then
-    return -- spans the whole axis: no divider to drag
+    return -- only split on this axis: nothing to resize against
   end
-  if at_far and not at_near then
-    grow = not grow -- only the inner border is draggable
+  local grow = toward_far
+  if at_far then
+    grow = not grow -- far-edge split moves its inner border, so flip
   end
   local pct = math.floor(get() * 100 / total)
   set(math.floor(total * next_stop(pct, grow) / 100))
 end
 
-vim.keymap.set("n", "<M-Right>", function()
+vim.keymap.set("n", "<leader>w>", function()
   snap_resize("x", true)
-end, { desc = "Resize: grow width to next stop" })
-vim.keymap.set("n", "<M-Left>", function()
+end, { desc = "Resize: move split border right" })
+vim.keymap.set("n", "<leader>w<", function()
   snap_resize("x", false)
-end, { desc = "Resize: shrink width to next stop" })
-vim.keymap.set("n", "<M-Down>", function()
+end, { desc = "Resize: move split border left" })
+vim.keymap.set("n", "<leader>w-", function()
   snap_resize("y", true)
-end, { desc = "Resize: grow height to next stop" })
-vim.keymap.set("n", "<M-Up>", function()
+end, { desc = "Resize: move split border down" })
+vim.keymap.set("n", "<leader>w+", function()
   snap_resize("y", false)
-end, { desc = "Resize: shrink height to next stop" })
+end, { desc = "Resize: move split border up" })
