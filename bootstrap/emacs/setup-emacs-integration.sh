@@ -38,7 +38,7 @@ kc_has() { "$SECURITY" find-internet-password -s "$1" -a "$2" >/dev/null 2>&1; }
 # --- preflight --------------------------------------------------------------
 bold "Emacs integration setup"
 for t in mu mbsync "$SECURITY"; do
-  command -v "$t" >/dev/null 2>&1 || warn "missing: $t (run bootstrap/mac.sh first)"
+  command -v "$t" >/dev/null 2>&1 || warn "missing: $t (run bootstrap/setup first, Emacs group)"
 done
 echo
 
@@ -151,4 +151,4 @@ bold "Done."
 if ask "Restart the Emacs daemon now (so new Keychain creds load)?"; then
   launchctl kickstart -k "gui/$(id -u)/$DAEMON" && ok "daemon restarted"
 fi
-info "Full reference: bootstrap/emacs-integration.md"
+info "Full reference: bootstrap/emacs/emacs-integration.md"

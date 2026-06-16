@@ -3,7 +3,7 @@
 How to bring up the full Emacs setup on a fresh Mac: the daemon, Doom, the
 global Hammerspoon hotkeys, **mu4e** (Gmail), **smudge** (Spotify), and
 **emacs-everywhere**. The package installs and symlinks are handled by the
-bootstrap (`mac.sh` + `install.sh`); this doc covers the manual, credential-
+bootstrap (`bootstrap/setup`); this doc covers the manual, credential-
 bearing steps the bootstrap can't automate.
 
 > **Secrets never live in this repo.** Passwords and API keys go in the macOS
@@ -12,7 +12,7 @@ bearing steps the bootstrap can't automate.
 > takes a secret in a **private terminal**, and use `read -rs` so it stays out
 > of your shell history.
 >
-> **Shortcut:** `bootstrap/setup-emacs-integration.sh` walks through sections
+> **Shortcut:** `bootstrap/emacs/setup-emacs-integration.sh` walks through sections
 > 1–3 below interactively (prompts for secrets → Keychain, writes `~/.mbsyncrc`,
 > runs the first sync, opens the Accessibility pane). It's idempotent and
 > prompts before storing anything. The rest of this doc is the reference for
@@ -22,10 +22,11 @@ bearing steps the bootstrap can't automate.
 
 ## 0. Prerequisites (handled by the bootstrap)
 
-`bootstrap/mac.sh` installs: `emacs-plus@30`, `mu`, `isync`, `pinentry-mac`,
-`terminal-notifier`, `vips` (dirvish thumbnails), and the `hammerspoon` cask.
-`bootstrap/install.sh` stows the `doom` and `hammerspoon` packages and offers to
-install the `com.sunny.emacs-daemon` LaunchAgent.
+`bootstrap/setup` (the **Emacs** group) installs `emacs-plus@30`, `mu`, `isync`,
+and `pinentry-mac`, and offers the `com.sunny.emacs-daemon` LaunchAgent and the
+Dock launcher applet; `vips` (dirvish thumbnails) and the `hammerspoon` cask are
+elsewhere in the picker. Stow the `doom` and `hammerspoon` packages from the
+**Dotfiles** group.
 
 After bootstrap, also do the Doom side once:
 

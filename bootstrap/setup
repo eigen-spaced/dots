@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Entry point for the dotfiles bootstrap TUI.
+#
+# Runs the committed prebuilt binary (no Go or gum needed). If there's no
+# prebuilt binary for this OS/arch, falls back to building from source when Go
+# is available.
+set -euo pipefail
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+os="$(uname -s | tr '[:upper:]' '[:lower:]')"
+arch="$(uname -m)"
+[ "$arch" = "aarch64" ] && arch="arm64"
+
+bin="$DIR/bin/dotbootstrap-$os-$arch"
+if [ -x "$bin" ]; then
+    exec "$bin" "$@"
+fi
+
+if command -v go >/dev/null 2>&1; then
+    echo "No prebuilt binary for $os-$arch — building from source…"
+    (cd "$DIR/dotbootstrap" && go build -o "$DIR/dotbootstrap/dotbootstrap" .)
+    exec "$DIR/dotbootstrap/dotbootstrap" "$@"
+fi
+
+echo "No prebuilt dotbootstrap binary for $os-$arch, and Go is not installed." >&2
+echo "Install Go (e.g. via mise) or add a prebuilt binary at: $bin" >&2
+exit 1

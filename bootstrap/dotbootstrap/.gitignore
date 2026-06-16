@@ -1,0 +1,2 @@
+# Local dev build (`make build`). The committed binary lives in ../bin/.
+/dotbootstrap
