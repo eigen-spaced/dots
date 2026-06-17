@@ -294,9 +294,44 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
         mu4e-get-mail-command "mbsync -a"
         mu4e-update-interval 300            ; background fetch every 5 min
         mu4e-attachment-dir "~/Downloads"
+        ;; REQUIRED for mbsync: rename files on move so mbsync doesn't see a UID
+        ;; clash and spawn duplicates. Without this, trashing leaves a stale copy
+        ;; in All Mail that never gets reaped — defaults to nil, which is wrong here.
+        mu4e-change-filenames-when-moving t
         message-send-mail-function #'smtpmail-send-it
         ;; Gmail saves its own copy of sent mail; don't let mu4e double it up.
-        mu4e-sent-messages-behavior 'delete)
+        mu4e-sent-messages-behavior 'delete
+        ;; Render HTML via shr (see the colour fix below); show whichever part
+        ;; the sender prefers (usually HTML). Flip to plain text on demand with
+        ;; RET on the gnus part button.
+        mm-text-html-renderer 'shr)
+
+  ;; Gmail labels mean a "deleted" message keeps its All Mail copy, so broad
+  ;; queries sweep Trash/Spam back in. Scope bookmarks to the INBOX maildir
+  ;; (and exclude Trash/Spam explicitly) so they stay out of the inbox view.
+  ;; `flag:trashed' is unused in this index (mbsync trashes by moving to the
+  ;; Trash maildir, not by flag), so exclude the Trash/Spam *maildirs* instead.
+  ;; The Inbox bookmark is maildir-scoped — All Mail isn't in scope, so deletes
+  ;; from it are one-shot (no duplicate-flip).
+  (setq mu4e-bookmarks
+        '((:name "Inbox"
+           :query "maildir:/gmail/INBOX"
+           :key ?i)
+          (:name "Unread messages"
+           :query "flag:unread AND NOT maildir:/gmail/[Gmail]/Trash AND NOT maildir:/gmail/[Gmail]/Spam"
+           :key ?u)
+          (:name "Today's messages"
+           :query "date:today..now AND NOT maildir:/gmail/[Gmail]/Trash AND NOT maildir:/gmail/[Gmail]/Spam"
+           :key ?t)
+          (:name "Last 7 days"
+           :query "date:7d..now AND NOT maildir:/gmail/[Gmail]/Trash AND NOT maildir:/gmail/[Gmail]/Spam"
+           :key ?w)
+          (:name "Flagged"
+           :query "flag:flagged AND NOT maildir:/gmail/[Gmail]/Trash"
+           :key ?f)
+          (:name "Messages with images"
+           :query "mime:image/*"
+           :key ?p)))
 
   (set-email-account! "gmail"
                       `((user-mail-address      . ,user-mail-address)
@@ -310,6 +345,18 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
                         (smtpmail-smtp-service  . 587)
                         (smtpmail-stream-type   . starttls))
                       t))
+
+;; HTML mail (when shown instead of plain text) renders via shr, which honours
+;; the message's own colours — marketing emails set white cell backgrounds that
+;; turn into ugly light boxes against a dark theme. Bind `shr-use-colors' off
+;; just for mail so HTML uses our theme faces. Scoped to `mm-shr' (gnus/mu4e's
+;; HTML-part renderer), so eww keeps page colours; fonts are left alone so the
+;; serif body styling survives.
+(defun my/mu4e-shr-no-colors (orig &rest args)
+  "Render HTML mail without the message's own colours (use theme faces)."
+  (let ((shr-use-colors nil))
+    (apply orig args)))
+(advice-add 'mm-shr :around #'my/mu4e-shr-no-colors)
 
 ;;; ---------------------------------------------
 ;;; //             Spotify (smudge)            //
