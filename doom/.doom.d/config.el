@@ -11,8 +11,7 @@
       (add-hook 'after-make-frame-functions fn))))
 
 (setq doom-font (font-spec :family "Cascadia Code NF" :size 17))
-;; fixed-pitch-serif is unused by default; prose serif comes from the
-;; `variable-pitch' remap below. (Static family name is "Merriweather 24pt".)
+;; Prose serif actually comes from the `variable-pitch' remap below; set anyway.
 (setq doom-serif-font (font-spec :family "Merriweather 24pt"))
 (setq doom-theme 'doom-moonlight)
 
@@ -50,6 +49,16 @@
 
 (add-hook 'mu4e-view-mode-hook #'my/mu4e-prose-serif)
 
+;; shr bakes hard line breaks at a fixed char width, so when olivetti narrows the
+;; body those lines wrap again into ragged half-lines. Turn filling off + soft-wrap
+;; instead, so paragraphs reflow to the shown width. Buffer-local so mail (also
+;; shr, via mm-shr) keeps its own wrapping.
+(defun my/eww-reflow ()
+  "Soft-wrap eww paragraphs to the window/olivetti width (no baked-in breaks)."
+  (setq-local shr-fill-text nil)
+  (visual-line-mode 1))
+(add-hook 'eww-mode-hook #'my/eww-reflow)
+
 ;; Centered reading column in eww, off by default; toggle with `SPC m c'.
 (after! olivetti (setq olivetti-body-width 80))
 (map! :after eww :map eww-mode-map :localleader
@@ -60,10 +69,8 @@
 ;; Auto-compile missing tree-sitter grammars on first file open (no prompt).
 (setq treesit-auto-install-grammar 'always)
 
-;; On-demand "focus follows width": grow the selected window to
-;; `my/focus-width' columns (enough that 80-col-formatted code never wraps)
-;; and let the others shrink. Off by default; toggle with `M-x
-;; my/focus-width-mode'. No package — just the built-in window resizer.
+;; "Focus follows width": grow the selected window to `my/focus-width' (so 80-col
+;; code never wraps), shrinking the rest. Toggle with `M-x my/focus-width-mode'.
 (defcustom my/focus-width 120
   "Target total width (columns) for the focused window."
   :type 'integer :group 'convenience)
@@ -87,12 +94,9 @@
     (remove-hook 'window-selection-change-functions #'my/focus-width--apply)
     (balance-windows)))
 
-;; tmux-style fraction-snap window resize (the elisp twin of nvim's
-;; core/focus.lua `snap_resize'). An arrow drags the shared border in its own
-;; direction, snapping the focused window through 25/33/50/67/75% of the frame.
-;; Border-follows-arrow: a window on the far (right/bottom) edge only has its
-;; inner border to move, so grow/shrink flips for it — the divider still travels
-;; the way the arrow points regardless of which side is focused.
+;; tmux-style fraction-snap window resize (twin of nvim's `snap_resize'): an arrow
+;; drags the shared border its way, snapping the window through `my/snap-stops'.
+;; A far-edge window moves its *inner* border, so grow/shrink flips for it.
 (defconst my/snap-stops '(25 33 50 67 75)
   "Fraction stops (percent of frame) the snap resizer steps through.")
 
@@ -122,17 +126,14 @@ arrow; see `my/snap-stops'."
              (target (/ (* total (my/snap--next-stop pct grow)) 100)))
         (ignore-errors (window-resize win (- target cur) horizontal))))))
 
-;; Bound to the same window-resize keys as before (Doom's `SPC w' prefix),
-;; mirroring nvim's <leader>w >/</+/-.
 (map! :leader
       :desc "Snap split border right" "w >" (cmd! (my/snap-resize 'x t))
       :desc "Snap split border left"  "w <" (cmd! (my/snap-resize 'x nil))
       :desc "Snap split border down"  "w +" (cmd! (my/snap-resize 'y t))
       :desc "Snap split border up"    "w -" (cmd! (my/snap-resize 'y nil)))
 
-;; which-key: give the leader prefixes their proper names (they otherwise show a
-;; bare "+prefix"). Naming-only — `(:prefix ("k" . "title"))' with no body sets
-;; the which-key label without touching the bindings underneath.
+;; Name the leader prefixes for which-key (a bodyless `:prefix' sets the label
+;; without touching the bindings underneath; they otherwise show "+prefix").
 (map! :leader
       (:prefix ("b" . "buffer"))
       (:prefix ("c" . "code"))
@@ -153,9 +154,9 @@ arrow; see `my/snap-stops'."
 (after! lsp-mode
   (setq lsp-semantic-tokens-enable t)
 
-  ;; Python LSP: pyrefly (`uv tool install pyrefly'); lsp-mode has no built-in
-  ;; client. Disable the other type checkers so pyrefly is sole; 
-  ;; (pyrefly has no semantic tokens, so Python is tree-sitter-only.)
+  ;; Python LSP: pyrefly (`uv tool install pyrefly') — no built-in lsp-mode client.
+  ;; Disable other checkers so it's sole; it has no semantic tokens, so Python
+  ;; highlighting stays tree-sitter-only.
   (dolist (client '(pyright pyls mspyls ty-ls))
     (add-to-list 'lsp-disabled-clients client))
   (lsp-register-client
@@ -294,25 +295,18 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
         mu4e-get-mail-command "mbsync -a"
         mu4e-update-interval 300            ; background fetch every 5 min
         mu4e-attachment-dir "~/Downloads"
-        ;; REQUIRED for mbsync: rename files on move so mbsync doesn't see a UID
-        ;; clash and spawn duplicates. Without this, trashing leaves a stale copy
-        ;; in All Mail that never gets reaped — defaults to nil, which is wrong here.
+        ;; mbsync needs this: rename on move so it doesn't see a UID clash and
+        ;; spawn duplicates (else trashed mail leaves stale, unreaped All Mail copies).
         mu4e-change-filenames-when-moving t
         message-send-mail-function #'smtpmail-send-it
         ;; Gmail saves its own copy of sent mail; don't let mu4e double it up.
         mu4e-sent-messages-behavior 'delete
-        ;; Render HTML via shr (see the colour fix below); show whichever part
-        ;; the sender prefers (usually HTML). Flip to plain text on demand with
-        ;; RET on the gnus part button.
+        ;; Flip to plain text with RET on the gnus part button (colour fix below).
         mm-text-html-renderer 'shr)
 
-  ;; Gmail labels mean a "deleted" message keeps its All Mail copy, so broad
-  ;; queries sweep Trash/Spam back in. Scope bookmarks to the INBOX maildir
-  ;; (and exclude Trash/Spam explicitly) so they stay out of the inbox view.
-  ;; `flag:trashed' is unused in this index (mbsync trashes by moving to the
-  ;; Trash maildir, not by flag), so exclude the Trash/Spam *maildirs* instead.
-  ;; The Inbox bookmark is maildir-scoped — All Mail isn't in scope, so deletes
-  ;; from it are one-shot (no duplicate-flip).
+  ;; Gmail keeps an All Mail copy of "deleted" mail, and `flag:trashed' is unused
+  ;; here (mbsync trashes by moving), so exclude the Trash/Spam *maildirs*. The
+  ;; Inbox bookmark is maildir-scoped, so deletes from it are one-shot.
   (setq mu4e-bookmarks
         '((:name "Inbox"
            :query "maildir:/gmail/INBOX"
@@ -346,12 +340,9 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
                         (smtpmail-stream-type   . starttls))
                       t))
 
-;; HTML mail (when shown instead of plain text) renders via shr, which honours
-;; the message's own colours — marketing emails set white cell backgrounds that
-;; turn into ugly light boxes against a dark theme. Bind `shr-use-colors' off
-;; just for mail so HTML uses our theme faces. Scoped to `mm-shr' (gnus/mu4e's
-;; HTML-part renderer), so eww keeps page colours; fonts are left alone so the
-;; serif body styling survives.
+;; shr honours the message's own colours — marketing emails set white backgrounds
+;; that become ugly boxes on a dark theme. Drop colours for mail only (via
+;; `mm-shr'), leaving eww's page colours and the serif body untouched.
 (defun my/mu4e-shr-no-colors (orig &rest args)
   "Render HTML mail without the message's own colours (use theme faces)."
   (let ((shr-use-colors nil))
@@ -512,7 +503,6 @@ No UI, and no OAuth needed for the AppleScript transport."
         lsp-ui-sideline-show-code-actions nil
         lsp-ui-doc-enable nil))
 
-;; corfu config
 (setq corfu-auto-prefix 2
       corfu-auto-delay 0.25)
 
