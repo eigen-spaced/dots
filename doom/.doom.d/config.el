@@ -130,6 +130,24 @@ arrow; see `my/snap-stops'."
       :desc "Snap split border down"  "w +" (cmd! (my/snap-resize 'y t))
       :desc "Snap split border up"    "w -" (cmd! (my/snap-resize 'y nil)))
 
+;; which-key: give the leader prefixes their proper names (they otherwise show a
+;; bare "+prefix"). Naming-only — `(:prefix ("k" . "title"))' with no body sets
+;; the which-key label without touching the bindings underneath.
+(map! :leader
+      (:prefix ("b" . "buffer"))
+      (:prefix ("c" . "code"))
+      (:prefix ("f" . "file"))
+      (:prefix ("g" . "git"))
+      (:prefix ("h" . "help"))
+      (:prefix ("i" . "insert"))
+      (:prefix ("m" . "mode (local)"))
+      (:prefix ("n" . "notes/org"))
+      (:prefix ("o" . "open"))
+      (:prefix ("p" . "project"))
+      (:prefix ("q" . "quit/session"))
+      (:prefix ("s" . "search"))
+      (:prefix ("t" . "toggle")))
+
 ;; LSP semantic tokens: type-aware highlighting (members, enums, namespaces) over
 ;; tree-sitter; the theme colors the `lsp-face-semhl-*' faces.
 (after! lsp-mode
@@ -457,3 +475,7 @@ No UI, and no OAuth needed for the AppleScript transport."
 ;; MuPDF-backed reader for PDF/EPUB/CBZ/MOBI/…; reader-mode is auto-registered
 ;; for those extensions (needs `brew install mupdf'). `SPC o D' opens any doc.
 (map! :leader :desc "Open document (reader)" "o D" #'reader-open-doc)
+
+;; EWW SVG zoom: rasterise SVGs to a PNG and open them in a zoomable image
+;; buffer (i+/i- in EWW), since SVGs can't be scaled reliably inline.
+(load! "eww-svg-zoom")
