@@ -259,6 +259,28 @@ its own, so we make one, pull it to the foreground, then invoke COMMAND."
 (map! :after dired :map dired-mode-map :localleader
       :desc "Edit filenames (wdired)" "w" #'dired-toggle-read-only)
 
+;; Dirvish opens full-frame with the preview as a side window, which can't be
+;; split — so `SPC w v' is a no-op there. C-v/C-s (matching the vertico finder)
+;; grab the file at point, drop the dirvish layout, and open it beside the buffer
+;; dirvish was launched from. Bound as plain key chords so they survive a switch
+;; off evil (meow/vanilla); the `:n' lines just let them win over evil's own
+;; C-v/C-s while evil is in charge.
+(defun my/dired-open-in-split (side)
+  "Open the file at point in a SIDE (`right'/`below') split.
+In a full-frame dirvish session, quit it first so the file lands next to the
+buffer dirvish was launched from."
+  (let ((file (dired-get-file-for-visit)))
+    (when (and (fboundp 'dirvish-curr) (dirvish-curr))
+      (dirvish-quit))
+    (select-window (if (eq side 'right) (split-window-right) (split-window-below)))
+    (find-file file)))
+
+(map! :after dired :map (dired-mode-map dirvish-mode-map)
+      "C-v"    (cmd! (my/dired-open-in-split 'right))
+      "C-s"    (cmd! (my/dired-open-in-split 'below))
+      :n "C-v" (cmd! (my/dired-open-in-split 'right))
+      :n "C-s" (cmd! (my/dired-open-in-split 'below)))
+
 ;;; ---------------------------------------------
 ;;; //                   Misc                  //
 ;;; ---------------------------------------------
