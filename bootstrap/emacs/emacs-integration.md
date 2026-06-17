@@ -23,10 +23,18 @@ bearing steps the bootstrap can't automate.
 ## 0. Prerequisites (handled by the bootstrap)
 
 `bootstrap/setup` (the **Emacs** group) installs `emacs-plus@30`, `mu`, `isync`,
-and `pinentry-mac`, and offers the `com.sunny.emacs-daemon` LaunchAgent and the
-Dock launcher applet; `vips` (dirvish thumbnails) and the `hammerspoon` cask are
-elsewhere in the picker. Stow the `doom` and `hammerspoon` packages from the
-**Dotfiles** group.
+`pinentry-mac`, `mupdf` (emacs-reader backend for epub/mobi/cbz), and the
+`pdf-tools build deps` (automake/autoconf/pkg-config/poppler), and offers the
+`com.sunny.emacs-daemon` LaunchAgent and the Dock launcher applet; `vips`
+(dirvish thumbnails) and the `hammerspoon` cask are elsewhere in the picker.
+Stow the `doom` and `hammerspoon` packages from the **Dotfiles** group.
+
+> **PDFs (pdf-tools).** PDF rendering needs the `epdfinfo` helper compiled. With
+> the build deps above present, build it once with `M-x pdf-tools-install` (or
+> just open a PDF — Doom builds it on first use). Without it, `pdf-view-mode`
+> shows raw bytes instead of the page. A `doom sync`/straight rebuild can wipe it;
+> re-run `M-x pdf-tools-install`. (epub/mobi/cbz use emacs-reader + `mupdf`, not
+> pdf-tools.)
 
 After bootstrap, also do the Doom side once:
 

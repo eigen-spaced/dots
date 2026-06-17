@@ -53,6 +53,9 @@ func registry(repo string) []item {
 		{"Emacs", "mu", "mu4e mail backend", "brew install mu", have("mu"), false},
 		{"Emacs", "isync (mbsync)", "IMAP sync for mu4e", "brew install isync", have("mbsync"), false},
 		{"Emacs", "pinentry-mac", "GPG/Keychain pinentry", "brew install pinentry-mac", have("pinentry-mac"), false},
+		{"Emacs", "mupdf", "emacs-reader backend (epub/mobi/cbz)", "brew install mupdf", have("mutool"), false},
+		{"Emacs", "pdf-tools build deps", "automake/autoconf/pkg-config/poppler — compiles epdfinfo (PDF rendering)",
+			"brew install automake autoconf pkg-config poppler", have("automake"), false},
 
 		// --- Toolchains -----------------------------------------------------
 		{"Toolchains", "mise runtimes", "node, python, go, uv, pnpm (latest)",
