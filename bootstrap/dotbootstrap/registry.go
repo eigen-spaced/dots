@@ -71,6 +71,10 @@ func registry(repo string) []item {
 		// --- Dev tools: C/C++ ----------------------------------------------
 		{"Dev tools", "llvm (clangd + clang-format)", "C/C++ LSP + formatter", "brew install llvm",
 			"[ -x /opt/homebrew/opt/llvm/bin/clang-format ]", true},
+		// llvm is keg-only, so its bin/ stays off PATH. Symlink just clang-format
+		// (not clangd — Apple's /usr/bin/clangd is fine) so apheleia can find it.
+		{"Dev tools", "clang-format on PATH", "symlink keg-only clang-format into /opt/homebrew/bin",
+			"ln -sf /opt/homebrew/opt/llvm/bin/clang-format /opt/homebrew/bin/clang-format", have("clang-format"), true},
 		// --- Dev tools: Rust ------------------------------------------------
 		{"Dev tools", "rust-analyzer", "Rust LSP (rustup component)", "rustup component add rust-analyzer", have("rust-analyzer"), true},
 		// --- Dev tools: Go --------------------------------------------------
