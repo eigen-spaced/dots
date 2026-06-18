@@ -50,8 +50,8 @@
 ;; (unpin! t)
 
 ;; Spotify control (config in config.el). Our fork carries the Feb-2026 Web API
-;; fixes; repos/smudge is symlinked to ~/Documents/projects/smudge for live dev.
-(package! smudge :recipe (:host github :repo "eigen-spaced/smudge"
+;; fixes; repos/splotch is symlinked to ~/Documents/projects/splotch for live dev.
+(package! splotch :recipe (:host github :repo "eigen-spaced/splotch"
                           :branch "main"))
 
 ;; Centered reading column for eww.

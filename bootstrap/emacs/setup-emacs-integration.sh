@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Guided, interactive setup for the Emacs deep-integration stack on macOS:
-#   mu4e (Gmail) · smudge (Spotify) · emacs-everywhere
+#   mu4e (Gmail) · splotch (Spotify) · emacs-everywhere
 #
 # Companion to emacs-integration.md. Secrets go into the macOS Keychain (you're
 # prompted; input is hidden and never stored in a file or shell history).
@@ -117,13 +117,14 @@ fi
 echo
 
 # ============================================================================
-bold "2) smudge — Spotify"
-if ask "Set up / update smudge (Spotify) now?"; then
+bold "2) splotch — Spotify"
+if ask "Set up / update splotch (Spotify) now?"; then
   echo
   info "Prereq: create a free app at https://developer.spotify.com/dashboard"
   info "and set its Redirect URI to exactly:"
-  info "  http://127.0.0.1:8080/smudge_api_callback"
+  info "  http://127.0.0.1:8080/splotch_api_callback"
   echo
+  # Keychain service stays "smudge" (matches config.el :host); package is splotch.
   for acct in client-id client-secret; do
     if kc_has smudge "$acct"; then
       ok "smudge/$acct already in Keychain"

@@ -372,82 +372,84 @@ buffer dirvish was launched from."
 (advice-add 'mm-shr :around #'my/mu4e-shr-no-colors)
 
 ;;; ---------------------------------------------
-;;; //             Spotify (smudge)            //
+;;; //             Spotify (splotch)            //
 ;;; ---------------------------------------------
 ;; Search/playlists via the Spotify Web API (creds in Keychain); play/pause/next
 ;; via the local macOS app over AppleScript (no Premium). Same transport is also
 ;; bound to global ⌘⌥ hotkeys in ~/.hammerspoon.
-(use-package! smudge
+(use-package! splotch
   :defer t
   :init
-  (setq smudge-transport 'apple
-        smudge-status-location 'modeline)
+  (setq splotch-transport 'apple
+        splotch-status-location 'modeline)
   :config
+  ;; NB: Keychain host stays "smudge" (the package was renamed splotch, but the
+  ;; stored creds are keyed under "smudge" — kept to avoid re-storing secrets).
   (let ((id  (auth-source-pick-first-password :host "smudge" :user "client-id"))
         (sec (auth-source-pick-first-password :host "smudge" :user "client-secret")))
-    (when id  (setq smudge-oauth2-client-id id))
-    (when sec (setq smudge-oauth2-client-secret sec)))
-  ;; smudge's first Web-API call busy-waits (blocking Emacs) for browser OAuth and
+    (when id  (setq splotch-oauth2-client-id id))
+    (when sec (setq splotch-oauth2-client-secret sec)))
+  ;; splotch's first Web-API call busy-waits (blocking Emacs) for browser OAuth and
   ;; hides its own message — surface a clear one so it's not mistaken for a hang.
-  (advice-add 'smudge-api-oauth2-auth :before
+  (advice-add 'splotch-api-oauth2-auth :before
               (lambda (&rest _)
-                (message "Smudge: a browser is opening — authorize Spotify there; Emacs resumes once you do.")))
-  ;; smudge polls status every 5s but never forces a mode-line repaint, so the
+                (message "Splotch: a browser is opening — authorize Spotify there; Emacs resumes once you do.")))
+  ;; splotch polls status every 5s but never forces a mode-line repaint, so the
   ;; indicator looks stale after a direct play/pause — force it.
-  (advice-add 'smudge-controller-update-player-status :after
+  (advice-add 'splotch-controller-update-player-status :after
               (lambda (&rest _) (force-mode-line-update t)))
-  ;; smudge's list keys (l = load more, g = reload) live in its mode-maps, but in
+  ;; splotch's list keys (l = load more, g = reload) live in its mode-maps, but in
   ;; Doom these buffers open in evil normal state, which shadows them — re-bind.
-  (evil-define-key 'normal smudge-playlist-search-mode-map
-    "l" #'smudge-playlist-load-more
-    "g" #'smudge-playlist-reload)
-  (evil-define-key 'normal smudge-track-search-mode-map
-    "l" #'smudge-track-load-more
-    "g" #'smudge-track-reload
-    (kbd "RET") #'smudge-track-select) ; play track-at-point (smudge only binds M-RET)
+  (evil-define-key 'normal splotch-playlist-search-mode-map
+    "l" #'splotch-playlist-load-more
+    "g" #'splotch-playlist-reload)
+  (evil-define-key 'normal splotch-track-search-mode-map
+    "l" #'splotch-track-load-more
+    "g" #'splotch-track-reload
+    (kbd "RET") #'splotch-track-select) ; play track-at-point (splotch only binds M-RET)
   ;; `l' reprints the whole list and dumps point at the top; save/restore the line.
-  (defun my/smudge-preserve-point (orig &rest args)
-    "Keep point on the same line when smudge reprints a list buffer."
+  (defun my/splotch-preserve-point (orig &rest args)
+    "Keep point on the same line when splotch reprints a list buffer."
     (let ((line (line-number-at-pos)))
       (apply orig args)
       (goto-char (point-min))
       (forward-line (1- line))))
-  (advice-add 'smudge-track-search-print    :around #'my/smudge-preserve-point)
-  (advice-add 'smudge-playlist-search-print :around #'my/smudge-preserve-point)
-  (global-smudge-remote-mode 1))
+  (advice-add 'splotch-track-search-print    :around #'my/splotch-preserve-point)
+  (advice-add 'splotch-playlist-search-print :around #'my/splotch-preserve-point)
+  (global-splotch-remote-mode 1))
 
-;; Wake smudge without opening UI: its transport commands aren't autoloaded, so
+;; Wake splotch without opening UI: its transport commands aren't autoloaded, so
 ;; they stay dead until the package loads. This loads it (runs the :config above).
-(defun my/smudge-connect ()
-  "Load + initialize smudge so transport (play/pause/next/prev) works.
+(defun my/splotch-connect ()
+  "Load + initialize splotch so transport (play/pause/next/prev) works.
 No UI, and no OAuth needed for the AppleScript transport."
   (interactive)
-  (require 'smudge)
+  (require 'splotch)
   ;; :config only runs on first load, so re-connecting after a disconnect needs this.
-  (global-smudge-remote-mode 1)
-  (ignore-errors (smudge-controller-player-status))
-  (message "Smudge ready — transport active."))
+  (global-splotch-remote-mode 1)
+  (ignore-errors (splotch-controller-player-status))
+  (message "Splotch ready — transport active."))
 
-;; Hide smudge's modeline info + stop the status poll; transport keeps working.
-(defun my/smudge-disconnect ()
-  "Turn off smudge's modeline player info + status polling."
+;; Hide splotch's modeline info + stop the status poll; transport keeps working.
+(defun my/splotch-disconnect ()
+  "Turn off splotch's modeline player info + status polling."
   (interactive)
-  (when (bound-and-true-p global-smudge-remote-mode)
-    (global-smudge-remote-mode -1))
-  (message "Smudge: player info hidden."))
+  (when (bound-and-true-p global-splotch-remote-mode)
+    (global-splotch-remote-mode -1))
+  (message "Splotch: player info hidden."))
 
 ;; SPC o M -> Spotify (SPC o m is mu4e).
 (map! :leader
       (:prefix ("o M" . "music")
-       :desc "Connect / wake"       "c"   #'my/smudge-connect
-       :desc "Disconnect / hide"    "C"   #'my/smudge-disconnect
-       :desc "Track search"         "s"   #'smudge-track-search
-       :desc "Playlist search"      "p"   #'smudge-playlist-search
-       :desc "My playlists"         "m"   #'smudge-my-playlists
-       :desc "Add playing→playlist" "a"   #'smudge-add-playing-track-to-playlist
-       :desc "Play/pause"           "SPC" #'smudge-controller-toggle-play
-       :desc "Next track"           "n"   #'smudge-controller-next-track
-       :desc "Previous track"       "N"   #'smudge-controller-previous-track))
+       :desc "Connect / wake"       "c"   #'my/splotch-connect
+       :desc "Disconnect / hide"    "C"   #'my/splotch-disconnect
+       :desc "Track search"         "s"   #'splotch-track-search
+       :desc "Playlist search"      "p"   #'splotch-playlist-search
+       :desc "My playlists"         "m"   #'splotch-my-playlists
+       :desc "Add playing→playlist" "a"   #'splotch-add-playing-track-to-playlist
+       :desc "Play/pause"           "SPC" #'splotch-controller-toggle-play
+       :desc "Next track"           "n"   #'splotch-controller-next-track
+       :desc "Previous track"       "N"   #'splotch-controller-previous-track))
 
 ;;; ---------------------------------------------
 ;;; //          emacs-everywhere (macOS)        //
