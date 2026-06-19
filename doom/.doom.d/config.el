@@ -10,6 +10,18 @@
     (when (fboundp fn)
       (add-hook 'after-make-frame-functions fn))))
 
+;; macOS daemon: a client frame from the Dock launcher (`emacsclient -c -n') opens
+;; BEHIND the frontmost app — the daemon isn't the active process, so the new frame
+;; can't raise itself. Pull Emacs to the front once the GUI client frame is up.
+;; `ns-hide-emacs 'activate' is the NS self-activate (no AppleScript app-name race).
+(when (and (daemonp) (featurep 'ns))
+  (defun my/ns-raise-emacs-on-server-frame ()
+    (when (display-graphic-p)
+      (select-frame-set-input-focus (selected-frame))
+      (ns-hide-emacs 'activate)))
+  ;; append so it runs after Doom's theme/font frame init
+  (add-hook 'server-after-make-frame-hook #'my/ns-raise-emacs-on-server-frame t))
+
 (setq doom-font (font-spec :family "Cascadia Code NF" :size 17))
 ;; Prose serif actually comes from the `variable-pitch' remap below; set anyway.
 (setq doom-serif-font (font-spec :family "Merriweather 24pt"))
@@ -40,14 +52,13 @@
 
 (add-hook 'org-mode-hook #'my/org-prose-serif)
 
-;; mu4e message view: serif body, like eww/org. (Headers list stays mono so its
-;; columns keep aligning.)
-(defun my/mu4e-prose-serif ()
-  "Render the mu4e message view in Merriweather (serif)."
+;; notmuch message view: serif body, like eww/org.
+(defun my/notmuch-prose-serif ()
+  "Render the notmuch message view in Merriweather (serif)."
   (my/reading-serif)
   (variable-pitch-mode 1))
 
-(add-hook 'mu4e-view-mode-hook #'my/mu4e-prose-serif)
+(add-hook 'notmuch-show-mode-hook #'my/notmuch-prose-serif)
 
 ;; shr bakes hard line breaks at a fixed char width, so when olivetti narrows the
 ;; body those lines wrap again into ragged half-lines. Turn filling off + soft-wrap
@@ -321,68 +332,85 @@ buffer dirvish was launched from."
   (add-to-list 'auth-sources 'macos-keychain-internet))
 
 ;;; ---------------------------------------------
-;;; //               Email (mu4e)              //
+;;; //              Email (notmuch)             //
 ;;; ---------------------------------------------
-;; mbsync (isync) syncs Gmail into ~/.mail; mu indexes it. Secrets via Keychain
-;; (auth-source for SMTP, PassCmd in ~/.mbsyncrc for IMAP); identity in private.el.
-(after! mu4e
-  (setq mu4e-root-maildir "~/.mail"
-        mu4e-get-mail-command "mbsync -a"
-        mu4e-update-interval 300            ; background fetch every 5 min
-        mu4e-attachment-dir "~/Downloads"
-        ;; mbsync needs this: rename on move so it doesn't see a UID clash and
-        ;; spawn duplicates (else trashed mail leaves stale, unreaped All Mail copies).
-        mu4e-change-filenames-when-moving t
-        message-send-mail-function #'smtpmail-send-it
-        ;; Gmail saves its own copy of sent mail; don't let mu4e double it up.
-        mu4e-sent-messages-behavior 'delete
-        ;; Flip to plain text with RET on the gnus part button (colour fix below).
-        mm-text-html-renderer 'shr)
+;; mbsync (isync) syncs Gmail into ~/.mail; notmuch indexes/tags it; afew applies
+;; tagging rules and moves trash/spam back to the Gmail folders. Secrets via
+;; Keychain (auth-source for SMTP, PassCmd in ~/.mbsyncrc for IMAP); identity in
+;; private.el + ~/.notmuch-config; afew rules in ~/.config/afew/config.
+(after! notmuch
+  ;; afew lives in ~/.local/bin — put it on PATH for Emacs subprocesses (PATH is
+  ;; NOT stripped by SIP, so this survives the shell exec).
+  (let ((bin (expand-file-name "~/.local/bin")))
+    (add-to-list 'exec-path bin)
+    (unless (string-match-p (regexp-quote bin) (or (getenv "PATH") ""))
+      (setenv "PATH" (concat bin ":" (getenv "PATH")))))
 
-  ;; Gmail keeps an All Mail copy of "deleted" mail, and `flag:trashed' is unused
-  ;; here (mbsync trashes by moving), so exclude the Trash/Spam *maildirs*. The
-  ;; Inbox bookmark is maildir-scoped, so deletes from it are one-shot.
-  (setq mu4e-bookmarks
-        '((:name "Inbox"
-           :query "maildir:/gmail/INBOX"
-           :key ?i)
-          (:name "Unread messages"
-           :query "flag:unread AND NOT maildir:/gmail/[Gmail]/Trash AND NOT maildir:/gmail/[Gmail]/Spam"
-           :key ?u)
-          (:name "Today's messages"
-           :query "date:today..now AND NOT maildir:/gmail/[Gmail]/Trash AND NOT maildir:/gmail/[Gmail]/Spam"
-           :key ?t)
-          (:name "Last 7 days"
-           :query "date:7d..now AND NOT maildir:/gmail/[Gmail]/Trash AND NOT maildir:/gmail/[Gmail]/Spam"
-           :key ?w)
-          (:name "Flagged"
-           :query "flag:flagged AND NOT maildir:/gmail/[Gmail]/Trash"
-           :key ?f)
-          (:name "Messages with images"
-           :query "mime:image/*"
-           :key ?p)))
+  ;; `<localleader> u' / `U' (+notmuch/update) runs this: move tagged mail -> sync
+  ;; -> index -> tag new. `mbsync' with no -c uses ~/.mbsyncrc. The `export DYLD'
+  ;; MUST be inside the command: afew's notmuch binding dlopen's libnotmuch by bare
+  ;; name from /opt/homebrew/lib (off the default search path), and macOS SIP strips
+  ;; DYLD_* across the shell exec — so an Emacs `setenv' never reaches afew, but a
+  ;; shell `export' right before the (non-SIP) python child does.
+  (setq +notmuch-sync-backend
+        (concat "export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib; "
+                "afew --move-mails && mbsync -a && notmuch new && afew --tag --new"))
 
-  (set-email-account! "gmail"
-                      `((user-mail-address      . ,user-mail-address)
-                        (user-full-name         . ,user-full-name)
-                        (mu4e-sent-folder       . "/gmail/[Gmail]/Sent Mail")
-                        (mu4e-drafts-folder     . "/gmail/[Gmail]/Drafts")
-                        (mu4e-trash-folder      . "/gmail/[Gmail]/Trash")
-                        (mu4e-refile-folder     . "/gmail/[Gmail]/All Mail")
-                        (smtpmail-smtp-user     . ,user-mail-address)
-                        (smtpmail-smtp-server   . "smtp.gmail.com")
-                        (smtpmail-smtp-service  . 587)
-                        (smtpmail-stream-type   . starttls))
-                      t))
+  ;; Gmail saves its own Sent copy (mbsync pulls [Gmail]/Sent Mail back), so skip a
+  ;; local Fcc duplicate — mirrors the old `mu4e-sent-messages-behavior 'delete'.
+  (setq notmuch-fcc-dirs nil)
+
+  ;; HTML mail via shr; colours dropped below. Saved searches replace the old mu4e
+  ;; bookmarks (exclude_tags in ~/.notmuch-config already hides trash/spam/deleted).
+  (setq mm-text-html-renderer 'shr
+        notmuch-saved-searches
+        '((:name "inbox"   :query "tag:inbox"                :key "i")
+          (:name "unread"  :query "tag:unread and tag:inbox" :key "u")
+          (:name "flagged" :query "tag:flagged"              :key "f")
+          (:name "today"   :query "date:today and tag:inbox" :key "t")
+          (:name "sent"    :query "tag:sent"                 :key "s")
+          (:name "all"     :query "*"                        :key "a")))
+
+  ;; Send via Gmail SMTP. Set inside `after! notmuch' so it wins over the module's
+  ;; own default (it forces `message-send-mail-with-sendmail'). Identity: private.el.
+  (setq message-send-mail-function #'smtpmail-send-it
+        send-mail-function #'smtpmail-send-it
+        smtpmail-smtp-user user-mail-address
+        smtpmail-smtp-server "smtp.gmail.com"
+        smtpmail-smtp-service 587
+        smtpmail-stream-type 'starttls)
+
+  ;; The module pins notmuch-hello to a cramped 30-col left popup; open it as a
+  ;; normal full window instead (this rule is pushed later, so it wins).
+  (set-popup-rule! "^\\*notmuch-hello" :ignore t)
+
+  ;; Bare `d' should trash the Gmail way (same as the module's `SPC m d'): apply
+  ;; +notmuch-delete-tags (+trash -inbox -unread) so afew's MailMover moves it to
+  ;; [Gmail]/Trash. (evil-collection's default `d' only toggles a local `deleted'
+  ;; tag that never reaches Gmail.) `U' syncs (+notmuch/update) from any buffer.
+  (map! :map notmuch-search-mode-map
+        :n "d" #'+notmuch/search-delete
+        :n "U" #'+notmuch/update
+        :map notmuch-tree-mode-map
+        :n "d" #'+notmuch/tree-delete
+        :n "U" #'+notmuch/update
+        :map notmuch-show-mode-map
+        :n "d" #'+notmuch/show-delete
+        :n "U" #'+notmuch/update
+        :map notmuch-hello-mode-map
+        :n "U" #'+notmuch/update))
+
+;; Launch notmuch on `SPC o m' (the slot the mu4e module used, freed when it went).
+(map! :leader :desc "Notmuch (mail)" "o m" #'notmuch)
 
 ;; shr honours the message's own colours — marketing emails set white backgrounds
 ;; that become ugly boxes on a dark theme. Drop colours for mail only (via
 ;; `mm-shr'), leaving eww's page colours and the serif body untouched.
-(defun my/mu4e-shr-no-colors (orig &rest args)
+(defun my/mail-shr-no-colors (orig &rest args)
   "Render HTML mail without the message's own colours (use theme faces)."
   (let ((shr-use-colors nil))
     (apply orig args)))
-(advice-add 'mm-shr :around #'my/mu4e-shr-no-colors)
+(advice-add 'mm-shr :around #'my/mail-shr-no-colors)
 
 ;;; ---------------------------------------------
 ;;; //             Spotify (splotch)            //

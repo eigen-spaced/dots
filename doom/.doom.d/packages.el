@@ -49,10 +49,20 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 
+;;; Potential org packages to explore later
+;;  - org-mru-clock for clocking in to tasks
+;;  - org-upcoming-modeline for not missing my meetings
+;;  - org-rich-yank for getting some context and highlighting on what I paste into org files
+
+;;  - org-super-agenda to make my agenda more readable and informative
+;;  - calfw-org for those few times I want a calendar layout
+;;  - org-download if I ever need to include an image, which is not so often but it's super handy when I need that
+
+
 ;; Spotify control (config in config.el). Our fork carries the Feb-2026 Web API
 ;; fixes; repos/splotch is symlinked to ~/Documents/projects/splotch for live dev.
 (package! splotch :recipe (:host github :repo "eigen-spaced/splotch"
-                          :branch "main"))
+                           :branch "main"))
 
 ;; Centered reading column for eww.
 (package! olivetti)
