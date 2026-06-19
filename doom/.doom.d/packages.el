@@ -57,6 +57,17 @@
 ;; Centered reading column for eww.
 (package! olivetti)
 
+;; Ghostel: libghostty-vt terminal (Ghostty's VT engine in Emacs). Prebuilt
+;; native module auto-downloads on first use; the MELPA recipe bundles the
+;; terminfo/ dir, so do NOT override :files (that drops it). Config in config.el.
+(package! ghostel)
+
+;; Evil integration for ghostel — its own MELPA package (depends on ghostel).
+(package! evil-ghostel)
+
+;; Syntax-highlight eww/shr <pre> code blocks (pulls in language-detection).
+(package! shr-tag-pre-highlight)
+
 ;; The Reader: MuPDF-backed document reader (PDF/EPUB/CBZ/MOBI/…). Builds a
 ;; native module at install (`make all' → render-core.dylib); needs `brew
 ;; install mupdf'. Config in config.el.

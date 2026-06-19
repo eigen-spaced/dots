@@ -59,6 +59,19 @@
   (visual-line-mode 1))
 (add-hook 'eww-mode-hook #'my/eww-reflow)
 
+;; eww is a reading buffer, not a transient popup: pin it to a persistent
+;; right-side pane so it joins the normal window tree (movable/splittable).
+(set-popup-rule! "^\\*eww\\*" :side 'right :size 0.5 :select t :quit nil :ttl nil)
+
+;; Syntax-highlight <pre> code blocks in eww/shr via font-lock, so they pick up
+;; the current Doom theme (matches code buffers). Language comes from the HTML
+;; class; `language-detection' guesses when there's no hint.
+(use-package! shr-tag-pre-highlight
+  :after shr
+  :config
+  (add-to-list 'shr-external-rendering-functions
+               '(pre . shr-tag-pre-highlight)))
+
 ;; Centered reading column in eww, off by default; toggle with `SPC m c'.
 (after! olivetti (setq olivetti-body-width 80))
 (map! :after eww :map eww-mode-map :localleader
@@ -445,7 +458,7 @@ No UI, and no OAuth needed for the AppleScript transport."
        :desc "Disconnect / hide"    "C"   #'my/splotch-disconnect
        :desc "Track search"         "s"   #'splotch-track-search
        :desc "Playlist search"      "p"   #'splotch-playlist-search
-       :desc "My playlists"         "m"   #'splotch-my-playlists
+       :desc "Open playlist"        "m"   #'splotch-open-playlist
        :desc "Add playing→playlist" "a"   #'splotch-add-playing-track-to-playlist
        :desc "Play/pause"           "SPC" #'splotch-controller-toggle-play
        :desc "Next track"           "n"   #'splotch-controller-next-track
@@ -540,3 +553,71 @@ No UI, and no OAuth needed for the AppleScript transport."
 ;; EWW SVG zoom: rasterise SVGs to a PNG and open them in a zoomable image
 ;; buffer (i+/i- in EWW), since SVGs can't be scaled reliably inline.
 (load! "eww-svg-zoom")
+
+;;; ---------------------------------------------
+;;; //           Ghostel terminal             //
+;;; ---------------------------------------------
+;; libghostty-vt-backed terminal (the Ghostty VT engine, in Emacs); our default
+;; terminal now that vterm is disabled (`:term vterm' off). Evil support comes
+;; from the bundled `evil-ghostel' (enabled below). Native module auto-downloads
+;; on first `M-x ghostel' (`ghostel-module-auto-install' defaults to `ask').
+
+;; vterm-style toggle popup: a persistent 25% bottom pane. The rule routes every
+;; ghostel buffer there (all are named "*ghostel..."); `my/ghostel-here' is the
+;; in-window escape hatch. Mirrors the old `^\\*vterm' popup the module shipped.
+(set-popup-rule! "^\\*ghostel" :size 0.25 :vslot -4 :select t :quit nil :ttl nil)
+
+(defun my/ghostel--in-project (&optional same-window)
+  "Open or switch to ghostel rooted at the current project (else `default-directory').
+A freshly created terminal starts in the project root; an existing one is
+reused as-is (navigate with the shell's own cd/~). With SAME-WINDOW, bypass
+the popup rule and open in the current window."
+  (let ((default-directory (or (doom-project-root) default-directory)))
+    (if same-window
+        (let ((display-buffer-alist nil)) (ghostel))
+      (ghostel))))
+
+(defun my/ghostel-toggle ()
+  "Toggle the ghostel popup, vterm-style: hide it if shown, else open it.
+A newly created terminal starts in the current project root."
+  (interactive)
+  (if-let* ((win (seq-find (lambda (w)
+                             (string-prefix-p "*ghostel" (buffer-name (window-buffer w))))
+                           (window-list))))
+      (delete-window win)
+    (my/ghostel--in-project)))
+
+(defun my/ghostel-here ()
+  "Open ghostel in the current window (project root), bypassing the popup rule."
+  (interactive)
+  (my/ghostel--in-project t))
+
+(use-package! ghostel
+  :defer t
+  :init
+  (map! :leader
+        :desc "Toggle ghostel popup"      "o t" #'my/ghostel-toggle
+        :desc "Ghostel in current window" "o T" #'my/ghostel-here)
+  :bind (:map ghostel-semi-char-mode-map
+         ("C-s" . consult-line)
+         ("M-<backspace>" . ghostel-backward-kill-word)
+         ("M-p" . (lambda () (interactive) (ghostel-send-key "p" "ctrl")))
+         ("M-n" . (lambda () (interactive) (ghostel-send-key "n" "ctrl"))))
+  :config
+  ;; Full redraws are robust against aggressive partial screen updates (zsh
+  ;; line-discard on C-u, TUIs); fixes the prompt briefly vanishing until the
+  ;; next keystroke, at a little extra CPU.
+  (setq ghostel-full-redraw t)
+  (add-to-list 'ghostel-eval-cmds '("magit-status-setup-buffer" magit-status-setup-buffer)))
+
+;; Evil integration: its own MELPA package (modeled on evil-collection-vterm).
+;; Per-buffer minor mode — starts in insert state, ESC snaps to normal.
+(use-package! evil-ghostel
+  :after (ghostel evil)
+  :hook (ghostel-mode . evil-ghostel-mode))
+
+;; Optional global integrations — flip on once ghostel earns its keep. These
+;; reroute eshell visual commands, `compile', and comint buffers through it.
+;; (use-package! ghostel-eshell  :hook (eshell-load . ghostel-eshell-visual-command-mode))
+;; (use-package! ghostel-compile :hook (after-init . ghostel-compile-global-mode))
+;; (use-package! ghostel-comint  :hook (after-init . ghostel-comint-global-mode))
