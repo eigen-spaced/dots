@@ -353,7 +353,8 @@ buffer dirvish was launched from."
   ;; DYLD_* across the shell exec — so an Emacs `setenv' never reaches afew, but a
   ;; shell `export' right before the (non-SIP) python child does.
   (setq +notmuch-sync-backend
-        (concat "export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib; "
+        (concat "export DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib "
+                "PYTHONWARNINGS=ignore::UserWarning; "  ; hush afew's pkg_resources notice
                 "afew --move-mails && mbsync -a && notmuch new && afew --tag --new"))
 
   ;; Gmail saves its own Sent copy (mbsync pulls [Gmail]/Sent Mail back), so skip a
@@ -384,21 +385,90 @@ buffer dirvish was launched from."
   ;; normal full window instead (this rule is pushed later, so it wins).
   (set-popup-rule! "^\\*notmuch-hello" :ignore t)
 
-  ;; Bare `d' should trash the Gmail way (same as the module's `SPC m d'): apply
-  ;; +notmuch-delete-tags (+trash -inbox -unread) so afew's MailMover moves it to
-  ;; [Gmail]/Trash. (evil-collection's default `d' only toggles a local `deleted'
-  ;; tag that never reaches Gmail.) `U' syncs (+notmuch/update) from any buffer.
-  (map! :map notmuch-search-mode-map
-        :n "d" #'+notmuch/search-delete
-        :n "U" #'+notmuch/update
-        :map notmuch-tree-mode-map
-        :n "d" #'+notmuch/tree-delete
-        :n "U" #'+notmuch/update
-        :map notmuch-show-mode-map
-        :n "d" #'+notmuch/show-delete
-        :n "U" #'+notmuch/update
-        :map notmuch-hello-mode-map
-        :n "U" #'+notmuch/update))
+  ;; Read/unread contrast + trash highlighting (mu4e-like): dim read mail, bold
+  ;; bright unread, whole-line red wash for trash-marked threads.
+  (custom-set-faces!
+    `(notmuch-search-subject          :foreground ,(doom-blend (doom-color 'fg) (doom-color 'bg) 0.5))
+    `(notmuch-search-matching-authors :foreground ,(doom-blend (doom-color 'fg) (doom-color 'bg) 0.5)))
+  (setq notmuch-search-line-faces
+        `(("unread"  :weight bold :foreground ,(doom-color 'fg))
+          ("flagged" :weight bold :foreground ,(doom-color 'yellow))
+          ;; trash: red line text, mirroring dired's deletion flag (`dired-flagged')
+          ("trash"   . dired-flagged)))
+
+  ;; `d' = reversible trash toggle. Adds +trash -inbox -unread (afew's MailMover
+  ;; moves it to [Gmail]/Trash on the next `U' sync); press again to undo (restore
+  ;; inbox). Until you sync it is just a local tag — fully reversible.
+  (defun my/notmuch-search-toggle-trash ()
+    "Toggle the trash mark on the thread at point; advance when trashing."
+    (interactive)
+    (if (member "trash" (notmuch-search-get-tags))
+        (notmuch-search-tag '("-trash" "+inbox"))
+      (notmuch-search-tag '("+trash" "-inbox" "-unread"))
+      (notmuch-search-next-thread)))
+  (defun my/notmuch-tree-toggle-trash ()
+    "Toggle the trash mark on the message at point (tree view)."
+    (interactive)
+    (if (member "trash" (notmuch-tree-get-tags))
+        (notmuch-tree-tag '("-trash" "+inbox"))
+      (notmuch-tree-tag '("+trash" "-inbox" "-unread"))
+      (notmuch-tree-next-message)))
+  (defun my/notmuch-show-toggle-trash ()
+    "Toggle the trash mark on the current message."
+    (interactive)
+    (if (member "trash" (notmuch-show-get-tags))
+        (notmuch-show-tag '("-trash" "+inbox"))
+      (notmuch-show-tag '("+trash" "-inbox" "-unread"))))
+
+  ;; Reading a thread clears its `unread' tag, but the search list caches the old
+  ;; display. A full refresh flashes the whole buffer; instead, on return re-query
+  ;; just the thread at point and redraw only its line (notmuch's own
+  ;; `notmuch-search-update-result') — quiet, like mu4e.
+  (defun my/notmuch-search-update-line-on-return (&rest _)
+    "Redraw only the thread line at point from a fresh single-thread query."
+    (when (and (eq major-mode 'notmuch-search-mode)
+               (notmuch-search-get-result))
+      (when-let* ((tid (notmuch-search-find-thread-id 'bare))
+                  (result (car (notmuch-call-notmuch-sexp
+                                "search" "--format=sexp" "--format-version=5"
+                                "--exclude=false" (concat "thread:" tid)))))
+        ;; Match the initial-render path (notmuch-search-append-result): set
+        ;; orig-tags = tags so notmuch doesn't paint every tag as a freshly
+        ;; "added" change (the green highlight).
+        (setq result (plist-put result :orig-tags (plist-get result :tags)))
+        (notmuch-search-update-result result))))
+  (advice-add 'notmuch-bury-or-kill-this-buffer :after #'my/notmuch-search-update-line-on-return)
+
+  ;; Background auto-sync every 5 min (like mu4e-update-interval): run the sync
+  ;; command quietly (no compilation popup), then refresh notmuch buffers that
+  ;; aren't currently focused — so new mail/counts appear without flashing under
+  ;; you. Starts once notmuch is loaded; `U' is still the on-demand sync.
+  (defvar my/notmuch-sync-timer nil)
+  (defun my/notmuch-auto-sync ()
+    "Run the notmuch sync quietly, then refresh unfocused notmuch buffers."
+    (unless (process-live-p (get-process "notmuch-autosync"))
+      (let ((default-directory "~/"))
+        (set-process-sentinel
+         (start-process-shell-command "notmuch-autosync" nil +notmuch-sync-backend)
+         (lambda (_proc event)
+           (when (string-prefix-p "finished" event)
+             (dolist (buf (buffer-list))
+               (with-current-buffer buf
+                 (when (and (memq major-mode '(notmuch-hello-mode notmuch-search-mode notmuch-tree-mode))
+                            (not (eq buf (window-buffer (selected-window)))))
+                   (notmuch-refresh-this-buffer))))))))))
+  (when (timerp my/notmuch-sync-timer) (cancel-timer my/notmuch-sync-timer))
+  (setq my/notmuch-sync-timer (run-with-timer 300 300 #'my/notmuch-auto-sync))
+
+  ;; `d' toggles trash (reversible); `U' syncs from any notmuch buffer.
+  (map! :map notmuch-search-mode-map :n "d" #'my/notmuch-search-toggle-trash :n "U" #'+notmuch/update
+        :map notmuch-tree-mode-map   :n "d" #'my/notmuch-tree-toggle-trash   :n "U" #'+notmuch/update
+        :map notmuch-show-mode-map   :n "d" #'my/notmuch-show-toggle-trash   :n "U" #'+notmuch/update
+        :map notmuch-hello-mode-map  :n "U" #'+notmuch/update)
+  (map! :localleader
+        :map notmuch-search-mode-map :desc "Toggle trash" "d" #'my/notmuch-search-toggle-trash
+        :map notmuch-tree-mode-map   :desc "Toggle trash" "d" #'my/notmuch-tree-toggle-trash
+        :map notmuch-show-mode-map   :desc "Toggle trash" "d" #'my/notmuch-show-toggle-trash))
 
 ;; Launch notmuch on `SPC o m' (the slot the mu4e module used, freed when it went).
 (map! :leader :desc "Notmuch (mail)" "o m" #'notmuch)
