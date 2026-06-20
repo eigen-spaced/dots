@@ -127,6 +127,9 @@ return {
       "*-lock.json", -- package-lock.json
       "*-lock.yaml", -- pnpm-lock.yaml
       "*.lockb", -- bun.lockb
+      "build", -- C/C++ build folders
+      ".build",
+      ".cache",
     }
     local function pick_files()
       local cmd = { "rg", "--files", "--hidden" }

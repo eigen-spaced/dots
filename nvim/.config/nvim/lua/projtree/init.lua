@@ -19,7 +19,7 @@ M.config = {
   width = 34,
   mode = "tree", -- "tree" | "folders"
   -- Names skipped by the non-git fallback walk (git mode honours .gitignore).
-  fallback_ignore = { ".git", "node_modules", ".DS_Store" },
+  fallback_ignore = { ".git", "build", ".cache", "node_modules", ".DS_Store" },
 }
 
 -- Live state. `buf` is reused across toggles so reopening is instant; `win` is
@@ -152,7 +152,8 @@ end
 local function render_node(node, prefix, lines, hls, mode)
   local entries = {}
   for _, name in ipairs(sorted_keys(node.dirs)) do
-    entries[#entries + 1] = { type = "dir", name = name, node = node.dirs[name] }
+    entries[#entries + 1] =
+      { type = "dir", name = name, node = node.dirs[name] }
   end
   if mode ~= "folders" then
     table.sort(node.files)
@@ -179,12 +180,21 @@ local function render_node(node, prefix, lines, hls, mode)
 
     -- Highlight the tree guides, the icon, and (for dirs) the name.
     local pre_bytes = #prefix + #connector
-    hls[#hls + 1] = { line = lnum, col = 0, end_col = pre_bytes, hl = "Comment" }
     hls[#hls + 1] =
-      { line = lnum, col = pre_bytes, end_col = pre_bytes + #icon, hl = icon_hl }
+      { line = lnum, col = 0, end_col = pre_bytes, hl = "Comment" }
+    hls[#hls + 1] = {
+      line = lnum,
+      col = pre_bytes,
+      end_col = pre_bytes + #icon,
+      hl = icon_hl,
+    }
     if entry.type == "dir" then
-      hls[#hls + 1] =
-        { line = lnum, col = pre_bytes + #icon + 1, end_col = #line, hl = "Directory" }
+      hls[#hls + 1] = {
+        line = lnum,
+        col = pre_bytes + #icon + 1,
+        end_col = #line,
+        hl = "Directory",
+      }
       local child_prefix = prefix .. (last and "  " or "│ ")
       render_node(entry.node, child_prefix, lines, hls, mode)
     end
@@ -204,7 +214,8 @@ local function render(root, mode)
   lines[1] = header .. tag
   hls[#hls + 1] = { line = 0, col = 0, end_col = #ricon, hl = ricon_hl }
   hls[#hls + 1] = { line = 0, col = #ricon, end_col = #header, hl = "Title" }
-  hls[#hls + 1] = { line = 0, col = #header, end_col = #header + #tag, hl = "Comment" }
+  hls[#hls + 1] =
+    { line = 0, col = #header, end_col = #header + #tag, hl = "Comment" }
 
   render_node(tree, "", lines, hls, mode)
 
@@ -236,7 +247,12 @@ local function ensure_buf()
   -- buffer-local <leader><leader> fire instantly instead of waiting on the
   -- global smart-splits <leader><leader>h/j/k/l swap maps.
   local function map(lhs, fn, desc)
-    vim.keymap.set("n", lhs, fn, { buffer = buf, silent = true, nowait = true, desc = desc })
+    vim.keymap.set(
+      "n",
+      lhs,
+      fn,
+      { buffer = buf, silent = true, nowait = true, desc = desc }
+    )
   end
   map("<Space><Space>", M.toggle_mode, "Toggle folders / full tree")
   map("m", M.toggle_mode, "Toggle folders / full tree")
@@ -264,7 +280,8 @@ local function apply(buf, lines, hls)
 end
 
 local function open_win(buf)
-  local split = M.config.side == "left" and "topleft vsplit" or "botright vsplit"
+  local split = M.config.side == "left" and "topleft vsplit"
+    or "botright vsplit"
   vim.cmd(split)
   local win = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_buf(win, buf)
@@ -341,10 +358,6 @@ function M.toggle_mode()
   M.set_mode(M.config.mode == "tree" and "folders" or "tree")
 end
 
-----------------------------------------------------------------------
--- Setup
-----------------------------------------------------------------------
-
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 
@@ -361,7 +374,10 @@ function M.setup(opts)
     elseif action == "refresh" then
       M.refresh()
     else
-      vim.notify("ProjTree: unknown action '" .. action .. "'", vim.log.levels.WARN)
+      vim.notify(
+        "ProjTree: unknown action '" .. action .. "'",
+        vim.log.levels.WARN
+      )
     end
   end, {
     nargs = "?",
