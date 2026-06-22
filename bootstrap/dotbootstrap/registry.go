@@ -38,6 +38,7 @@ func registry(repo string) []item {
 			"brew install git stow mise direnv fzf fd ripgrep jq tmux ffmpeg gum",
 			have("gum") + " && " + have("fd") + " && " + have("rg"), true},
 		{"Homebrew", "libvips", "vipsthumbnail — Doom dirvish thumbnails", "brew install vips", have("vipsthumbnail"), true},
+		{"Homebrew", "bat", "syntax-highlighting pager — colored dirvish previews", "brew install bat", have("bat"), true},
 
 		// --- Apps (casks) ---------------------------------------------------
 		{"Apps (casks)", "Ghostty", "terminal emulator", "brew install --cask ghostty", "[ -d /Applications/Ghostty.app ]", true},
@@ -110,12 +111,20 @@ func registry(repo string) []item {
 
 		// --- Dotfiles (stow) ------------------------------------------------
 		stow("nvim", "Neovim config"),
+		stow("emacs", "Emacs config (~/.config/emacs)"),
 		stow("doom", "Doom Emacs config"),
+		stow("bat", "bat config + pixel-miri16 theme"),
 		stow("zsh", "zsh config"),
 		stow("tmux", "tmux config"),
 		stow("ghostty", "Ghostty config"),
 		stow("hammerspoon", "Hammerspoon config"),
 		stow("scripts", "~/.config/scripts helpers"),
+
+		// --- post-stow build steps ------------------------------------------
+		// Compile the stowed pixel-miri16 bat theme into bat's machine-local
+		// cache (~/.cache/bat); must run after `brew install bat` + `stow bat`.
+		{"Dotfiles (stow)", "bat theme cache", "compile pixel-miri16 into ~/.cache/bat",
+			"bat cache --build", "bat --list-themes 2>/dev/null | grep -q pixel-miri16", true},
 
 		// --- launchd agents -------------------------------------------------
 		{"launchd", "update reminder", "daily 11:00 check; notifies if update-all stale 14d+", updateReminderCmd,
@@ -146,6 +155,7 @@ cat > "$plist" <<PLIST
     <array>
         <string>/opt/homebrew/bin/emacs</string>
         <string>--fg-daemon</string>
+        <string>--init-directory=$HOME/.config/emacs</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

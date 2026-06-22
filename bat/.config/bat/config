@@ -1,0 +1,3 @@
+# bat config — theme matches vanilla-emacs (pixel-themes-miri16).
+# Custom theme lives in themes/; rebuild the cache after changing it: bat cache --build
+--theme="pixel-miri16"

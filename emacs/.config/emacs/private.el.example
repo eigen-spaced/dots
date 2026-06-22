@@ -1,0 +1,12 @@
+;;; private.el.example --- machine-local identity (copy to private.el) -*- lexical-binding: t; -*-
+;;
+;; Copy this to ~/.config/vanilla-emacs/private.el and fill in your details.
+;; private.el is loaded by init.el (noerror) and kept OUT of the repo — secrets
+;; and personal data never get committed.  SMTP/IMAP passwords come from the
+;; macOS Keychain (auth-source) and ~/.mbsyncrc, not from here.
+;;; Code:
+
+(setq user-full-name   "Your Name"
+      user-mail-address "you@example.com")
+
+;;; private.el.example ends here

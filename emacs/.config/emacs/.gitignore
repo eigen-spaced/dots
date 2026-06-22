@@ -1,0 +1,22 @@
+# Runtime state — lives in the real ~/.config/emacs, never the repo.
+elpa/
+eln-cache/
+*.elc
+auto-save-list/
+backups/
+autosave/
+transient/
+var/
+.cache/
+custom.el
+recentf
+history
+places
+projects
+savehist
+org-clock-save.el
+org-roam.db
+.org-id-locations
+persp-state
+# Machine-local identity (see private.el.example).
+private.el
