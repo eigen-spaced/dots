@@ -64,7 +64,12 @@
     (let ((msg (format "%S" args)))
       (unless (string-match-p "content modified" msg)
         (apply orig-fn args))))
-  (advice-add 'lsp--error :around #'my/lsp-ignore-rust-analyzer-content-modified))
+  (advice-add 'lsp--error :around #'my/lsp-ignore-rust-analyzer-content-modified)
+
+  ;; Cap clangd indexing at half the cores so big C++ projects don't peg the CPU.
+  (with-eval-after-load 'lsp-clangd
+    (add-to-list 'lsp-clients-clangd-args
+                 (format "-j=%d" (max 1 (/ (num-processors) 2))))))
 
 (use-package lsp-ui
   :commands (lsp-ui-mode)
@@ -73,11 +78,32 @@
   (lsp-ui-doc-enable nil)
   (lsp-ui-peek-enable t))
 
+(defun my/consult-lsp-symbols-project-transformer (workspace symbol-info)
+  "Transform SYMBOL-INFO like the default, but drop symbols outside WORKSPACE root.
+Filters out indexed std-library / SDK headers (e.g. CommandLineTools)."
+  (let ((file (ignore-errors
+                (lsp--uri-to-path
+                 (lsp:location-uri (lsp:symbol-information-location symbol-info)))))
+        (root (lsp--workspace-root workspace)))
+    (when (and file root
+               (string-prefix-p (file-name-as-directory (expand-file-name root))
+                                (expand-file-name file)))
+      (consult-lsp--symbols--transformer workspace symbol-info))))
+
+(defun my/consult-lsp--drop-nil-candidates (cands)
+  "Drop nil entries the project filter leaves in CANDS."
+  (delq nil cands))
+
 (use-package consult-lsp
   :after (consult lsp-mode)
   :bind (("C-c s ," . consult-lsp-file-symbols)
          ("C-c s ." . consult-lsp-symbols)
-         ("C-c s D" . consult-lsp-diagnostics)))
+         ("C-c s D" . consult-lsp-diagnostics))
+  :config
+  (setq consult-lsp-symbols-transformer-function
+        #'my/consult-lsp-symbols-project-transformer)
+  (advice-add 'consult-lsp--symbols--make-transformer :filter-return
+              #'my/consult-lsp--drop-nil-candidates))
 
 (defun my/flycheck-eldoc (callback &rest _)
   "Feed flycheck errors at point to eldoc so they compose with LSP hover."

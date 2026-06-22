@@ -384,7 +384,8 @@ BINDINGS are KEY COMMAND pairs."
   "a" #'lsp-execute-code-action
   "n" #'lsp-rename
   "i" #'lsp-find-implementation
-  "s" #'consult-lsp-symbols
+  "s" #'consult-lsp-file-symbols
+  "S" #'consult-lsp-symbols
   "l" #'lsp
   "f" #'apheleia-format-buffer
   "e" #'quickrun

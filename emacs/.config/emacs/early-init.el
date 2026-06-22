@@ -15,7 +15,7 @@
       initial-scratch-message nil
       frame-resize-pixelwise t
       default-frame-alist '((fullscreen . maximized)
-                            (font . "Cascadia Code NF-17")
+                            (font . "Cascadia Code NF-18")
                             (vertical-scroll-bars . nil)
                             (internal-border-width . 8)
                             (left-fringe . 8)

@@ -45,6 +45,7 @@
   :config
   (consult-customize
    consult-ripgrep consult-grep consult-git-grep
+   consult-lsp-file-symbols consult-lsp-symbols
    :preview-key nil)
   (consult-customize
    consult-fd consult-find consult-recent-file

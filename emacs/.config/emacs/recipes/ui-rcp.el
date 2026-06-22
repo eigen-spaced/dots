@@ -10,7 +10,7 @@
   :vc (:url "https://github.com/lucasobx/pixel-themes" :rev :newest)
   :config
   (pixel-themes-mode 1)
-  (pixel-themes-load-theme 'pixel-themes-miri16))
+  (pixel-themes-load-theme 'pixel-themes-alia16))
 
 (use-package nerd-icons)
 
@@ -31,7 +31,7 @@
   (doom-modeline-buffer-encoding nil)
   (doom-modeline-buffer-file-name-style 'truncate-upto-project))
 
-(set-face-attribute 'default nil :font "Cascadia Code NF" :height 170)
+(set-face-attribute 'default nil :font "Cascadia Code NF" :height 180)
 
 (provide 'ui-rcp)
 ;;; ui-rcp.el ends here

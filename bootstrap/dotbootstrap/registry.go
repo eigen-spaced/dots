@@ -125,6 +125,11 @@ func registry(repo string) []item {
 		// cache (~/.cache/bat); must run after `brew install bat` + `stow bat`.
 		{"Dotfiles (stow)", "bat theme cache", "compile pixel-miri16 into ~/.cache/bat",
 			"bat cache --build", "bat --list-themes 2>/dev/null | grep -q pixel-miri16", true},
+		// Pre-compile tree-sitter grammars for the config's languages so the
+		// first visit to each never warns.  Driven through the running daemon
+		// (treesit-auto already loaded), so there's no second Emacs racing elpa.
+		{"Dotfiles (stow)", "emacs tree-sitter grammars", "compile grammars for the config's languages",
+			grammarInstallCmd, `ls "$HOME/.config/emacs/tree-sitter/"libtree-sitter-go.* >/dev/null 2>&1`, true},
 
 		// --- launchd agents -------------------------------------------------
 		{"launchd", "update reminder", "daily 11:00 check; notifies if update-all stale 14d+", updateReminderCmd,
@@ -204,3 +209,11 @@ cat > "$plist" <<PLIST
 PLIST
 launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
 launchctl bootstrap "gui/$(id -u)" "$plist"`
+
+// grammarInstallCmd compiles tree-sitter grammars for the config's languages.
+// It waits for the Emacs daemon, then drives treesit-auto from inside it (so
+// only one Emacs touches elpa/), installing any grammar not already present.
+const grammarInstallCmd = `for i in $(seq 1 60); do emacsclient -e t >/dev/null 2>&1 && break; sleep 2; done
+emacsclient --eval '(let ((treesit-language-source-alist (treesit-auto--build-treesit-source-alist)))
+  (dolist (lang (quote (go gomod c cpp python rust javascript typescript tsx json yaml toml css html bash markdown dockerfile)))
+    (unless (treesit-ready-p lang t) (ignore-errors (treesit-install-language-grammar lang)))))'`

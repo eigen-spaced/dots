@@ -16,7 +16,23 @@
   (dashboard-display-icons-p t)
   (dashboard-set-heading-icons t)
   (dashboard-set-file-icons t)
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*"))))
+  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  :config
+  ;; On the daemon the dashboard first renders frameless, where
+  ;; (face-attribute 'default :height) is a bogus 1; dashboard-agenda--set-face
+  ;; bakes that tiny height into the agenda items.  Re-render once a real GUI
+  ;; frame exists (default height is correct there), then drop the hook.  The
+  ;; 0.1s timer lets the new frame's faces fully realize first (Doom does the
+  ;; same in +doom-dashboard-reload-frame-h — synchronous reload is unreliable).
+  (when (daemonp)
+    (defun my/dashboard-refresh-on-frame ()
+      (remove-hook 'server-after-make-frame-hook #'my/dashboard-refresh-on-frame)
+      (run-with-timer
+       0.1 nil
+       (lambda ()
+         (when (get-buffer "*dashboard*")
+           (with-current-buffer "*dashboard*" (dashboard-refresh-buffer))))))
+    (add-hook 'server-after-make-frame-hook #'my/dashboard-refresh-on-frame)))
 
 (with-eval-after-load 'meow
   (add-to-list 'meow-mode-state-list '(dashboard-mode . motion)))

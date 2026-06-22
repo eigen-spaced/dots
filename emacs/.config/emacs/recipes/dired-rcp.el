@@ -98,7 +98,7 @@
   :commands (dirvish-side)
   :custom
   (dirvish-side-width 35)
-  (dirvish-side-attributes '(nerd-icons collapse))
+  (dirvish-side-attributes '(collapse))
   (dirvish-side-display-alist '((side . left) (slot . -1))))
 
 ;; dired buffers run in meow Motion so the mode's single-key commands pass
