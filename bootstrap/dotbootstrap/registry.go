@@ -174,6 +174,8 @@ cat > "$plist" <<PLIST
     <dict>
         <key>PATH</key>
         <string>/opt/homebrew/bin:/opt/homebrew/sbin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+        <key>LSP_USE_PLISTS</key>
+        <string>1</string>
     </dict>
 </dict>
 </plist>

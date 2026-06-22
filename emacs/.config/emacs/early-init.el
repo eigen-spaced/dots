@@ -25,6 +25,10 @@
 (when (eq system-type 'darwin)
   (setq ns-right-command-modifier 'hyper))
 
+;; lsp-mode uses plists (not hash tables) for server messages = less GC.  Read
+;; at lsp's compile + load time, so it must be set before lsp is ever compiled.
+(setenv "LSP_USE_PLISTS" "1")
+
 (setq package-enable-at-startup t
       package-native-compile t)
 
