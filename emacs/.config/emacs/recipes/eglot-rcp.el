@@ -50,9 +50,8 @@
 (advice-add 'eglot-completion-at-point :filter-return
             #'my/eglot-dim-completion-annotations)
 
-;; Docs-at-point on demand: `?' ("what is this?") pops an eldoc-box childframe
-;; with the eglot hover (or eldoc for any mode) that vanishes on the next
-;; command — the lsp-ui-doc-glance replacement.  Bound to `?' in meow-rcp.el.
+;; Docs-at-point on demand: pops an eldoc-box childframe with the eglot
+;; hover command — the lsp-ui-doc-glance replacement.  Bound to `?' in meow-rcp.el.
 (use-package eldoc-box
   :commands (eldoc-box-help-at-point))
 
@@ -62,8 +61,6 @@
   (eldoc-documentation-strategy #'eldoc-documentation-compose-eagerly)
   (eldoc-echo-area-use-multiline-p t))
 
-;; Diagnostics via flymake; `flymake-eldoc-function' (Emacs 30) streams the
-;; error at point into the echo area, composed with eglot's hover via eldoc.
 (use-package flymake
   :ensure nil
   :hook (prog-mode . flymake-mode)
@@ -78,16 +75,14 @@
   :after (consult eglot)
   :bind ("C-c s ." . consult-eglot-symbols))
 
-;; Eglot's stderr buffer is space-prefixed (already hidden); the events buffer
-;; is disabled above.  Hide any stray *EGLOT …* buffer from the switchers too.
-;; Reach them on demand with M-x eglot-events-buffer / eglot-stderr-buffer.
-(defvar my/eglot-hidden-buffer-rx "\\`\\*EGLOT "
-  "Regexp for eglot helper buffers to keep out of buffer switchers.")
+(defvar my/hidden-tooling-buffer-rx
+  "\\`\\*\\(EGLOT \\|Flymake diagnostics \\)"
+  "Regexp for eglot/flymake helper buffers to hide from buffer switchers.")
 (with-eval-after-load 'consult
-  (add-to-list 'consult-buffer-filter my/eglot-hidden-buffer-rx))
+  (add-to-list 'consult-buffer-filter my/hidden-tooling-buffer-rx))
 (with-eval-after-load 'perspective
   (require 'ido)                        ; ido-ignore-buffers lives in ido.el
-  (add-to-list 'ido-ignore-buffers my/eglot-hidden-buffer-rx))
+  (add-to-list 'ido-ignore-buffers my/hidden-tooling-buffer-rx))
 
 (provide 'eglot-rcp)
 ;;; eglot-rcp.el ends here
