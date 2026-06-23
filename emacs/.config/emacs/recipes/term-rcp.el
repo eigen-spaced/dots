@@ -8,6 +8,21 @@
 (use-package ghostel
   :commands (ghostel ghostel-project my/ghostel-popup my/ghostel-full))
 
+;; ghostel is a terminal — meow's modal keymaps must not intercept its keys.
+;; meow guesses NORMAL state for ghostel buffers (a-z are ghostel--self-insert,
+;; which the guesser reads as a code buffer), so without this a fresh terminal
+;; opens modal: keys run meow commands and backspace eats the prompt.  Even
+;; insert state would steal ESC/C-w.  Mirror the Doom setup (evil-ghostel ->
+;; evil emacs state): turn meow OFF in ghostel buffers for a pure-terminal
+;; passthrough — drop back out with C-x o / C-x 0.
+;; meow enables via `meow-global-mode-enable-in-buffer' on
+;; `after-change-major-mode-hook'; append ours (depth 90) so it runs right after
+;; in the SAME command — no window where meow is briefly active (no race).
+(defun my/ghostel-disable-meow ()
+  (when (and (derived-mode-p 'ghostel-mode) (bound-and-true-p meow-mode))
+    (meow-mode -1)))
+(add-hook 'after-change-major-mode-hook #'my/ghostel-disable-meow 90)
+
 (defun my/ghostel--root ()
   "Project root, or `default-directory' when outside a project."
   (or (when-let ((p (project-current))) (project-root p)) default-directory))
