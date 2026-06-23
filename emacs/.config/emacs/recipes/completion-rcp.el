@@ -65,6 +65,41 @@
 (use-package embark-consult
   :after (embark consult))
 
+;; Open a completion candidate in a split: C-v vertical (side-by-side), C-s
+;; horizontal (stacked).  Works in any vertico finder — buffers, files, project
+;; files — via embark, which classifies the candidate and injects it into the
+;; opener's prompt.  C-v/C-s in vertico-map fire embark-act with that action.
+(defun my/embark-split-opener (opener splitter)
+  "Return a command that runs SPLITTER, selects the new window, then OPENER."
+  (lambda ()
+    (interactive)
+    (select-window (funcall splitter))
+    (call-interactively opener)))
+
+(with-eval-after-load 'embark
+  (dolist (spec `(("C-v" . split-window-right)
+                  ("C-s" . split-window-below)))
+    (define-key embark-file-map   (kbd (car spec))
+                (my/embark-split-opener #'find-file (cdr spec)))
+    (define-key embark-buffer-map (kbd (car spec))
+                (my/embark-split-opener #'switch-to-buffer (cdr spec)))))
+
+(defun my/vertico-split-vertical ()
+  "Open the current candidate in a vertical split (side-by-side)."
+  (interactive)
+  (setq unread-command-events (listify-key-sequence (kbd "C-v")))
+  (embark-act))
+
+(defun my/vertico-split-horizontal ()
+  "Open the current candidate in a horizontal split (stacked)."
+  (interactive)
+  (setq unread-command-events (listify-key-sequence (kbd "C-s")))
+  (embark-act))
+
+(with-eval-after-load 'vertico
+  (define-key vertico-map (kbd "C-v") #'my/vertico-split-vertical)
+  (define-key vertico-map (kbd "C-s") #'my/vertico-split-horizontal))
+
 (use-package corfu
   :init (global-corfu-mode)
   :custom

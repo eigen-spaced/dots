@@ -73,6 +73,9 @@
   (savehist-mode 1)
   (save-place-mode 1)
   (recentf-mode 1)
+  ;; Move point into help buffers (describe-key/function/…) so they're readable
+  ;; and q-dismissable straight away.
+  (setq help-window-select t)
   (add-hook 'after-init-hook
             (lambda () (when (file-exists-p custom-file) (load custom-file nil t))))
   :bind
