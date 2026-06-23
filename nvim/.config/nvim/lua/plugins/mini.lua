@@ -159,7 +159,7 @@ return {
         { source = { show = grep_show }, window = { config = grep_win_config } }
       )
     end, { desc = "Live grep" })
-    vim.keymap.set({ "n", "x" }, "<c-b>", function()
+    vim.keymap.set({ "n", "x" }, "<leader>bb", function()
       pick.builtin.buffers()
     end, { desc = "Pick buffers" })
     vim.keymap.set("n", "<leader>fd", function()

@@ -100,24 +100,29 @@
   (let ((meow-use-clipboard t)) (call-interactively #'meow-save)))
 
 (defun my/scroll-half-page-down ()
-  "Vim `C-d' feel: scroll down half a window, recentering."
+  "Vim `C-f' feel: scroll down half a window, recentering."
   (interactive) (forward-line (max 1 (/ (window-body-height) 2))) (recenter))
 
 (defun my/scroll-half-page-up ()
-  "Vim `C-u' feel: scroll up half a window, recentering."
+  "Vim `C-b' feel: scroll up half a window, recentering."
   (interactive) (forward-line (- (max 1 (/ (window-body-height) 2)))) (recenter))
 
 (defun my/meow-search-backward ()
   "Vim `N': previous search match."
   (interactive) (meow-search -1))
 
+;; meow's built-in `meow-find-expand'/`meow-till-expand' already do the vim
+;; visual `f'/`t': they extend an active selection from its anchor to the found
+;; char, and fall back to a fresh find when nothing is selected -- so `f'/`t'
+;; bind straight to them (no wrapper).  Only backward `F'/`T' need a helper: meow
+;; has no backward-expand variant, so feed a negative prefix to the expand cmd.
 (defun my/meow-find-backward ()
-  "Vim `F': find char backward."
-  (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find)))
+  "Vim `F': find char backward; extend the active selection."
+  (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find-expand)))
 
 (defun my/meow-till-backward ()
-  "Vim `T': till char backward."
-  (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-till)))
+  "Vim `T': till char backward; extend the active selection."
+  (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-till-expand)))
 
 (defun my/backward-kill-word ()
   "Insert-mode `C-w': kill one adjacent chunk (whitespace/word/punct),no line cross."
@@ -131,13 +136,6 @@
        ((eq (char-syntax (char-before)) ?w) (skip-syntax-backward "w" (line-beginning-position)))
        (t (skip-syntax-backward "^w " (line-beginning-position))))
       (delete-region (point) beg)))))
-
-(defun my/meow-digit-or-expand ()
-  "Digit key: expand selection to the Nth hint if live, else numeric prefix."
-  (interactive)
-  (if (and (region-active-p) meow--expand-nav-function (meow--selection-type))
-      (meow-expand)
-    (meow-digit-argument)))
 
 (defun my/meow-mark-whitespace ()
   "Select the adjacent (or next) run of horizontal whitespace on the line."
@@ -178,6 +176,119 @@ With no region, insert the pair and enter insert state between them."
 (my/meow-define-surround my/meow-surround-quote    "\"" "\"")
 (my/meow-define-surround my/meow-surround-backtick "`" "`")
 
+;;; vim-style ci/ca: nearest-pair inner/bounds ----------------------
+;; meow's `,'/`.' (inner/bounds-of-thing) only fire when point is already inside
+;; the thing.  These wrappers add vim's ci"/ca( reach: for a pair delimiter (or
+;; `e' = symbol) select the pair enclosing point, else the next one on the line;
+;; every other thing falls through to meow unchanged.  A real meow selection is
+;; left, so follow with c/d/y.
+
+(defconst my/meow-pair-chars
+  '((?\( ?\( . ?\)) (?\) ?\( . ?\))
+    (?\[ ?\[ . ?\]) (?\] ?\[ . ?\])
+    (?{  ?{  . ?})  (?}  ?{  . ?})
+    (?<  ?<  . ?>)  (?>  ?<  . ?>)
+    (?\" ?\" . ?\") (?'  ?'  . ?') (?`  ?`  . ?`))
+  "Delimiter char -> (OPEN . CLOSE) for the nearest-pair selectors.")
+
+(defun my/meow--quote-inner (q)
+  "Inner (BEG . END) of the nearest Q…Q pair on the current line, or nil."
+  (let* ((pt (point)) (eol (line-end-position)) (qs (char-to-string q))
+         (positions '()))
+    (save-excursion
+      (goto-char (line-beginning-position))
+      (while (search-forward qs eol t)
+        (unless (eq (char-before (1- (point))) ?\\)   ; skip \" escapes
+          (push (1- (point)) positions))))
+    (setq positions (nreverse positions))
+    (let ((pairs '()))
+      (while (and positions (cdr positions))
+        (push (cons (car positions) (cadr positions)) pairs)
+        (setq positions (cddr positions)))
+      (setq pairs (nreverse pairs))
+      (when-let ((hit (or (seq-find (lambda (p) (and (< (car p) pt) (<= pt (cdr p)))) pairs)
+                          (seq-find (lambda (p) (>= (car p) pt)) pairs))))
+        (cons (1+ (car hit)) (cdr hit))))))
+
+(defun my/meow--match-forward (open close from)
+  "From FROM, return the position of the CLOSE matching an already-open level."
+  (save-excursion
+    (goto-char from)
+    (let ((depth 0)
+          (re (regexp-opt (list (char-to-string open) (char-to-string close))))
+          result)
+      (while (and (not result) (re-search-forward re nil t))
+        (let ((c (char-before)))
+          (cond ((eq c open)  (setq depth (1+ depth)))
+                ((eq c close) (if (zerop depth) (setq result (1- (point)))
+                                (setq depth (1- depth)))))))
+      result)))
+
+(defun my/meow--bracket-inner (open close)
+  "Inner (BEG . END) of the nearest OPEN…CLOSE pair, or nil.
+Prefer the pair enclosing point (handles nesting), else the next on the line."
+  (let ((pt (point)))
+    (or
+     (save-excursion
+       (let ((depth 0)
+             (re (regexp-opt (list (char-to-string open) (char-to-string close))))
+             ob)
+         (while (and (not ob) (re-search-backward re nil t))
+           (cond ((eq (char-after) close) (setq depth (1+ depth)))
+                 ((eq (char-after) open)  (if (zerop depth) (setq ob (point))
+                                            (setq depth (1- depth))))))
+         (when ob
+           (let ((cb (my/meow--match-forward open close (1+ ob))))
+             (when (and cb (< ob pt) (<= pt cb)) (cons (1+ ob) cb))))))
+     (save-excursion
+       (when (search-forward (char-to-string open) (line-end-position) t)
+         (let ((ob (1- (point)))
+               (cb (my/meow--match-forward open close (point))))
+           (when cb (cons (1+ ob) cb))))))))
+
+(defun my/meow--pair-inner (open close)
+  (if (eq open close) (my/meow--quote-inner open)
+    (my/meow--bracket-inner open close)))
+
+(defun my/meow--symbol-inner ()
+  "Bounds of the symbol at point, else the next symbol on the line, or nil."
+  (or (bounds-of-thing-at-point 'symbol)
+      (save-excursion
+        (when (re-search-forward "\\(?:\\sw\\|\\s_\\)" (line-end-position) t)
+          (goto-char (match-beginning 0))
+          (bounds-of-thing-at-point 'symbol)))))
+
+(defun my/meow--select-bounds (bounds outer)
+  "Make a meow selection over BOUNDS; OUTER widens by one each side (delimiters)."
+  (let ((beg (if outer (1- (car bounds)) (car bounds)))
+        (end (if outer (1+ (cdr bounds)) (cdr bounds))))
+    (meow--select (meow--make-selection '(select . inner) beg end) t)))
+
+(defun my/meow--inner-or-bounds (outer fallback)
+  "Read a char and select the nearest pair (OUTER includes delimiters) or
+symbol; fall through to FALLBACK for any other meow thing."
+  (let* ((ch (read-char (if outer "bounds: " "inner: ")))
+         (pair (alist-get ch my/meow-pair-chars)))
+    (cond
+     (pair (if-let ((b (my/meow--pair-inner (car pair) (cdr pair))))
+               (my/meow--select-bounds b outer)
+             (user-error "No %c…%c on this line" (car pair) (cdr pair))))
+     ((eq ch ?e) (if-let ((b (my/meow--symbol-inner)))
+                     (my/meow--select-bounds b nil)
+                   (user-error "No symbol")))
+     (t (setq unread-command-events (list ch))
+        (call-interactively fallback)))))
+
+(defun my/meow-inner-nearest ()
+  "`meow-inner-of-thing' that reaches the nearest pair/symbol (vim ci\")."
+  (interactive)
+  (my/meow--inner-or-bounds nil #'meow-inner-of-thing))
+
+(defun my/meow-bounds-nearest ()
+  "`meow-bounds-of-thing' that reaches the nearest pair/symbol (vim ca\")."
+  (interactive)
+  (my/meow--inner-or-bounds t #'meow-bounds-of-thing))
+
 ;;; meow keymaps ----------------------------------------------------
 
 (defun my/meow-setup ()
@@ -196,18 +307,21 @@ With no region, insert the pair and enter insert state between them."
           (meow-cancel-selection . ignore)
           (meow-pop-selection . meow-pop-grab)
           (meow-replace . my/meow-replace-char)
-          (meow-beacon-change . meow-beacon-change-char)))
+          (meow-beacon-change . meow-beacon-change-char)
+          ;; digits bind straight to `meow-expand' (already selection-fallback
+          ;; wrapped); with no selection it lands here -> numeric prefix arg.
+          (meow-expand . meow-digit-argument)))
   (meow-normal-define-key
    '("SPC" . meow-keypad)
-   '("9" . my/meow-digit-or-expand)
-   '("8" . my/meow-digit-or-expand) '("7" . my/meow-digit-or-expand)
-   '("6" . my/meow-digit-or-expand) '("5" . my/meow-digit-or-expand)
-   '("4" . my/meow-digit-or-expand) '("3" . my/meow-digit-or-expand)
-   '("2" . my/meow-digit-or-expand) '("1" . my/meow-digit-or-expand)
+   '("9" . meow-expand)
+   '("8" . meow-expand) '("7" . meow-expand)
+   '("6" . meow-expand) '("5" . meow-expand)
+   '("4" . meow-expand) '("3" . meow-expand)
+   '("2" . meow-expand) '("1" . meow-expand)
    '("-" . negative-argument)
    '(";" . meow-reverse)
-   '("," . meow-inner-of-thing)
-   '("." . meow-bounds-of-thing)
+   '("," . my/meow-inner-nearest)
+   '("." . my/meow-bounds-nearest)
    '("[" . meow-beginning-of-thing)
    '("]" . meow-end-of-thing)
    '("/" . consult-line)
@@ -220,7 +334,7 @@ With no region, insert the pair and enter insert state between them."
    '("c" . meow-change)       '("C" . my/meow-change-to-eol)
    '("d" . meow-delete)       '("D" . meow-backward-delete)
    '("e" . meow-next-word)    '("E" . meow-next-symbol)
-   '("f" . meow-find)         '("F" . my/meow-find-backward)
+   '("f" . meow-find-expand)  '("F" . my/meow-find-backward)
    '("g" . meow-cancel-selection) '("G" . meow-grab)
    '("h" . meow-left)         '("H" . meow-left-expand)
    '("i" . meow-insert)       '("I" . my/meow-insert-line)
@@ -235,7 +349,7 @@ With no region, insert the pair and enter insert state between them."
    '("r" . meow-replace)      '("R" . meow-swap-grab)
    '("%" . evilmi-jump-items-native)
    '("s" . meow-kill)         '("S" . my/meow-mark-whitespace)
-   '("t" . meow-till)         '("T" . my/meow-till-backward)
+   '("t" . meow-till-expand)  '("T" . my/meow-till-backward)
    '("u" . meow-undo)         '("U" . undo-fu-only-redo)
    '("v" . meow-visit)
    '("w" . meow-mark-word)    '("W" . meow-mark-symbol)
@@ -292,14 +406,28 @@ With no region, insert the pair and enter insert state between them."
   ;; dashboard, and insert state.
   (define-key global-map (kbd "s-x") #'execute-extended-command)
   (define-key global-map (kbd "s-!") #'shell-command)
-  ;; ? = "what is this?" — eglot hover / eldoc docs in an eldoc-box childframe
-  ;; (see eglot-rcp.el).  K keeps its default meow-prev-expand.
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
   (setq meow--kbd-kill-line "C-S-k")
   (define-key global-map (kbd "C-S-k") #'kill-line)
+  ;; meow-left/right (also H/L, a, expand) move point by *executing* the
+  ;; `meow--kbd-forward-char'/`-backward-char' key macros (default C-f/C-b).
+  ;; We rebind C-f/C-b to half-page scroll below, so redirect those macros to
+  ;; dedicated C-S-f/C-S-b -- else h/l "move one char" by scrolling a half page.
+  ;; Same key-hijack pattern as meow--kbd-kill-line above.
+  (setq meow--kbd-forward-char "C-S-f")
+  (define-key global-map (kbd "C-S-f") #'forward-char)
+  (setq meow--kbd-backward-char "C-S-b")
+  (define-key global-map (kbd "C-S-b") #'backward-char)
   (dolist (km (list meow-normal-state-keymap meow-motion-state-keymap))
-    (define-key km (kbd "M-K") #'my/scroll-half-page-up)
-    (define-key km (kbd "M-J") #'my/scroll-half-page-down))
+    (define-key km (kbd "C-b") #'my/scroll-half-page-up)
+    (define-key km (kbd "C-f") #'my/scroll-half-page-down))
+  ;; Insert state is for editing, not window nav: shadow the global C-h/j/k/l
+  ;; windmove with insert-mode editing.  C-h/C-w/C-k = delete char/word/to-eol
+  ;; (vim insert trio); C-j newline, C-l recenter.  Nav stays on normal/motion.
+  (define-key meow-insert-state-keymap (kbd "C-h") #'backward-delete-char)
+  (define-key meow-insert-state-keymap (kbd "C-j") #'electric-newline-and-maybe-indent)
+  (define-key meow-insert-state-keymap (kbd "C-k") #'kill-line)
+  (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
   (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word))
 
 (use-package key-chord
