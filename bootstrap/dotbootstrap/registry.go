@@ -24,8 +24,21 @@ func registry(repo string) []item {
 	stow := func(pkg, desc string) item {
 		// No reliable per-package "installed" check; re-stow (--restow) is cheap
 		// and idempotent, so always offer it, selected by default.
+		//
+		// --no-folding forces real dirs + per-file symlinks. We default to it
+		// because most packages' tools write caches/state/history into their
+		// config dir (emacs elpa/eln-cache, zsh .zcompdump, tmux plugins); a
+		// folded dir-symlink would create that runtime junk inside this repo.
 		return item{"Dotfiles (stow)", pkg, desc,
 			fmt.Sprintf("cd %q && stow --no-folding --restow %s", repo, pkg), "", true}
+	}
+	// stowFold lets stow fold the package into a single directory symlink. Use
+	// only for packages that keep NO runtime/temp files in their config dir, so
+	// nothing generated leaks into the repo. nvim qualifies: plugins live in
+	// ~/.local/share and lazy-lock.json is committed.
+	stowFold := func(pkg, desc string) item {
+		return item{"Dotfiles (stow)", pkg, desc,
+			fmt.Sprintf("cd %q && stow --restow %s", repo, pkg), "", true}
 	}
 	// pnpm global package; bin is the executable it provides (for the install check).
 	pnpm := func(title, pkg, desc, bin string) item {
@@ -110,9 +123,8 @@ func registry(repo string) []item {
 		pnpm("codex", "@openai/codex", "OpenAI Codex CLI", "codex"),
 
 		// --- Dotfiles (stow) ------------------------------------------------
-		stow("nvim", "Neovim config"),
+		stowFold("nvim", "Neovim config"),
 		stow("emacs", "Emacs config (~/.config/emacs)"),
-		stow("doom", "Doom Emacs config"),
 		stow("bat", "bat config + pixel-miri16 theme"),
 		stow("zsh", "zsh config"),
 		stow("tmux", "tmux config"),

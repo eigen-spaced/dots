@@ -30,7 +30,8 @@
 (require 'workspace-rcp)
 (require 'vcs-rcp)
 (require 'code-rcp)
-(require 'lsp-mode-rcp)
+(require 'eglot-rcp)
+(require 'python-rcp)
 (require 'tree-sitter-rcp)
 (require 'editing-rcp)
 (require 'eww-rcp)
@@ -38,6 +39,7 @@
 (require 'markdown-rcp)
 (require 'notmuch-rcp)
 (require 'dired-rcp)
+(require 'term-rcp)
 (require 'dashboard-rcp)
 (require 'meow-rcp)
 

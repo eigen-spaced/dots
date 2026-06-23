@@ -287,7 +287,14 @@ With no region, insert the pair and enter insert state between them."
     (meow--which-key-describe-keymap)))
 
 (with-eval-after-load 'meow
-  (define-key meow-normal-state-keymap (kbd "s-x") #'execute-extended-command)
+  ;; Super-key twins for M-x / M-! bound in the GLOBAL map, not a meow state
+  ;; map, so they fire in every state — including motion-state buffers like the
+  ;; dashboard, and insert state.
+  (define-key global-map (kbd "s-x") #'execute-extended-command)
+  (define-key global-map (kbd "s-!") #'shell-command)
+  ;; ? = "what is this?" — eglot hover / eldoc docs in an eldoc-box childframe
+  ;; (see eglot-rcp.el).  K keeps its default meow-prev-expand.
+  (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
   (setq meow--kbd-kill-line "C-S-k")
   (define-key global-map (kbd "C-S-k") #'kill-line)
   (dolist (km (list meow-normal-state-keymap meow-motion-state-keymap))
@@ -344,6 +351,7 @@ BINDINGS are KEY COMMAND pairs."
 (my/leader-prefix "TAB" "workspace"
   "TAB" #'persp-switch
   "."   #'persp-switch
+  "c"   #'my/persp-new-workspace
   "n"   #'persp-next
   "p"   #'persp-prev
   "d"   #'persp-kill
@@ -355,10 +363,8 @@ BINDINGS are KEY COMMAND pairs."
   "s" #'consult-line
   "S" #'consult-line-multi
   "p" #'consult-ripgrep
-  "i" #'consult-imenu
   "m" #'consult-mark
-  "d" #'consult-flycheck
-  "D" #'consult-lsp-diagnostics)
+  "d" #'consult-flymake)
 
 (my/leader-prefix "p" "project"
   "p" #'projectile-switch-project
@@ -376,17 +382,21 @@ BINDINGS are KEY COMMAND pairs."
   "g" #'magit-status
   "b" #'magit-blame
   "l" #'magit-log-current
-  "d" #'magit-dispatch)
+  "d" #'magit-dispatch
+  "[" #'diff-hl-previous-hunk
+  "]" #'diff-hl-next-hunk
+  "r" #'diff-hl-revert-hunk
+  "s" #'diff-hl-show-hunk)
 
 (my/leader-prefix "k" "code"
   "d" #'xref-find-definitions
   "D" #'xref-find-references
-  "a" #'lsp-execute-code-action
-  "n" #'lsp-rename
-  "i" #'lsp-find-implementation
-  "s" #'consult-lsp-file-symbols
-  "S" #'consult-lsp-symbols
-  "l" #'lsp
+  "a" #'eglot-code-actions
+  "n" #'eglot-rename
+  "i" #'eglot-find-implementation
+  "s" #'consult-imenu
+  "S" #'consult-eglot-symbols
+  "l" #'eglot
   "f" #'apheleia-format-buffer
   "e" #'quickrun
   "r" #'quickrun-region
@@ -417,6 +427,8 @@ BINDINGS are KEY COMMAND pairs."
   "d" #'dirvish
   "D" #'my/dirvish-org
   "j" #'webjump
+  "t" #'my/ghostel-popup
+  "T" #'my/ghostel-full
   "-" #'dired-jump)
 
 (my/leader-prefix "n" "notes/org"

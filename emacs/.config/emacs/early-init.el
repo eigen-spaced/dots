@@ -32,4 +32,9 @@
 (setq package-enable-at-startup t
       package-native-compile t)
 
+;; Precompute every package's autoloads into one concatenated file so
+;; `package-initialize' doesn't walk all of elpa/ at startup.  Regenerate with
+;; `M-x package-quickstart-refresh' after installing/removing packages.
+(setq package-quickstart t)
+
 ;;; early-init.el ends here

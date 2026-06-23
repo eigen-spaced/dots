@@ -45,7 +45,7 @@
   :config
   (consult-customize
    consult-ripgrep consult-grep consult-git-grep
-   consult-lsp-file-symbols consult-lsp-symbols
+   consult-eglot-symbols
    :preview-key nil)
   (consult-customize
    consult-fd consult-find consult-recent-file
@@ -72,10 +72,23 @@
   (corfu-auto-prefix 2)
   (corfu-auto-delay 0.15)
   (corfu-cycle t)
+  (corfu-preselect 'prompt)              ; no candidate selected until you navigate
   (corfu-quit-no-match 'separator)
   :bind (:map corfu-map
-              ("C-j" . corfu-next)
-              ("C-k" . corfu-previous)))
+              ("TAB"     . corfu-next)
+              ([tab]     . corfu-next)
+              ("S-TAB"   . corfu-previous)
+              ([backtab] . corfu-previous)
+              ("C-j"     . corfu-next)
+              ("C-k"     . corfu-previous)))
+
+(use-package nerd-icons-corfu
+  :after corfu
+  :config
+  (add-to-list 'corfu-margin-formatters #'nerd-icons-corfu-formatter))
+
+;; Dimming the eglot annotation lives in eglot-rcp.el — eglot hard-codes it to
+;; font-lock-function-name-face, so it must be re-faced at the capf, not here.
 
 (use-package cape
   :init
