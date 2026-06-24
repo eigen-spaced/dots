@@ -11,11 +11,6 @@
 
 ;;; Editing-command helpers ------------------------------------------
 
-(defun my/meow-escape ()
-  "Cancel a selection, else quit (vanilla `keyboard-quit')."
-  (interactive)
-  (if (region-active-p) (meow-cancel-selection) (keyboard-quit)))
-
 (defun my/meow-replace-char ()
   "Vim `r': replace the char at point with the next key; ESC or \\[keyboard-quit] cancels."
   (interactive)
@@ -330,9 +325,8 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("<escape>" . keyboard-quit))
   (setq meow-selection-command-fallback
         '((meow-change . meow-change-char)
-          (meow-kill . meow-delete)
           (meow-cancel-selection . ignore)
-          (meow-pop-selection . meow-pop-grab)
+          (meow-pop-selection . ignore)
           (meow-replace . my/meow-replace-char)
           (meow-beacon-change . meow-beacon-change-char)
           ;; digits bind straight to `meow-expand' (already selection-fallback
@@ -374,9 +368,9 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("o" . meow-open-below)       '("O" . meow-open-above)
    '("p" . my/meow-paste-below)   '("P" . my/meow-paste-above)
    '("q" . my/meow-quit)
-   '("r" . meow-replace)          '("R" . meow-swap-grab)
+   '("r" . meow-replace)
    '("%" . evilmi-jump-items-native)
-   '("s" . meow-kill)
+   '("s" . meow-kill)             '("S" . meow-block)
    '("t" . meow-till-expand)      '("T" . my/meow-till-backward)
    '("u" . meow-undo)             '("U" . undo-fu-only-redo)
    '("C-r" . undo-fu-only-redo)
@@ -384,7 +378,7 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("w" . meow-mark-word)        '("W" . meow-mark-symbol)
    '("x" . meow-line)             '("X" . meow-goto-line)
    '("y" . my/meow-save-clipboard) '("Y" . my/meow-save-to-eol)
-   '("z" . meow-pop-selection)
+   '("z" . meow-pop-selection)   '("Z" . meow-to-block)
    '(">" . my/meow-indent-right)
    '("<" . my/meow-indent-left)
    '("'" . repeat)
@@ -393,11 +387,18 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("{" . my/meow-surround-brace)
    '("\"" . my/meow-surround-quote)
    '("`" . my/meow-surround-backtick)
-   '("<escape>" . my/meow-escape)))
+   '("<escape>" . keyboard-quit)))
 
 (use-package meow
   :demand t
   :config
+  (setq meow-replace-state-name-list
+        '((org-motion . "O-M")
+          (normal . "N")
+          (motion . "M")
+          (keypad . "K")
+          (insert . "I")
+          (beacon . "B")))
   (my/meow-setup)
   (add-to-list 'meow-mode-state-list '(messages-buffer-mode . normal))
   (meow-global-mode 1)
@@ -419,8 +420,11 @@ symbol; fall through to FALLBACK for any other meow thing."
 
   ;; Start-keys are CHARACTERS (c->C-c, x->C-x); string keys silently no-op.
   ;; `h' is NOT a start-key (C-h is windmove-left) so SPC h reaches help.
+  ;; Free `g' from the keypad C-M- prefix so `SPC g' reaches the grab leader
+  ;; (C-M- commands are rare; `m' stays the Meta prefix).
   (setq meow-keypad-leader-dispatch my/leader-map
-        meow-keypad-start-keys '((?c . ?c) (?x . ?x)))
+        meow-keypad-start-keys '((?c . ?c) (?x . ?x))
+        meow-keypad-ctrl-meta-prefix nil)
   (meow-define-keys 'insert '("M-SPC" . meow-keypad))
 
   (when (fboundp 'meow--setup-which-key)
@@ -459,17 +463,6 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key meow-insert-state-keymap (kbd "C-k") #'kill-line)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
   (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word))
-
-;; Corfu's auto-popup can outlive a *beacon* edit: meow replays the change via a
-;; kbd macro and returns to beacon state without corfu's own quit hook firing,
-;; leaving a stray completion frame up.  Dismiss it specifically on beacon-insert
-;; exit -- normal insert already tears corfu down on its own.
-(with-eval-after-load 'meow
-  (advice-add 'meow-beacon-insert-exit :after
-              (lambda (&rest _)
-                (when (and (fboundp 'corfu-quit)
-                           (bound-and-true-p completion-in-region-mode))
-                  (corfu-quit)))))
 
 ;; ESC aborts any real minibuffer prompt (M-x, find-file, completing-read);
 ;; without this ESC is just the Meta prefix and dangles.  (The y/n and
@@ -564,6 +557,10 @@ BINDINGS are KEY COMMAND pairs."
   "]" #'diff-hl-next-hunk
   "r" #'diff-hl-revert-hunk
   "s" #'diff-hl-show-hunk)
+
+(my/leader-prefix "g" "grab"
+  "p" #'meow-swap-grab
+  "y" #'meow-sync-grab)
 
 (my/leader-prefix "k" "code"
   "d" #'xref-find-definitions
