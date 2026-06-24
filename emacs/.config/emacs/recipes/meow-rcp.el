@@ -1,9 +1,7 @@
 ;;; meow-rcp.el --- meow modal editing + SPC leader (loads last) -*- lexical-binding: t; -*-
 ;;
-;; The SPC leader is meow's KEYPAD: SPC means "hold a modifier for me".
 ;;   c -> C-c   x -> C-x   m -> M-   g -> C-M-   (the four reserved letters)
 ;; Because c/x/m/g are taken, three things sit off their Doom spot:
-;;   code -> SPC k    raw C-c -> SPC c    git -> SPC v
 ;;
 
 (eval-when-compile (require 'cl-lib))
@@ -33,6 +31,15 @@
     (let* ((c (char-after))
            (new (if (eq c (downcase c)) (upcase c) (downcase c))))
       (delete-char 1) (insert-char new))))
+
+(defun my/meow-append ()
+  "Vim `a': append after the selection; with none, insert *after* the char at
+point (not at point, which is what bare `meow-append' does)."
+  (interactive)
+  (if (region-active-p)
+      (call-interactively #'meow-append)
+    (unless (eolp) (forward-char 1))
+    (meow-insert)))
 
 (defun my/meow-append-line ()
   "Vim `A': end of line, then Insert."
@@ -99,6 +106,12 @@
   (interactive)
   (let ((meow-use-clipboard t)) (call-interactively #'meow-save)))
 
+(defun my/meow-save-to-eol ()
+  "`Y': copy from point to end of line (kill-ring + system clipboard)."
+  (interactive)
+  (let ((select-enable-clipboard t))
+    (kill-ring-save (point) (line-end-position))))
+
 (defun my/scroll-half-page-down ()
   "Vim `C-f' feel: scroll down half a window, recentering."
   (interactive) (forward-line (max 1 (/ (window-body-height) 2))) (recenter))
@@ -107,15 +120,17 @@
   "Vim `C-b' feel: scroll up half a window, recentering."
   (interactive) (forward-line (- (max 1 (/ (window-body-height) 2)))) (recenter))
 
-(defun my/meow-search-backward ()
-  "Vim `N': previous search match."
-  (interactive) (meow-search -1))
+;; Make `consult-line' feed meow's search ring, so after `/' you can repeat the
+;; same query with n/N (`meow-search') -- consult-line is otherwise a one-shot
+;; picker that leaves the ring untouched.  Its typed input lands in
+;; `consult--line-history'; push it (literal-quoted) as the current search.
+(defun my/consult-line-to-search-ring (&rest _)
+  "Push the last `consult-line' query into `regexp-search-ring' for n/N."
+  (when-let* ((query (car (bound-and-true-p consult--line-history)))
+              ((not (string-empty-p query))))
+    (meow--push-search (regexp-quote query))))
+(advice-add 'consult-line :after #'my/consult-line-to-search-ring)
 
-;; meow's built-in `meow-find-expand'/`meow-till-expand' already do the vim
-;; visual `f'/`t': they extend an active selection from its anchor to the found
-;; char, and fall back to a fresh find when nothing is selected -- so `f'/`t'
-;; bind straight to them (no wrapper).  Only backward `F'/`T' need a helper: meow
-;; has no backward-expand variant, so feed a negative prefix to the expand cmd.
 (defun my/meow-find-backward ()
   "Vim `F': find char backward; extend the active selection."
   (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find-expand)))
@@ -342,32 +357,33 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("_" . back-to-indentation)
    '("0" . beginning-of-visual-line)
    '("$" . end-of-visual-line)
-   '("a" . meow-append)       '("A" . my/meow-append-line)
-   '("b" . meow-back-word)    '("B" . meow-back-symbol)
-   '("c" . meow-change)       '("C" . my/meow-change-to-eol)
-   '("d" . meow-delete)       '("D" . meow-backward-delete)
-   '("e" . meow-next-word)    '("E" . meow-next-symbol)
-   '("f" . meow-find-expand)  '("F" . my/meow-find-backward)
+   '("a" . my/meow-append)        '("A" . my/meow-append-line)    
+   '("b" . meow-back-word)        '("B" . meow-back-symbol)    
+   '("c" . meow-change)           '("C" . my/meow-change-to-eol)    
+   '("d" . meow-delete)           '("D" . meow-backward-delete)    
+   '("e" . meow-next-word)        '("E" . meow-next-symbol)    
+   '("f" . meow-find-expand)      '("F" . my/meow-find-backward)    
    '("g" . meow-cancel-selection) '("G" . meow-grab)
-   '("h" . meow-left)         '("H" . meow-left-expand)
-   '("i" . meow-insert)       '("I" . my/meow-insert-line)
-   '("j" . meow-next)         '("J" . meow-next-expand)
-   '("k" . meow-prev)         '("K" . meow-prev-expand)
-   '("l" . meow-right)        '("L" . meow-right-expand)
+   '("h" . meow-left)             '("H" . meow-left-expand)
+   '("i" . meow-insert)           '("I" . my/meow-insert-line)
+   '("j" . meow-next)             '("J" . meow-next-expand)
+   '("k" . meow-prev)             '("K" . meow-prev-expand)
+   '("l" . meow-right)            '("L" . meow-right-expand)
    '("m" . meow-join)
-   '("n" . meow-search)       '("N" . my/meow-search-backward)
-   '("o" . meow-open-below)   '("O" . meow-open-above)
-   '("p" . my/meow-paste-below) '("P" . my/meow-paste-above)
+   '("n" . meow-search)
+   '("o" . meow-open-below)       '("O" . meow-open-above)
+   '("p" . my/meow-paste-below)   '("P" . my/meow-paste-above)
    '("q" . my/meow-quit)
-   '("r" . meow-replace)      '("R" . meow-swap-grab)
+   '("r" . meow-replace)          '("R" . meow-swap-grab)
    '("%" . evilmi-jump-items-native)
    '("s" . meow-kill)
-   '("t" . meow-till-expand)  '("T" . my/meow-till-backward)
-   '("u" . meow-undo)         '("U" . undo-fu-only-redo)
-   '("v" . meow-visit)       '("V" . my/meow-reselect)
-   '("w" . meow-mark-word)    '("W" . meow-mark-symbol)
-   '("x" . meow-line)         '("X" . meow-goto-line)
-   '("y" . my/meow-save-clipboard)
+   '("t" . meow-till-expand)      '("T" . my/meow-till-backward)
+   '("u" . meow-undo)             '("U" . undo-fu-only-redo)
+   '("C-r" . undo-fu-only-redo)
+   '("v" . meow-visit)            '("V" . my/meow-reselect)
+   '("w" . meow-mark-word)        '("W" . meow-mark-symbol)
+   '("x" . meow-line)             '("X" . meow-goto-line)
+   '("y" . my/meow-save-clipboard) '("Y" . my/meow-save-to-eol)
    '("z" . meow-pop-selection)
    '(">" . my/meow-indent-right)
    '("<" . my/meow-indent-left)
@@ -420,6 +436,9 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key global-map (kbd "s-x") #'execute-extended-command)
   (define-key global-map (kbd "s-!") #'shell-command)
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
+  ;; C-s saves only in normal state -- not globally -- so when meow is off (pure
+  ;; Emacs keys) C-s falls back to its vanilla `isearch-forward'.
+  (define-key meow-normal-state-keymap (kbd "C-s") #'save-buffer)
   (setq meow--kbd-kill-line "C-S-k")
   (define-key global-map (kbd "C-S-k") #'kill-line)
   ;; Scroll lives on C-u/C-d (vim half-page) below.  C-u has no meow internal
@@ -440,6 +459,17 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key meow-insert-state-keymap (kbd "C-k") #'kill-line)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
   (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word))
+
+;; Corfu's auto-popup can outlive a *beacon* edit: meow replays the change via a
+;; kbd macro and returns to beacon state without corfu's own quit hook firing,
+;; leaving a stray completion frame up.  Dismiss it specifically on beacon-insert
+;; exit -- normal insert already tears corfu down on its own.
+(with-eval-after-load 'meow
+  (advice-add 'meow-beacon-insert-exit :after
+              (lambda (&rest _)
+                (when (and (fboundp 'corfu-quit)
+                           (bound-and-true-p completion-in-region-mode))
+                  (corfu-quit)))))
 
 ;; ESC aborts any real minibuffer prompt (M-x, find-file, completing-read);
 ;; without this ESC is just the Meta prefix and dangles.  (The y/n and
@@ -509,7 +539,9 @@ BINDINGS are KEY COMMAND pairs."
   "S" #'consult-line-multi
   "p" #'consult-ripgrep
   "m" #'consult-mark
-  "d" #'consult-flymake)
+  "d" #'consult-flymake
+  "f" #'isearch-forward
+  "b" #'isearch-backward)
 
 (my/leader-prefix "p" "project"
   "p" #'projectile-switch-project

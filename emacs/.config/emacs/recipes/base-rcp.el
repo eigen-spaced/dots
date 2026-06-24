@@ -87,7 +87,6 @@
    ("C-j"  . windmove-down)
    ("C-\\" . my/split-right-follow)
    ("C--"  . my/split-below-follow)
-   ("C-s"  . save-buffer)
    ("C-q"  . delete-window)
    ("s-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
    :map minibuffer-local-map
