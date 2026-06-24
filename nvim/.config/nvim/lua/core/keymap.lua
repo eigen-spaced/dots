@@ -18,9 +18,6 @@ keymap.set("i", "kj", "<Esc>")
 keymap.set("n", "H", "^")
 keymap.set("n", "L", "$")
 
-keymap.set("n", "<C-f>", "<C-d>")
-keymap.set("n", "<C-b>", "<C-u>")
-
 -- Fallback split navigation incase smart-splits fails
 -- Better split navigation
 keymap.set("n", "<C-h>", "<C-w>h")

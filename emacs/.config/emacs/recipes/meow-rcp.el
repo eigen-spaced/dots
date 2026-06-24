@@ -137,16 +137,28 @@
        (t (skip-syntax-backward "^w " (line-beginning-position))))
       (delete-region (point) beg)))))
 
-(defun my/meow-mark-whitespace ()
-  "Select the adjacent (or next) run of horizontal whitespace on the line."
+;; Vim `gv': remember each region as it is deactivated, so it can be restored
+;; after an accidental exit.  Direction is preserved (mark/point), and it comes
+;; back as an expandable selection so c/d/y and H/L/e work on it straight away.
+(defvar-local my/meow-last-selection nil
+  "Bounds (MARK . POINT) of the most recent region in this buffer.")
+
+(defun my/meow-remember-selection ()
+  "Record the region being deactivated for `my/meow-reselect'."
+  (when (and (mark t) (/= (mark t) (point)))
+    (setq my/meow-last-selection (cons (mark t) (point)))))
+(add-hook 'deactivate-mark-hook #'my/meow-remember-selection)
+
+(defun my/meow-reselect ()
+  "Vim `gv': restore the last selection in this buffer."
   (interactive)
-  (if (looking-at-p "[ \t]")
-      (skip-chars-backward " \t")
-    (skip-chars-forward "^ \t" (line-end-position)))
-  (if (looking-at "[ \t]+")
-      (meow--select (meow--make-selection '(select . transient)
-                                          (match-beginning 0) (match-end 0)))
-    (message "No whitespace to select")))
+  (if my/meow-last-selection
+      (meow--select (meow--make-selection
+                     '(expand . char)
+                     (car my/meow-last-selection)
+                     (cdr my/meow-last-selection))
+                    t)                     ; activate the mark (region)
+    (user-error "No selection to restore")))
 
 (defun my/meow-quit ()
   "Vim `:q': delete the current split; sole window -> previous buffer."
@@ -319,6 +331,7 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("4" . meow-expand) '("3" . meow-expand)
    '("2" . meow-expand) '("1" . meow-expand)
    '("-" . negative-argument)
+   '("!" . revert-buffer-quick)
    '(";" . meow-reverse)
    '("," . my/meow-inner-nearest)
    '("." . my/meow-bounds-nearest)
@@ -348,10 +361,10 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("q" . my/meow-quit)
    '("r" . meow-replace)      '("R" . meow-swap-grab)
    '("%" . evilmi-jump-items-native)
-   '("s" . meow-kill)         '("S" . my/meow-mark-whitespace)
+   '("s" . meow-kill)
    '("t" . meow-till-expand)  '("T" . my/meow-till-backward)
    '("u" . meow-undo)         '("U" . undo-fu-only-redo)
-   '("v" . meow-visit)
+   '("v" . meow-visit)       '("V" . my/meow-reselect)
    '("w" . meow-mark-word)    '("W" . meow-mark-symbol)
    '("x" . meow-line)         '("X" . meow-goto-line)
    '("y" . my/meow-save-clipboard)
@@ -409,18 +422,16 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
   (setq meow--kbd-kill-line "C-S-k")
   (define-key global-map (kbd "C-S-k") #'kill-line)
-  ;; meow-left/right (also H/L, a, expand) move point by *executing* the
-  ;; `meow--kbd-forward-char'/`-backward-char' key macros (default C-f/C-b).
-  ;; We rebind C-f/C-b to half-page scroll below, so redirect those macros to
-  ;; dedicated C-S-f/C-S-b -- else h/l "move one char" by scrolling a half page.
+  ;; Scroll lives on C-u/C-d (vim half-page) below.  C-u has no meow internal
+  ;; use, but meow-delete acts by *executing* `meow--kbd-delete-char' (default
+  ;; C-d), so redirect that macro to C-S-d -- else C-d scrolls instead of
+  ;; deleting.  (C-f/C-b stay meow's default forward/backward-char, driving h/l.)
   ;; Same key-hijack pattern as meow--kbd-kill-line above.
-  (setq meow--kbd-forward-char "C-S-f")
-  (define-key global-map (kbd "C-S-f") #'forward-char)
-  (setq meow--kbd-backward-char "C-S-b")
-  (define-key global-map (kbd "C-S-b") #'backward-char)
+  (setq meow--kbd-delete-char "C-S-d")
+  (define-key global-map (kbd "C-S-d") #'delete-char)
   (dolist (km (list meow-normal-state-keymap meow-motion-state-keymap))
-    (define-key km (kbd "C-b") #'my/scroll-half-page-up)
-    (define-key km (kbd "C-f") #'my/scroll-half-page-down))
+    (define-key km (kbd "C-u") #'my/scroll-half-page-up)
+    (define-key km (kbd "C-d") #'my/scroll-half-page-down))
   ;; Insert state is for editing, not window nav: shadow the global C-h/j/k/l
   ;; windmove with insert-mode editing.  C-h/C-w/C-k = delete char/word/to-eol
   ;; (vim insert trio); C-j newline, C-l recenter.  Nav stays on normal/motion.
@@ -429,6 +440,12 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key meow-insert-state-keymap (kbd "C-k") #'kill-line)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
   (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word))
+
+;; ESC aborts any real minibuffer prompt (M-x, find-file, completing-read);
+;; without this ESC is just the Meta prefix and dangles.  (The y/n and
+;; read-multiple-choice confirmations are raw read-event loops, NOT minibuffers
+;; -- ESC for those is handled by `my/read-event-esc-quits' in base-rcp.)
+(define-key minibuffer-local-map (kbd "<escape>") #'abort-minibuffers)
 
 (use-package key-chord
   :after meow

@@ -15,13 +15,23 @@
   (avy-background t))
 
 (use-package undo-fu
-  :commands (undo-fu-only-undo undo-fu-only-redo))
+  :commands (undo-fu-only-undo undo-fu-only-redo)
+  :custom
+  ;; Raise the ceilings so long histories aren't truncated (Doom's values) --
+  ;; otherwise persisted undo gets cut off on reload.
+  (undo-limit        (* 256 1024))       ; 256kb
+  (undo-strong-limit (* 3 1024 1024))    ; 3mb
+  (undo-outer-limit  (* 48 1024 1024)))  ; 48mb
+
+(use-package undo-fu-session
+  :init (undo-fu-session-global-mode)
+  :custom
+  (undo-fu-session-directory
+   (expand-file-name "undo-fu-session" user-emacs-directory)))
 
 (use-package evil-matchit
   :commands (evilmi-jump-items-native))
 
-;; Surround: change/delete/add pairs (C-, a/c/d).  Quick add is also on the
-;; meow-normal open-pair keys (see meow-rcp's my/meow-surround-*).
 (use-package embrace
   :bind ("C-," . embrace-commander))
 

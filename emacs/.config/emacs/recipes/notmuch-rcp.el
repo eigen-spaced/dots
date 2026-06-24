@@ -114,6 +114,15 @@
   :hook (notmuch-show-mode . my/notmuch-prose-serif)
   :custom
   (notmuch-fcc-dirs nil)                 ; Gmail keeps its own Sent copy
+  (notmuch-search-oldest-first nil)      ; newest mail first
+  ;; Pad each field to a fixed width so the tags land in their own right-hand
+  ;; column (Doom's layout) instead of trailing each subject.
+  (notmuch-search-result-format
+   '(("date"    . "%12s ")
+     ("count"   . "%-7s ")
+     ("authors" . "%-30s ")
+     ("subject" . "%-72s ")
+     ("tags"    . "(%s)")))
   (notmuch-saved-searches
    '((:name "inbox"   :query "tag:inbox"                :key "i")
      (:name "unread"  :query "tag:unread and tag:inbox" :key "u")

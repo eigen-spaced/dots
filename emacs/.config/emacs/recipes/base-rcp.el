@@ -30,7 +30,8 @@
   :ensure nil
   :custom
   (indent-tabs-mode nil)
-  (tab-width 4)
+  (tab-width 2)
+  (standard-indent 2)
   (fill-column 80)
   (ring-bell-function #'ignore)
   (use-short-answers t)
@@ -91,6 +92,15 @@
    ("s-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
    :map minibuffer-local-map
    ("C-w"  . backward-kill-word)))
+
+(setq-default js-indent-level 2
+              typescript-ts-mode-indent-offset 2
+              css-indent-offset 2
+              sgml-basic-offset 2
+              sh-basic-offset 2
+              lua-indent-level 2
+              c-basic-offset 2
+              python-indent-offset 4)   ; Python convention
 
 (use-package which-key
   :ensure nil
@@ -164,10 +174,26 @@
          (rel (mapcar (lambda (f) (file-relative-name f root)) files)))
     (find-file (expand-file-name (completing-read "Config: " rel nil t) root))))
 
+(defun my/read-event-esc-quits (orig &rest args)
+  "Around-advice: make ESC quit during ORIG's `read-event` loop.
+Passes ARGS to ORIG."
+  (cl-letf* ((real (symbol-function 'read-event))
+             ((symbol-function 'read-event)
+              (lambda (&rest a)
+                (let ((ev (apply real a)))
+                  (if (memq ev '(?\e escape)) (keyboard-quit) ev)))))
+    (apply orig args)))
+
+;; Kill-modified-buffer prompt: ESC = "no, don't kill".
+(advice-add 'kill-buffer--possibly-save :around #'my/read-event-esc-quits)
+
 (defun my/delete-frame-confirm ()
-  "Delete the current frame, after confirmation."
   (interactive)
-  (when (y-or-n-p "Delete this frame? ")
+  (when (eq ?y (car (my/read-event-esc-quits
+                     #'read-multiple-choice
+                     "Delete this frame?"
+                     '((?y "yes" "delete this frame")
+                       (?n "no"  "keep this frame")))))
     (delete-frame)))
 
 (defun my/reveal-in-finder ()
