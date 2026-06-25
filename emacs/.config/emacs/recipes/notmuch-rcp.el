@@ -33,6 +33,28 @@
   (my/reading-serif)
   (variable-pitch-mode 1))
 
+;;; Address completion ----------------------------------------------
+;; notmuch completes contacts via a `completing-read' on TAB, which corfu can't
+;; drive -- the minibuffer pops up modally and eats keystrokes.  A real capf
+;; lists contacts inline instead (type freely, C-n/C-p to move, RET to insert).
+(defun my/notmuch-address-capf ()
+  "`completion-at-point' for notmuch contacts on header lines."
+  (when (and (derived-mode-p 'message-mode)
+             (save-excursion (beginning-of-line)
+                             (looking-at-p notmuch-address-completion-headers-regexp)))
+    (let* ((end (point))
+           (beg (save-excursion
+                  (re-search-backward "\\(\\`\\|[\n:,]\\)[ \t]*")
+                  (goto-char (match-end 0))
+                  (point))))
+      ;; Exclusive (no `:exclusive no') so notmuch's own completing-read never runs.
+      (list beg end (completion-table-dynamic #'notmuch-address-options)))))
+
+(defun my/notmuch-address-setup-capf ()
+  "Use `my/notmuch-address-capf' for address completion in compose buffers."
+  (require 'notmuch-address)
+  (add-hook 'completion-at-point-functions #'my/notmuch-address-capf -50 t))
+
 (defun my/mail-shr-no-colors (orig &rest args)
   "Render HTML mail without the message's own colours (use theme faces)."
   (let ((shr-use-colors nil))
@@ -156,21 +178,17 @@
   (add-to-list 'notmuch-search-line-faces '("trash" . dired-flagged) t)
   (advice-add 'mm-shr :around #'my/mail-shr-no-colors)
 
-  ;; notmuch buffers run in meow Motion (set in `meow-mode-state-list', meow-rcp)
-  ;; so the mode's own single-key bindings (d, U, J, !) pass through.
+  (dolist (map (list notmuch-search-mode-map notmuch-tree-mode-map
+                     notmuch-show-mode-map notmuch-hello-mode-map))
+    (define-key map (kbd "U") #'my/notmuch-update)
+    (define-key map (kbd "J") #'notmuch-jump-search))
   (define-key notmuch-search-mode-map (kbd "d") #'my/notmuch-search-toggle-trash)
   (define-key notmuch-search-mode-map (kbd "!") #'my/notmuch-search-toggle-unread)
-  (define-key notmuch-search-mode-map (kbd "U") #'my/notmuch-update)
-  (define-key notmuch-search-mode-map (kbd "J") #'notmuch-jump-search)
   (define-key notmuch-tree-mode-map   (kbd "d") #'my/notmuch-tree-toggle-trash)
   (define-key notmuch-tree-mode-map   (kbd "!") #'my/notmuch-tree-toggle-unread)
-  (define-key notmuch-tree-mode-map   (kbd "U") #'my/notmuch-update)
-  (define-key notmuch-tree-mode-map   (kbd "J") #'notmuch-jump-search)
   (define-key notmuch-show-mode-map   (kbd "d") #'my/notmuch-show-toggle-trash)
-  (define-key notmuch-show-mode-map   (kbd "U") #'my/notmuch-update)
-  (define-key notmuch-show-mode-map   (kbd "J") #'notmuch-jump-search)
-  (define-key notmuch-hello-mode-map  (kbd "U") #'my/notmuch-update)
-  (define-key notmuch-hello-mode-map  (kbd "J") #'notmuch-jump-search)
+
+  (add-hook 'message-mode-hook #'my/notmuch-address-setup-capf)
 
   (add-hook 'notmuch-show-mode-hook
             (lambda () (add-hook 'kill-buffer-hook #'my/notmuch-refresh-parent-search nil t)))

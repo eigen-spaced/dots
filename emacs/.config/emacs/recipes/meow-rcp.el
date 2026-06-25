@@ -147,22 +147,25 @@ Built-in commenting -- no package needed; comments respect the major mode."
 
 ;; Vim `gv': remember each region as it is deactivated, so it can be restored
 ;; after an accidental exit.  Direction is preserved (mark/point), and it comes
-;; back as an expandable selection so c/d/y and H/L/e work on it straight away.
+;; back as a normal selection -- c/d/y act on it, H/J/K/L extend, h/j/k/l cancel.
 (defvar-local my/meow-last-selection nil
   "Bounds (MARK . POINT) of the most recent region in this buffer.")
 
 (defun my/meow-remember-selection ()
-  "Record the region being deactivated for `my/meow-reselect'."
-  (when (and (mark t) (/= (mark t) (point)))
+  "Record the live region for `my/meow-reselect'.
+Captured while the region is active rather than on `deactivate-mark-hook':
+meow shuffles the mark ring when it cancels a selection, so by deactivation
+time `(mark)' no longer points at the selection's start."
+  (when (and (region-active-p) (/= (mark t) (point)))
     (setq my/meow-last-selection (cons (mark t) (point)))))
-(add-hook 'deactivate-mark-hook #'my/meow-remember-selection)
+(add-hook 'post-command-hook #'my/meow-remember-selection)
 
 (defun my/meow-reselect ()
   "Vim `gv': restore the last selection in this buffer."
   (interactive)
   (if my/meow-last-selection
       (meow--select (meow--make-selection
-                     '(expand . char)
+                     '(select . char)
                      (car my/meow-last-selection)
                      (cdr my/meow-last-selection))
                     t)                     ; activate the mark (region)
@@ -270,119 +273,6 @@ With no region, insert the pair and enter insert state between them."
 (my/meow-define-surround my/meow-surround-quote    "\"" "\"")
 (my/meow-define-surround my/meow-surround-backtick "`" "`")
 
-;;; vim-style ci/ca: nearest-pair inner/bounds ----------------------
-;; meow's `,'/`.' (inner/bounds-of-thing) only fire when point is already inside
-;; the thing.  These wrappers add vim's ci"/ca( reach: for a pair delimiter (or
-;; `e' = symbol) select the pair enclosing point, else the next one on the line;
-;; every other thing falls through to meow unchanged.  A real meow selection is
-;; left, so follow with c/d/y.
-
-(defconst my/meow-pair-chars
-  '((?\( ?\( . ?\)) (?\) ?\( . ?\))
-    (?\[ ?\[ . ?\]) (?\] ?\[ . ?\])
-    (?{  ?{  . ?})  (?}  ?{  . ?})
-    (?<  ?<  . ?>)  (?>  ?<  . ?>)
-    (?\" ?\" . ?\") (?'  ?'  . ?') (?`  ?`  . ?`))
-  "Delimiter char -> (OPEN . CLOSE) for the nearest-pair selectors.")
-
-(defun my/meow--quote-inner (q)
-  "Inner (BEG . END) of the nearest Q…Q pair on the current line, or nil."
-  (let* ((pt (point)) (eol (line-end-position)) (qs (char-to-string q))
-         (positions '()))
-    (save-excursion
-      (goto-char (line-beginning-position))
-      (while (search-forward qs eol t)
-        (unless (eq (char-before (1- (point))) ?\\)   ; skip \" escapes
-          (push (1- (point)) positions))))
-    (setq positions (nreverse positions))
-    (let ((pairs '()))
-      (while (and positions (cdr positions))
-        (push (cons (car positions) (cadr positions)) pairs)
-        (setq positions (cddr positions)))
-      (setq pairs (nreverse pairs))
-      (when-let ((hit (or (seq-find (lambda (p) (and (< (car p) pt) (<= pt (cdr p)))) pairs)
-                          (seq-find (lambda (p) (>= (car p) pt)) pairs))))
-        (cons (1+ (car hit)) (cdr hit))))))
-
-(defun my/meow--match-forward (open close from)
-  "From FROM, return the position of the CLOSE matching an already-open level."
-  (save-excursion
-    (goto-char from)
-    (let ((depth 0)
-          (re (regexp-opt (list (char-to-string open) (char-to-string close))))
-          result)
-      (while (and (not result) (re-search-forward re nil t))
-        (let ((c (char-before)))
-          (cond ((eq c open)  (setq depth (1+ depth)))
-                ((eq c close) (if (zerop depth) (setq result (1- (point)))
-                                (setq depth (1- depth)))))))
-      result)))
-
-(defun my/meow--bracket-inner (open close)
-  "Inner (BEG . END) of the nearest OPEN…CLOSE pair, or nil.
-Prefer the pair enclosing point (handles nesting), else the next on the line."
-  (let ((pt (point)))
-    (or
-     (save-excursion
-       (let ((depth 0)
-             (re (regexp-opt (list (char-to-string open) (char-to-string close))))
-             ob)
-         (while (and (not ob) (re-search-backward re nil t))
-           (cond ((eq (char-after) close) (setq depth (1+ depth)))
-                 ((eq (char-after) open)  (if (zerop depth) (setq ob (point))
-                                            (setq depth (1- depth))))))
-         (when ob
-           (let ((cb (my/meow--match-forward open close (1+ ob))))
-             (when (and cb (< ob pt) (<= pt cb)) (cons (1+ ob) cb))))))
-     (save-excursion
-       (when (search-forward (char-to-string open) (line-end-position) t)
-         (let ((ob (1- (point)))
-               (cb (my/meow--match-forward open close (point))))
-           (when cb (cons (1+ ob) cb))))))))
-
-(defun my/meow--pair-inner (open close)
-  (if (eq open close) (my/meow--quote-inner open)
-    (my/meow--bracket-inner open close)))
-
-(defun my/meow--symbol-inner ()
-  "Bounds of the symbol at point, else the next symbol on the line, or nil."
-  (or (bounds-of-thing-at-point 'symbol)
-      (save-excursion
-        (when (re-search-forward "\\(?:\\sw\\|\\s_\\)" (line-end-position) t)
-          (goto-char (match-beginning 0))
-          (bounds-of-thing-at-point 'symbol)))))
-
-(defun my/meow--select-bounds (bounds outer)
-  "Make a meow selection over BOUNDS; OUTER widens by one each side (delimiters)."
-  (let ((beg (if outer (1- (car bounds)) (car bounds)))
-        (end (if outer (1+ (cdr bounds)) (cdr bounds))))
-    (meow--select (meow--make-selection '(select . inner) beg end) t)))
-
-(defun my/meow--inner-or-bounds (outer fallback)
-  "Read a char and select the nearest pair (OUTER includes delimiters) or
-symbol; fall through to FALLBACK for any other meow thing."
-  (let* ((ch (read-char (if outer "bounds: " "inner: ")))
-         (pair (alist-get ch my/meow-pair-chars)))
-    (cond
-     (pair (if-let ((b (my/meow--pair-inner (car pair) (cdr pair))))
-               (my/meow--select-bounds b outer)
-             (user-error "No %c…%c on this line" (car pair) (cdr pair))))
-     ((eq ch ?e) (if-let ((b (my/meow--symbol-inner)))
-                     (my/meow--select-bounds b nil)
-                   (user-error "No symbol")))
-     (t (setq unread-command-events (list ch))
-        (call-interactively fallback)))))
-
-(defun my/meow-inner-nearest ()
-  "`meow-inner-of-thing' that reaches the nearest pair/symbol (vim ci\")."
-  (interactive)
-  (my/meow--inner-or-bounds nil #'meow-inner-of-thing))
-
-(defun my/meow-bounds-nearest ()
-  "`meow-bounds-of-thing' that reaches the nearest pair/symbol (vim ca\")."
-  (interactive)
-  (my/meow--inner-or-bounds t #'meow-bounds-of-thing))
-
 ;;; meow keymaps ----------------------------------------------------
 
 (defun my/meow-setup ()
@@ -419,8 +309,8 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("!" . revert-buffer-quick)
    '(";" . meow-reverse)
    '(":" . my/meow-ex)
-   '("," . my/meow-inner-nearest)
-   '("." . my/meow-bounds-nearest)
+   '("," . meow-inner-of-thing)
+   '("." . meow-bounds-of-thing)
    '("[" . meow-beginning-of-thing)
    '("]" . meow-end-of-thing)
    '("/" . consult-line)
@@ -470,7 +360,6 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("u" . meow-undo)
    '("U" . undo-fu-only-redo)
    '("v" . meow-visit)
-   '("V" . my/meow-reselect)
    '("w" . meow-mark-word)
    '("W" . meow-mark-symbol)
    '("x" . meow-line)
@@ -498,8 +387,7 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key m "e" #'end-of-buffer)         ; ge -> end of buffer (also G)
   (define-key m "h" #'mwim-beginning)        ; gh -> smart line start (M-h)
   (define-key m "l" #'mwim-end)              ; gl -> smart line end   (M-l)
-  (define-key m "b" #'meow-block)            ; gb -> select block (old S)
-  (define-key m "c" #'my/meow-comment))      ; gc -> toggle comment (line/region)
+  (define-key m "b" #'meow-block))           ; gb -> select block (old S)
 
 (use-package meow
   :demand t
@@ -535,17 +423,6 @@ symbol; fall through to FALLBACK for any other meow thing."
           (notmuch-show-mode . motion)))
   (meow-global-mode 1)
 
-  (meow-thing-register 'angle        '(regexp "<" ">")   '(regexp "<" ">"))
-  (meow-thing-register 'double-quote '(regexp "\"" "\"") '(regexp "\"" "\""))
-  (meow-thing-register 'single-quote '(regexp "'" "'")   '(regexp "'" "'"))
-  (meow-thing-register 'backtick     '(regexp "`" "`")   '(regexp "`" "`"))
-  (setq meow-char-thing-table
-        '((?\( . round) (?\) . round) (?\[ . square) (?\] . square)
-          (?\{ . curly) (?\} . curly) (?\< . angle) (?\> . angle)
-          (?\" . double-quote) (?\' . single-quote) (?\` . backtick)
-          (?e . symbol) (?w . window) (?b . buffer)
-          (?p . paragraph) (?l . line) (?d . defun) (?s . sentence)))
-
   (setq meow-cursor-type-normal 'box
         meow-cursor-type-insert '(bar . 2)
         meow-expand-hint-counts nil)
@@ -571,6 +448,8 @@ symbol; fall through to FALLBACK for any other meow thing."
   ;; dashboard, and insert state.
   (define-key global-map (kbd "s-x") #'execute-extended-command)
   (define-key global-map (kbd "s-!") #'shell-command)
+  (define-key global-map (kbd "s-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
+  (define-key global-map (kbd "C-x C-x") #'my/meow-reselect) ; vim `gv' reselect (was V)
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
   ;; (setq meow--kbd-kill-line "C-S-k")
   ;; (define-key global-map (kbd "C-S-k") #'kill-line)
@@ -695,6 +574,7 @@ BINDINGS are KEY COMMAND pairs."
 (my/leader-prefix "k" "code"
   "d" #'xref-find-definitions
   "D" #'xref-find-references
+  "," #'xref-go-back                     ; was M-, (now embrace)
   "a" #'eglot-code-actions
   "n" #'eglot-rename
   "i" #'eglot-find-implementation
