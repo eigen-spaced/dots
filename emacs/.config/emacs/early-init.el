@@ -14,6 +14,7 @@
 (setq inhibit-startup-screen t
       initial-scratch-message nil
       frame-resize-pixelwise t
+      frame-inhibit-implied-resize t   ; skip the font-driven frame resize (~0.4-1s, every frame)
       default-frame-alist '((fullscreen . maximized)
                             (font . "Cascadia Code NF-18")
                             (vertical-scroll-bars . nil)

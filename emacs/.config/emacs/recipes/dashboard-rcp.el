@@ -34,8 +34,5 @@
            (with-current-buffer "*dashboard*" (dashboard-refresh-buffer))))))
     (add-hook 'server-after-make-frame-hook #'my/dashboard-refresh-on-frame)))
 
-(with-eval-after-load 'meow
-  (add-to-list 'meow-mode-state-list '(dashboard-mode . motion)))
-
 (provide 'dashboard-rcp)
 ;;; dashboard-rcp.el ends here

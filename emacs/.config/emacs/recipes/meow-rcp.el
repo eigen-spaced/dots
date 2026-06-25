@@ -36,17 +36,23 @@ point (not at point, which is what bare `meow-append' does)."
     (unless (eolp) (forward-char 1))
     (meow-insert)))
 
-(defun my/meow-append-line ()
-  "Vim `A': end of line, then Insert."
-  (interactive) (end-of-line) (meow-insert))
+(defun my/meow-substitute-line ()
+  "Vim `S'/`cc': change the whole line, keeping its indentation.
+With a region, change every line it spans."
+  (interactive)
+  (if (use-region-p)
+      (let ((beg (save-excursion (goto-char (region-beginning)) (line-beginning-position)))
+            (end (save-excursion (goto-char (region-end))       (line-end-position))))
+        (delete-region beg end) (goto-char beg) (meow-insert))
+    (back-to-indentation) (kill-line) (meow-insert)))
 
-(defun my/meow-insert-line ()
-  "Vim `I': first non-blank, then Insert."
-  (interactive) (back-to-indentation) (meow-insert))
-
-(defun my/meow-change-to-eol ()
-  "Vim `C': change to end of line."
-  (interactive) (kill-line) (meow-insert))
+(defun my/meow-comment ()
+  "Vim `gc': toggle comments on the active region, else the current line.
+Built-in commenting -- no package needed; comments respect the major mode."
+  (interactive)
+  (if (use-region-p)
+      (comment-or-uncomment-region (region-beginning) (region-end))
+    (comment-line 1)))
 
 (defun my/meow-indent-right ()
   "Indent region or current line right by `tab-width'."
@@ -126,14 +132,6 @@ point (not at point, which is what bare `meow-append' does)."
     (meow--push-search (regexp-quote query))))
 (advice-add 'consult-line :after #'my/consult-line-to-search-ring)
 
-(defun my/meow-find-backward ()
-  "Vim `F': find char backward; extend the active selection."
-  (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find-expand)))
-
-(defun my/meow-till-backward ()
-  "Vim `T': till char backward; extend the active selection."
-  (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-till-expand)))
-
 (defun my/backward-kill-word ()
   "Insert-mode `C-w': kill one adjacent chunk (whitespace/word/punct),no line cross."
   (interactive)
@@ -170,12 +168,86 @@ point (not at point, which is what bare `meow-append' does)."
                     t)                     ; activate the mark (region)
     (user-error "No selection to restore")))
 
-(defun my/meow-quit ()
-  "Vim `:q': delete the current split; sole window -> previous buffer."
+(defun my/open-dashboard ()
+  "Show the dashboard in the current window."
+  (cond ((fboundp 'dashboard-open) (dashboard-open))
+        ((fboundp 'dashboard-refresh-buffer)
+         (dashboard-refresh-buffer) (switch-to-buffer "*dashboard*"))
+        (t (switch-to-buffer (get-buffer-create "*dashboard*")))))
+
+(defun my/meow-quit-buffer ()
+  "Quit -- bound to `q' and to `:q'/`:wq'.  In a split, close the window (vim
+`:q', buffer kept).  As the sole window, kill the buffer; when only the
+*scratch*/*Messages* fallback is left, land on the dashboard.  Refuse on the lone
+dashboard -- there is nothing to quit."
   (interactive)
-  (if (> (length (window-list (selected-frame) 'no-minibuffer)) 1)
-      (delete-window)
-    (previous-buffer)))
+  (cond
+   ((> (length (window-list nil 'no-minibuffer)) 1) (delete-window))
+   ((derived-mode-p 'dashboard-mode) (message "Can't quit the dashboard"))
+   (t (kill-current-buffer)
+      (when (member (buffer-name) '("*scratch*" "*Messages*"))
+        (my/open-dashboard)))))
+
+(with-eval-after-load 'dashboard
+  (define-key dashboard-mode-map (kbd "q") #'my/meow-quit-buffer))
+
+;;; Vim ex command line (`:') ---------------------------------------
+;; `:' reads a command line (with history) and dispatches the write/quit/edit
+;; family, `:N' goto-line, and `[%]s/PAT/REP/[flags]' substitute.  Patterns are
+;; Emacs regexps (so REP backrefs are \1, not vim's \1 vs &); flag `c' confirms.
+(defvar my/meow-ex-history nil "Minibuffer history for `my/meow-ex'.")
+
+(defun my/meow-ex--substitute (line)
+  "Run an ex substitute LINE: [%]s/PAT/REP/[flags].
+`%' targets the whole buffer, else the region, else the current line.
+Flag `c' turns it into an interactive `query-replace-regexp'."
+  (let* ((whole (eq (aref line 0) ?%))
+         (body  (if whole (substring line 1) line))    ; starts at the `s'
+         (delim (char-to-string (aref body 1)))        ; char after `s' = separator
+         (parts (split-string (substring body 2) (regexp-quote delim)))
+         (pat (nth 0 parts)) (rep (or (nth 1 parts) "")) (flags (or (nth 2 parts) "")))
+    (when (or (null pat) (string-empty-p pat)) (user-error "Empty search pattern"))
+    (let ((beg (cond (whole (point-min)) ((use-region-p) (region-beginning)) (t (line-beginning-position))))
+          (end (cond (whole (point-max)) ((use-region-p) (region-end))       (t (line-end-position)))))
+      (if (string-search "c" flags)
+          (save-excursion (goto-char beg) (query-replace-regexp pat rep nil beg end))
+        (replace-regexp-in-region pat rep beg end)))))
+
+(defun my/buffer-display-path ()
+  "File path for the `:w' message: bare name when the file sits in the project
+root, a project-relative path in a subdirectory, the absolute path when the file
+is outside any project (or the buffer name when it visits no file)."
+  (let ((file (buffer-file-name)))
+    (if (null file)
+        (buffer-name)
+      (let ((root (and (fboundp 'projectile-project-root)
+                       (projectile-project-root (file-name-directory file)))))
+        (if (and root (string-prefix-p (expand-file-name root) (expand-file-name file)))
+            (file-relative-name file root)
+          file)))))
+
+(defun my/meow-ex (line)
+  "Minimal vim ex command line; LINE is what you type after `:'.
+Handles w wq x q q! qa qa! wqa e e! `:N' goto-line and `[%]s/PAT/REP/[flags]'."
+  (interactive (list (read-string ":" nil 'my/meow-ex-history)))
+  (setq line (string-trim line))
+  (cond
+   ((string-empty-p line))
+   ((string-match-p "\\`[0-9]+\\'" line)
+    (goto-char (point-min)) (forward-line (1- (string-to-number line))))
+   ((string-match-p "\\`%?s[^[:alnum:]]" line) (my/meow-ex--substitute line))
+   ((string-prefix-p "e " line) (find-file (string-trim (substring line 1))))
+   (t (pcase line
+        ((or "w" "w!")                (save-buffer)
+         (message "\"%s\" written" (my/buffer-display-path)))
+        ((or "wq" "wq!" "x" "xit")    (save-buffer) (my/meow-quit-buffer))
+        ("q"                          (my/meow-quit-buffer))
+        ("q!"                         (set-buffer-modified-p nil) (my/meow-quit-buffer))
+        ((or "e" "e!" "edit" "edit!") (revert-buffer t t))
+        ((or "wqa" "wqa!" "xa" "xa!") (save-some-buffers t) (save-buffers-kill-terminal))
+        ("qa"                         (save-buffers-kill-terminal))
+        ("qa!"                        (kill-emacs))
+        (_ (user-error "Unknown ex command: :%s" line))))))
 
 (defun my/meow-surround (open close)
   "Wrap the active region with OPEN and CLOSE.
@@ -334,14 +406,19 @@ symbol; fall through to FALLBACK for any other meow thing."
           (meow-expand . meow-digit-argument)))
   (meow-normal-define-key
    '("SPC" . meow-keypad)
+   '("1" . meow-expand)
+   '("2" . meow-expand)
+   '("3" . meow-expand)
+   '("4" . meow-expand)
+   '("5" . meow-expand)
+   '("6" . meow-expand)
+   '("7" . meow-expand)
+   '("8" . meow-expand)
    '("9" . meow-expand)
-   '("8" . meow-expand) '("7" . meow-expand)
-   '("6" . meow-expand) '("5" . meow-expand)
-   '("4" . meow-expand) '("3" . meow-expand)
-   '("2" . meow-expand) '("1" . meow-expand)
    '("-" . negative-argument)
    '("!" . revert-buffer-quick)
    '(";" . meow-reverse)
+   '(":" . my/meow-ex)
    '("," . my/meow-inner-nearest)
    '("." . my/meow-bounds-nearest)
    '("[" . meow-beginning-of-thing)
@@ -349,36 +426,59 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("/" . consult-line)
    '("~" . my/meow-toggle-char-case)
    '("_" . back-to-indentation)
+   '("Q" . kmacro-start-macro-or-insert-counter)
+   '("@" . kmacro-end-or-call-macro)
    '("0" . beginning-of-visual-line)
    '("$" . end-of-visual-line)
-   '("a" . my/meow-append)        '("A" . my/meow-append-line)    
-   '("b" . meow-back-word)        '("B" . meow-back-symbol)    
-   '("c" . meow-change)           '("C" . my/meow-change-to-eol)    
-   '("d" . meow-delete)           '("D" . meow-backward-delete)    
-   '("e" . meow-next-word)        '("E" . meow-next-symbol)    
-   '("f" . meow-find-expand)      '("F" . my/meow-find-backward)    
-   '("g" . meow-cancel-selection) '("G" . meow-grab)
-   '("h" . meow-left)             '("H" . meow-left-expand)
-   '("i" . meow-insert)           '("I" . my/meow-insert-line)
-   '("j" . meow-next)             '("J" . meow-next-expand)
-   '("k" . meow-prev)             '("K" . meow-prev-expand)
-   '("l" . meow-right)            '("L" . meow-right-expand)
+   '("a" . my/meow-append)
+   '("A" . (lambda () (interactive) (end-of-line) (meow-insert)))
+   '("b" . meow-back-word)
+   '("B" . meow-back-symbol)
+   '("c" . meow-change)
+   '("C" . (lambda () (interactive) (meow-kill) (meow-insert)))
+   '("d" . meow-delete)
+   '("D" . meow-backward-delete)
+   '("e" . meow-next-word)
+   '("E" . meow-next-symbol)
+   '("f" . meow-find-expand)
+   '("F" . (lambda () (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find-expand))))
+   '("g" . my/meow-g-prefix)
+   '("G" . end-of-buffer)
+   '("h" . meow-left)
+   '("H" . meow-left-expand)
+   '("i" . meow-insert)
+   '("I" . (lambda () (interactive) (beginning-of-line) (meow-insert)))
+   '("j" . meow-next)
+   '("J" . meow-next-expand)
+   '("k" . meow-prev)
+   '("K" . meow-prev-expand)
+   '("l" . meow-right)
+   '("L" . meow-right-expand)
    '("m" . meow-join)
    '("n" . meow-search)
-   '("o" . meow-open-below)       '("O" . meow-open-above)
-   '("p" . my/meow-paste-below)   '("P" . my/meow-paste-above)
-   '("q" . my/meow-quit)
+   '("o" . meow-open-below)
+   '("O" . meow-open-above)
+   '("p" . my/meow-paste-below)
+   '("P" . my/meow-paste-above)
+   '("q" . my/meow-quit-buffer)
    '("r" . meow-replace)
    '("%" . evilmi-jump-items-native)
-   '("s" . meow-kill)             '("S" . meow-block)
-   '("t" . meow-till-expand)      '("T" . my/meow-till-backward)
-   '("u" . meow-undo)             '("U" . undo-fu-only-redo)
-   '("C-r" . undo-fu-only-redo)
-   '("v" . meow-visit)            '("V" . my/meow-reselect)
-   '("w" . meow-mark-word)        '("W" . meow-mark-symbol)
-   '("x" . meow-line)             '("X" . meow-goto-line)
-   '("y" . my/meow-save-clipboard) '("Y" . my/meow-save-to-eol)
-   '("z" . meow-pop-selection)   '("Z" . meow-to-block)
+   '("s" . meow-kill)
+   '("S" . my/meow-substitute-line)
+   '("t" . meow-till-expand)
+   '("T" . (lambda () (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-till-expand))))
+   '("u" . meow-undo)
+   '("U" . undo-fu-only-redo)
+   '("v" . meow-visit)
+   '("V" . my/meow-reselect)
+   '("w" . meow-mark-word)
+   '("W" . meow-mark-symbol)
+   '("x" . meow-line)
+   '("X" . meow-goto-line)
+   '("y" . my/meow-save-clipboard)
+   '("Y" . my/meow-save-to-eol)
+   '("z" . meow-pop-selection)
+   '("Z" . meow-to-block)
    '(">" . my/meow-indent-right)
    '("<" . my/meow-indent-left)
    '("'" . repeat)
@@ -388,6 +488,18 @@ symbol; fall through to FALLBACK for any other meow thing."
    '("\"" . my/meow-surround-quote)
    '("`" . my/meow-surround-backtick)
    '("<escape>" . keyboard-quit)))
+
+;;; vim `g' prefix --------------------------------------------------
+;; `g' is a prefix (was bare `meow-cancel-selection' -- ESC still cancels).
+;; `gb' rehouses `meow-block' (vim `S' took its old key).
+(define-prefix-command 'my/meow-g-prefix)
+(let ((m my/meow-g-prefix))
+  (define-key m "g" #'beginning-of-buffer)   ; gg -> top of buffer
+  (define-key m "e" #'end-of-buffer)         ; ge -> end of buffer (also G)
+  (define-key m "h" #'mwim-beginning)        ; gh -> smart line start (M-h)
+  (define-key m "l" #'mwim-end)              ; gl -> smart line end   (M-l)
+  (define-key m "b" #'meow-block)            ; gb -> select block (old S)
+  (define-key m "c" #'my/meow-comment))      ; gc -> toggle comment (line/region)
 
 (use-package meow
   :demand t
@@ -400,7 +512,27 @@ symbol; fall through to FALLBACK for any other meow thing."
           (insert . "I")
           (beacon . "B")))
   (my/meow-setup)
-  (add-to-list 'meow-mode-state-list '(messages-buffer-mode . normal))
+  ;; Per-major-mode initial state.  meow resolves a buffer by exact mode, then
+  ;; up the derived-mode parents, then auto-detects (a-z self-insert -> Normal,
+  ;; else Motion).  So `special-mode' is a Motion catch-all (help/info/grep/occur/
+  ;; compilation/magit/dashboard...); exact rows below override it (Normal) or
+  ;; cover modes that don't derive from a read-only parent.  Centralised here
+  ;; instead of per-recipe drop-ins.  (ghostel turns meow OFF entirely -- see
+  ;; term-rcp -- which a state row can't express, so that one stays a hook.)
+  (setq meow-mode-state-list
+        '((conf-mode . normal)
+          (fundamental-mode . normal)
+          (prog-mode . normal)
+          (text-mode . normal)
+          (wdired-mode . normal)             ; editing dired filenames
+          (special-mode . motion)            ; catch-all for read-only single-key UIs
+          (dired-mode . motion)
+          (dirvish-mode . motion)
+          (pdf-view-mode . motion)
+          (notmuch-hello-mode . motion)      ; notmuch modes derive from fundamental
+          (notmuch-search-mode . motion)     ; (-> Normal), so they need explicit rows
+          (notmuch-tree-mode . motion)
+          (notmuch-show-mode . motion)))
   (meow-global-mode 1)
 
   (meow-thing-register 'angle        '(regexp "<" ">")   '(regexp "<" ">"))
@@ -440,11 +572,8 @@ symbol; fall through to FALLBACK for any other meow thing."
   (define-key global-map (kbd "s-x") #'execute-extended-command)
   (define-key global-map (kbd "s-!") #'shell-command)
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
-  ;; C-s saves only in normal state -- not globally -- so when meow is off (pure
-  ;; Emacs keys) C-s falls back to its vanilla `isearch-forward'.
-  (define-key meow-normal-state-keymap (kbd "C-s") #'save-buffer)
-  (setq meow--kbd-kill-line "C-S-k")
-  (define-key global-map (kbd "C-S-k") #'kill-line)
+  ;; (setq meow--kbd-kill-line "C-S-k")
+  ;; (define-key global-map (kbd "C-S-k") #'kill-line)
   ;; Scroll lives on C-u/C-d (vim half-page) below.  C-u has no meow internal
   ;; use, but meow-delete acts by *executing* `meow--kbd-delete-char' (default
   ;; C-d), so redirect that macro to C-S-d -- else C-d scrolls instead of
@@ -559,6 +688,7 @@ BINDINGS are KEY COMMAND pairs."
   "s" #'diff-hl-show-hunk)
 
 (my/leader-prefix "g" "grab"
+  "g" #'meow-grab
   "p" #'meow-swap-grab
   "y" #'meow-sync-grab)
 
@@ -583,6 +713,7 @@ BINDINGS are KEY COMMAND pairs."
   "-"  #'my/split-below-follow
   "c"  #'delete-window
   "o"  #'delete-other-windows
+  "w"  #'ace-window
   "h"  #'windmove-left
   "j"  #'windmove-down
   "k"  #'windmove-up

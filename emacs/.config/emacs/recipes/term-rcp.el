@@ -8,7 +8,6 @@
 (use-package ghostel
   :commands (ghostel ghostel-project my/ghostel-popup my/ghostel-full))
 
-;; ghostel is a terminal — meow's modal keymaps must not intercept its keys.
 ;; meow guesses NORMAL state for ghostel buffers (a-z are ghostel--self-insert,
 ;; which the guesser reads as a code buffer), so without this a fresh terminal
 ;; opens modal: keys run meow commands and backspace eats the prompt.  Even

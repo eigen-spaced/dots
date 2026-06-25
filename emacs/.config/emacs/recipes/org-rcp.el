@@ -5,6 +5,12 @@
 
 (setq org-directory "~/org/")
 
+;; Lean org link backends.  The default pulls ol-gnus -- which drags in the whole
+;; Gnus reader (~400ms at the first org load, i.e. the dashboard agenda) -- plus
+;; rmail/mhe/bbdb/irc/w3m/bibtex/docview we never use (we're on notmuch).  Re-add
+;; any `ol-*' here if you start using its link type.
+(setq org-modules '(ol-info ol-eww ol-doi))
+
 (defun my/org-file (name)
   "Absolute path of NAME under `org-directory'."
   (expand-file-name name org-directory))

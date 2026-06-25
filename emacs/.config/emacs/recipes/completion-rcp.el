@@ -84,6 +84,28 @@
     (define-key embark-buffer-map (kbd (car spec))
                 (my/embark-split-opener #'switch-to-buffer (cdr spec)))))
 
+;; Same C-v/C-s split-open for consult grep + line results.  Those candidates are
+;; `consult-grep'/`consult-location' targets (not file/buffer), so they fall back
+;; to `embark-general-map'; give each its own action map that splits, then reuses
+;; consult's own jump (correct file/line resolution).  embark funcalls these with
+;; the target; the vertico-map C-v/C-s -> `embark-act' dispatch below finds them.
+(declare-function embark-consult-goto-grep "embark-consult")
+(declare-function embark-consult-goto-location "embark-consult")
+(defun my/embark-grep-split-right (loc &rest _) (select-window (split-window-right)) (embark-consult-goto-grep loc))
+(defun my/embark-grep-split-below (loc &rest _) (select-window (split-window-below)) (embark-consult-goto-grep loc))
+(defun my/embark-loc-split-right  (loc &rest _) (select-window (split-window-right)) (embark-consult-goto-location loc))
+(defun my/embark-loc-split-below  (loc &rest _) (select-window (split-window-below)) (embark-consult-goto-location loc))
+
+(with-eval-after-load 'embark-consult
+  (defvar-keymap my/embark-consult-grep-map
+    "C-v" #'my/embark-grep-split-right
+    "C-s" #'my/embark-grep-split-below)
+  (defvar-keymap my/embark-consult-location-map
+    "C-v" #'my/embark-loc-split-right
+    "C-s" #'my/embark-loc-split-below)
+  (add-to-list 'embark-keymap-alist '(consult-grep . my/embark-consult-grep-map))
+  (add-to-list 'embark-keymap-alist '(consult-location . my/embark-consult-location-map)))
+
 (defun my/vertico-split-vertical ()
   "Open the current candidate in a vertical split (side-by-side)."
   (interactive)

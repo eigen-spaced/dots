@@ -17,6 +17,32 @@
 (require 'cl-lib)
 (setq use-package-always-ensure t)
 
+;; Opt-in startup profiler: launch with `EMACS_BENCH=1 emacs ...' to instrument
+;; package loads with benchmark-init and write a sorted report to
+;; benchmark-init.txt at after-init (also live via M-x
+;; benchmark-init/show-durations-tree).  Note: it times *file loads* only, not
+;; function calls like `exec-path-from-shell-initialize'.
+(when (getenv "EMACS_BENCH")
+  (require 'benchmark-init)
+  (benchmark-init/activate)
+  (add-hook 'after-init-hook
+            (lambda ()
+              (benchmark-init/deactivate)
+              (ignore-errors
+                (with-temp-file (expand-file-name "benchmark-init.txt" user-emacs-directory)
+                  (insert (format "emacs-init-time: %s\n\n%-34s %9s %9s\n" (emacs-init-time)
+                                  "file/package" "self-ms" "total-ms"))
+                  (let ((rows (delq nil
+                               (mapcar
+                                (lambda (e)
+                                  (let ((name (alist-get :name e)) (self (alist-get :duration-adj e)))
+                                    (when (and name (not (eq name 'benchmark-init/root)) (numberp self))
+                                      (list name self (alist-get :duration e)))))
+                                (benchmark-init/flatten benchmark-init/durations-tree)))))
+                    (dolist (r (sort rows (lambda (a b) (> (nth 1 a) (nth 1 b)))))
+                      (insert (format "%-34s %9.1f %9.1f\n" (nth 0 r) (nth 1 r) (nth 2 r))))))))
+            t))
+
 (add-to-list 'load-path (expand-file-name "recipes" user-emacs-directory))
 
 ;; Machine-local, git-ignored identity (user-full-name / user-mail-address).
@@ -28,6 +54,8 @@
 (require 'completion-rcp)
 (require 'project-rcp)
 (require 'workspace-rcp)
+(require 'ace-window-rcp)
+(require 'dimmer-rcp)
 (require 'vcs-rcp)
 (require 'code-rcp)
 (require 'eglot-rcp)

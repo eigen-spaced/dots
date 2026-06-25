@@ -26,6 +26,16 @@
   "Split stacked and select the new window."
   (interactive) (select-window (split-window-below)))
 
+;; Persistence/global modes that needn't be live during (daemon) boot.  Enabled
+;; once, on the first command: `pre-command-hook' fires *before* that command, so
+;; opening a file as your first action still gets `save-place' restore.
+;; (`recentf' is NOT here -- it stays eager to feed the startup dashboard.)
+(defun my/enable-deferred-modes ()
+  (remove-hook 'pre-command-hook #'my/enable-deferred-modes)
+  (savehist-mode 1)
+  (save-place-mode 1)
+  (global-auto-revert-mode 1))
+
 (use-package emacs
   :ensure nil
   :custom
@@ -70,10 +80,8 @@
     (add-hook h #'display-line-numbers-mode))
   (setq-default bidi-paragraph-direction 'left-to-right)
   (global-so-long-mode 1)
-  (global-auto-revert-mode 1)
-  (savehist-mode 1)
-  (save-place-mode 1)
-  (recentf-mode 1)
+  (recentf-mode 1)                       ; eager: feeds the startup dashboard's recents
+  (add-hook 'pre-command-hook #'my/enable-deferred-modes)
   ;; Move point into help buffers (describe-key/function/…) so they're readable
   ;; and q-dismissable straight away.
   (setq help-window-select t)
@@ -83,12 +91,10 @@
   (
    ("C-h"  . windmove-left)
    ("C-l"  . windmove-right)
-   ("C-k"  . windmove-up)
-   ("C-j"  . windmove-down)
-   ("C-\\" . my/split-right-follow)
-   ("C--"  . my/split-below-follow)
    ("C-q"  . delete-window)
    ("s-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
+   ("C-x C-r" . eval-region)            ; eval the region (was find-file-read-only)
+   ("C-."     . find-file)              ; same as the `SPC .' leader
    :map minibuffer-local-map
    ("C-w"  . backward-kill-word)))
 

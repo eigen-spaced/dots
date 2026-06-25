@@ -101,11 +101,7 @@
   (dirvish-side-attributes '(collapse))
   (dirvish-side-display-alist '((side . left) (slot . -1))))
 
-;; dired buffers run in meow Motion so the mode's single-key commands pass
-;; through; wdired (filename editing) needs Normal/insert.
-(with-eval-after-load 'meow
-  (add-to-list 'meow-mode-state-list '(dired-mode . motion))
-  (add-to-list 'meow-mode-state-list '(wdired-mode . normal)))
+;; meow state for dired/dirvish/wdired lives in `meow-mode-state-list' (meow-rcp).
 
 (provide 'dired-rcp)
 ;;; dired-rcp.el ends here

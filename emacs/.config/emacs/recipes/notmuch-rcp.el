@@ -114,6 +114,7 @@
   :hook (notmuch-show-mode . my/notmuch-prose-serif)
   :custom
   (notmuch-fcc-dirs nil)                 ; Gmail keeps its own Sent copy
+  (notmuch-draft-folder "gmail/[Gmail]/Drafts") ; C-x C-s saves drafts here (synced to Gmail)
   (notmuch-search-oldest-first nil)      ; newest mail first
   ;; Pad each field to a fixed width so the tags land in their own right-hand
   ;; column (Doom's layout) instead of trailing each subject.
@@ -129,6 +130,7 @@
      (:name "flagged" :query "tag:flagged"              :key "f")
      (:name "today"   :query "date:today and tag:inbox" :key "t")
      (:name "sent"    :query "tag:sent"                 :key "s")
+     (:name "drafts"  :query "tag:draft"                :key "d")
      (:name "all"     :query "*"                        :key "a")))
   :config
   ;; afew lives in ~/.local/bin — put it on PATH for Emacs subprocesses.
@@ -147,18 +149,15 @@
         smtpmail-smtp-server "smtp.gmail.com"
         smtpmail-smtp-service 587
         smtpmail-stream-type 'starttls)
+  ;; The Gmail app-password lives in the macOS Keychain; the default `auth-sources'
+  ;; only checks ~/.authinfo*, so add the Keychain (mbsync reads the same entry).
+  (add-to-list 'auth-sources 'macos-keychain-internet)
 
   (add-to-list 'notmuch-search-line-faces '("trash" . dired-flagged) t)
   (advice-add 'mm-shr :around #'my/mail-shr-no-colors)
 
-  ;; notmuch buffers run in meow Motion so the mode's own single-key bindings
-  ;; (d, U, J, !) pass through instead of hitting Normal-state meow commands.
-  (with-eval-after-load 'meow
-    (dolist (m '(notmuch-hello-mode notmuch-search-mode notmuch-tree-mode notmuch-show-mode))
-      (add-to-list 'meow-mode-state-list (cons m 'motion))))
-
-  ;; `j' is meow Motion next-line, which shadows notmuch's jump-to-search — move
-  ;; that to `J'.  `d' trash toggle, `!' read toggle, `U' sync.
+  ;; notmuch buffers run in meow Motion (set in `meow-mode-state-list', meow-rcp)
+  ;; so the mode's own single-key bindings (d, U, J, !) pass through.
   (define-key notmuch-search-mode-map (kbd "d") #'my/notmuch-search-toggle-trash)
   (define-key notmuch-search-mode-map (kbd "!") #'my/notmuch-search-toggle-unread)
   (define-key notmuch-search-mode-map (kbd "U") #'my/notmuch-update)
