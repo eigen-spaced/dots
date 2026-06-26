@@ -149,6 +149,10 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
 (defun my/capture-frame ()
   "Pop a centered floating frame and capture one entry straight into inbox.org."
   (interactive)
+  ;; Load org-capture first so `org-capture-templates' is declared special
+  ;; before we let-bind it -- otherwise (under lexical-binding) the let binds it
+  ;; lexically and loading org-capture errors ("already lexical var").
+  (require 'org-capture)
   (let ((frame (make-frame '((name . "org-capture")
                              (window-system . ns)
                              (fullscreen . nil)

@@ -64,6 +64,7 @@
 (require 'python-rcp)
 (require 'tree-sitter-rcp)
 (require 'editing-rcp)
+(require 'emacs-everywhere-rcp)
 (require 'eww-rcp)
 (require 'org-rcp)
 (require 'markdown-rcp)

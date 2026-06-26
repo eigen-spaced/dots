@@ -12,10 +12,6 @@ zsh/.config/zsh/.zcompdump
 .lsp
 .clj-kondo
 
-# Doom: machine-local personal values (name/email). Tracked template lives in
-# doom/.doom.d/private.el.example.
-doom/.doom.d/private.el
-
 # flycheck temp files (created next to a checked file; config.el is symlinked
 # into this repo, so they can land here)
 flycheck_*.el
