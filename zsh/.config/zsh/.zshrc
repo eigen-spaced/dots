@@ -9,14 +9,9 @@ case "$OSTYPE" in
     linux*)  [[ -f /etc/arch-release ]] && IS_ARCH=1 ;;
 esac
 
-# --- PATH (deduped) ---------------------------------------------------------
-typeset -U path
-path=(
-    $HOME/.bin
-    $HOME/.local/bin
-    $HOME/.cargo/bin
-    $path
-)
+# PATH / runtime env (mise, pnpm, ~/.bin, scripts) lives in .zprofile so a
+# login shell — including the one Emacs spawns to import PATH — gets it too.
+# Interactive shells inherit it from the login shell.
 
 # --- History ----------------------------------------------------------------
 HISTFILE="$HOME/.config/zsh/zsh_history"
@@ -87,28 +82,13 @@ else
 fi
 
 # --- Tool integrations ------------------------------------------------------
-# mise — runtime version manager
-eval "$(mise activate zsh)"
-
 # pip safety: require a virtualenv unless gpip is used (defined in zsh-functions)
 export PIP_REQUIRE_VIRTUALENV=true
 
 # Dictionary helper
 [[ -f "$HOME/.config/scripts/define.sh" ]] && source "$HOME/.config/scripts/define.sh"
 
-# Dictionary helper
-export PATH="$HOME/.config/scripts:$PATH"
-
 # Personal/private overrides — not committed
 [[ -f "$HOME/.zshrc-personal" ]] && source "$HOME/.zshrc-personal"
 
 eval "$(zoxide init zsh)"
-
-# pnpm — the binary itself is managed by mise; PNPM_HOME is only the
-# directory where `pnpm add -g` puts global package binaries.
-export PNPM_HOME="$HOME/Library/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-# pnpm end

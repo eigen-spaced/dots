@@ -9,6 +9,10 @@
 
 (use-package avy
   :commands (avy-goto-char-timer avy-goto-char-2 avy-goto-word-1 avy-goto-line avy-resume)
+  :bind (("C-:" . avy-goto-char-timer)
+         ("C-'" . avy-goto-char)
+         ("M-g f" . avy-goto-line)
+         ("M-g w" . avy-goto-word-1))
   :custom
   (avy-timeout-seconds 0.3)
   (avy-all-windows nil)
@@ -33,7 +37,7 @@
   :commands (evilmi-jump-items-native))
 
 (use-package embrace
-  :bind ("M-," . embrace-commander)
+  :bind ("C-," . embrace-commander)
   ;; Drop the inverse-video "boxes" on the pair previews -> clean coloured text,
   ;; closer to meow's thing menu.
   :custom-face

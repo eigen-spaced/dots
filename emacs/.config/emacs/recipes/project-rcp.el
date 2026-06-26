@@ -27,21 +27,5 @@
     (when file
       (find-file (expand-file-name file root)))))
 
-;; Harpoon-style buffer pinning, scoped per project + git branch.  Default keys
-;; are M-1..9 (= digit-argument); move them to H-<n> (right-Cmd, see early-init).
-(use-package javelin
-  :config
-  (global-javelin-minor-mode 1)
-  (let ((m javelin-minor-mode-map))
-    (dotimes (i 9)
-      (let ((n (1+ i)))
-        (define-key m (kbd (format "H-%d" n))
-                    (intern (format "javelin-go-or-assign-to-%d" n)))
-        (define-key m (kbd (format "M-%d" n)) nil)))
-    (define-key m (kbd "H-0") (lookup-key m (kbd "M-0")))   ; delete sub-map
-    (define-key m (kbd "M-0") nil)
-    (define-key m (kbd "H--") #'javelin-toggle-quick-menu)
-    (define-key m (kbd "M--") nil)))
-
 (provide 'project-rcp)
 ;;; project-rcp.el ends here

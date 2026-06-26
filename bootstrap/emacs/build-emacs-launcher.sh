@@ -24,9 +24,30 @@ ICON_SRC="$SCRIPT_DIR/emacs-icon.png"
 
 echo "Building Emacs Dock launcher at $APP ..."
 
-# 1. Compile the applet (inline source — opens a daemon frame via emacsclient -c).
+# 1. Compile the applet. It calls a launcher script (written next) that WAITS
+#    for the daemon to accept connections before opening a frame, and always
+#    exits 0 — so clicking the Dock icon during startup queues a frame instead
+#    of raising AppleScript's "command exited with a non-zero status" dialog.
 rm -rf "$APP"
-osacompile -o "$APP" -e "do shell script \"$EMACSCLIENT -c -n -a '' >/dev/null 2>&1\""
+osacompile -o "$APP" -e "do shell script \"$APP/Contents/Resources/launch-emacs.sh\""
+
+# 1a. Write that launcher into the bundle (before the codesign step below, so the
+#     ad-hoc signature covers it). Escaped \$ stays literal in the script; only
+#     $EMACSCLIENT is expanded now.
+LAUNCHER="$APP/Contents/Resources/launch-emacs.sh"
+cat > "$LAUNCHER" <<EOF
+#!/bin/sh
+# Poll the Emacs daemon for up to ~10s, then open a GUI frame. Never fails:
+# returns 0 even mid-boot, so the launching app shows no error dialog.
+c="$EMACSCLIENT"
+i=0
+while [ \$i -lt 100 ] && ! "\$c" -e t >/dev/null 2>&1; do
+  sleep 0.1
+  i=\$((i + 1))
+done
+"\$c" -c -n -a '' >/dev/null 2>&1 || true
+EOF
+chmod +x "$LAUNCHER"
 
 # 2. Build + install a modern, multi-resolution icns. (iconutil requires the
 #    staging directory to be named *.iconset.)

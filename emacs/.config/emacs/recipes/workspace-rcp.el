@@ -56,7 +56,7 @@ just the active one (see :config)."
   (persp-mode-prefix-key (kbd "C-c M-p"))
   (persp-state-default-file (expand-file-name "persp-state" user-emacs-directory))
   (persp-suppress-no-prefix-key-warning t)
-  (persp-sort 'created)                  ; s-N -> Nth workspace by creation order
+  (persp-sort 'created)                  ; H-N -> Nth workspace by creation order
   :init
   (persp-mode)
   :config
@@ -66,10 +66,10 @@ just the active one (see :config)."
   (setq persp-show-modestring nil)
   (setq global-mode-string (delete '(:eval (persp-mode-line)) global-mode-string))
   (add-to-list 'global-mode-string '(:eval (my/persp-current-modeline)) t)
-  ;; s-1..s-9 switch to an EXISTING workspace by position; they never create.
-  ;; Workspace creation is explicit: SPC TAB c (or M-x my/persp-new-workspace).
+  ;; H-1..H-9 (right-Cmd) switch to an EXISTING workspace by position; they never
+  ;; create.  Workspace creation is explicit: SPC TAB c (or M-x my/persp-new-workspace).
   (dotimes (i 9)
-    (define-key global-map (kbd (format "s-%d" (1+ i)))
+    (define-key global-map (kbd (format "H-%d" (1+ i)))
                 (let ((n (1+ i))) (lambda () (interactive) (my/persp-switch-by-index n))))))
 
 (provide 'workspace-rcp)

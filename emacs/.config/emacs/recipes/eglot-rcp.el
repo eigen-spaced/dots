@@ -66,8 +66,29 @@
   :hook (prog-mode . flymake-mode)
   :bind ("C-c s e" . consult-flymake)
   :custom
-  (flymake-fringe-indicator-position 'left-fringe)
-  (flymake-no-changes-timeout 0.5))
+  ;; Margin (not fringe) indicators so the gutter shows nerd-font glyphs.
+  (flymake-indicator-type 'margins)
+  (flymake-margin-indicators-string
+   '((error   "" compilation-error)
+     (warning "" compilation-warning)
+     (note    "" compilation-info)))
+  (flymake-no-changes-timeout 0.5)
+  :config
+  ;; Bump the margin glyph size to sit closer to the bookmark icon: re-face each
+  ;; margin string (keeping the user's literal glyph) with a taller face that
+  ;; still inherits the original colour.  flymake renders the glyph as
+  ;; `(:inherit (FACE default))', so a relative `:height' on FACE scales it.
+  (defface my/flymake-margin-error '((t :inherit compilation-error :height 1.15))
+    "Taller margin glyph for flymake errors.")
+  (defface my/flymake-margin-warning '((t :inherit compilation-warning :height 1.15))
+    "Taller margin glyph for flymake warnings.")
+  (defface my/flymake-margin-note '((t :inherit compilation-info :height 1.15))
+    "Taller margin glyph for flymake notes.")
+  (dolist (spec '((flymake-error   . my/flymake-margin-error)
+                  (flymake-warning . my/flymake-margin-warning)
+                  (flymake-note    . my/flymake-margin-note)))
+    (when-let* ((cur (get (car spec) 'flymake-margin-string)))
+      (put (car spec) 'flymake-margin-string (list (car cur) (cdr spec))))))
 
 ;; Workspace symbol search (replaces consult-lsp); file symbols stay on
 ;; consult-imenu (C-c s i, completion-rcp).

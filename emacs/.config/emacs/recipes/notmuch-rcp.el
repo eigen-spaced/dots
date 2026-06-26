@@ -60,7 +60,11 @@
   (let ((shr-use-colors nil))
     (apply orig args)))
 
-;;; Reversible trash + read/unread toggles --------------------------
+;;; Reversible trash + unread toggles -------------------------------
+;; All call notmuch's own tag functions, which redraw the line themselves:
+;; `!' toggles +unread/-unread; `d' toggles trash (a compound +trash -inbox
+;; -unread that the single-tag +/- keys can't do in one stroke).  Plain +/- and
+;; `*' stay available for arbitrary or region tagging.
 
 (defun my/notmuch-search-toggle-trash ()
   "Toggle the trash mark on the thread at point; advance when trashing."
@@ -86,48 +90,26 @@
     (notmuch-show-tag '("+trash" "-inbox" "-unread"))))
 
 (defun my/notmuch-search-toggle-unread ()
-  "Toggle the unread tag on the thread at point."
+  "Toggle the unread tag on the thread at point via notmuch's own tagging."
   (interactive)
-  (if (member "unread" (notmuch-search-get-tags))
-      (notmuch-search-tag '("-unread"))
-    (notmuch-search-tag '("+unread")))
-  (when-let* ((result (notmuch-search-get-result)))
-    (notmuch-search-update-result
-     (plist-put result :orig-tags (plist-get result :tags)))))
+  (notmuch-search-tag
+   (if (member "unread" (notmuch-search-get-tags)) '("-unread") '("+unread"))))
 
 (defun my/notmuch-tree-toggle-unread ()
-  "Toggle the unread tag on the message at point (tree view)."
+  "Toggle the unread tag on the message at point via notmuch's own tagging."
   (interactive)
-  (if (member "unread" (notmuch-tree-get-tags))
-      (notmuch-tree-tag '("-unread"))
-    (notmuch-tree-tag '("+unread")))
-  (notmuch-tree-set-prop :orig-tags (notmuch-tree-get-prop :tags))
-  (notmuch-tree-refresh-result))
-
-(defun my/notmuch-refresh-parent-search ()
-  "Refresh the search buffer a thread was opened from, when the thread is killed."
-  (when (and (buffer-live-p notmuch-show-parent-buffer)
-             (not (get-buffer-process notmuch-show-parent-buffer)))
-    (with-current-buffer notmuch-show-parent-buffer
-      (notmuch-refresh-this-buffer))))
+  (notmuch-tree-tag
+   (if (member "unread" (notmuch-tree-get-tags)) '("-unread") '("+unread"))))
 
 ;;; Background auto-sync every 5 min ---------------------------------
 
 (defvar my/notmuch-sync-timer nil)
 
 (defun my/notmuch-auto-sync ()
-  "Run the notmuch sync quietly, then refresh unfocused notmuch buffers."
+  "Sync mail quietly in the background; refresh manually with `g'."
   (unless (process-live-p (get-process "notmuch-autosync"))
     (let ((default-directory "~/"))
-      (set-process-sentinel
-       (start-process-shell-command "notmuch-autosync" nil my/notmuch-sync-command)
-       (lambda (_proc event)
-         (when (string-prefix-p "finished" event)
-           (dolist (buf (buffer-list))
-             (with-current-buffer buf
-               (when (and (memq major-mode '(notmuch-hello-mode notmuch-search-mode notmuch-tree-mode))
-                          (not (eq buf (window-buffer (selected-window)))))
-                 (notmuch-refresh-this-buffer))))))))))
+      (start-process-shell-command "notmuch-autosync" nil my/notmuch-sync-command))))
 
 ;;; notmuch ----------------------------------------------------------
 
@@ -190,11 +172,24 @@
 
   (add-hook 'message-mode-hook #'my/notmuch-address-setup-capf)
 
-  (add-hook 'notmuch-show-mode-hook
-            (lambda () (add-hook 'kill-buffer-hook #'my/notmuch-refresh-parent-search nil t)))
-
   (when (timerp my/notmuch-sync-timer) (cancel-timer my/notmuch-sync-timer))
   (setq my/notmuch-sync-timer (run-with-timer 300 300 #'my/notmuch-auto-sync)))
+
+;; `mml-preview' (C-c C-m P) renders the outgoing MIME in a popup, but binds `q'
+;; to a bare `kill-buffer' -- which kills the preview buffer yet leaves its window
+;; behind, now showing the compose buffer.  Rebind `q' to `quit-window' so it
+;; kills the preview AND restores the pre-preview window layout.
+(defun my/mml-preview-quit ()
+  "Kill the MIME preview and restore the pre-preview window layout."
+  (interactive)
+  (quit-window t))
+
+(with-eval-after-load 'mml
+  (defun my/mml-preview-quit-restores-window (&rest _)
+    (when (and (boundp 'mml-preview-buffer) (buffer-live-p mml-preview-buffer))
+      (with-current-buffer mml-preview-buffer
+        (local-set-key "q" #'my/mml-preview-quit))))
+  (advice-add 'mml-preview :after #'my/mml-preview-quit-restores-window))
 
 (provide 'notmuch-rcp)
 ;;; notmuch-rcp.el ends here

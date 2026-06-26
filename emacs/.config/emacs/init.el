@@ -53,6 +53,8 @@
 (require 'ui-rcp)
 (require 'completion-rcp)
 (require 'project-rcp)
+(require 'javelin-rcp)
+(require 'modeline-rcp)
 (require 'workspace-rcp)
 (require 'ace-window-rcp)
 (require 'dimmer-rcp)

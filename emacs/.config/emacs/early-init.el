@@ -22,9 +22,14 @@
                             (left-fringe . 8)
                             (right-fringe . 8)))
 
-;; Right-Cmd = Hyper (left-Cmd stays super); frees H-1..H-9 for javelin.
+;; Right-side modifiers, two-handed by design (left hand on the number/letter,
+;; right hand on the modifier):
+;;   right-Cmd    = Hyper -> H-<n> workspaces, H-x M-x
+;;   right-Option = Alt   -> A-<n> javelin   (was a redundant Meta; left-Option
+;;                                            stays Meta, left-Cmd stays super)
 (when (eq system-type 'darwin)
-  (setq ns-right-command-modifier 'hyper))
+  (setq ns-right-command-modifier 'hyper
+        ns-right-option-modifier 'alt))
 
 ;; lsp-mode uses plists (not hash tables) for server messages = less GC.  Read
 ;; at lsp's compile + load time, so it must be set before lsp is ever compiled.

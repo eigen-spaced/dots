@@ -5,6 +5,11 @@
 ;; GUI/daemon Emacs on macOS doesn't inherit the shell PATH; import it so gls,
 ;; rg, fd, language servers and mise shims are found.
 (use-package exec-path-from-shell
+  :init
+  ;; Use a login (not interactive) shell: PATH/env now lives in .zprofile, so a
+  ;; plain `-l' shell has the full PATH without sourcing the heavy interactive
+  ;; .zshrc (plugins, prompt, completions). ~330ms -> ~20ms at startup.
+  (setq exec-path-from-shell-arguments '("-l"))
   :config
   (when (or (daemonp) (memq window-system '(mac ns x)))
     (exec-path-from-shell-initialize)))
@@ -17,6 +22,25 @@
   (gcmh-idle-delay 'auto)
   (gcmh-auto-idle-delay-factor 10)
   (gcmh-high-cons-threshold (* 64 1024 1024)))
+
+(defun my/eval-region (start end)
+  "Eval the region, then echo a confirmation.
+`eval-region' is silent (no PRINTFLAG when called interactively), unlike
+`eval-last-sexp' (\\[eval-last-sexp]) which echoes the value."
+  (interactive "r")
+  (eval-region start end)
+  (deactivate-mark)
+  (message "Evaluated region"))
+
+(defun my/reload-config ()
+  "Re-load every recipes/*.el without restarting Emacs (a Doom-reload-ish).
+Most recipes re-run cleanly; changes that only a fresh process can undo
+(removed bindings, advice, etc.) still need a restart."
+  (interactive)
+  (dolist (f (directory-files
+              (expand-file-name "recipes" user-emacs-directory) t "\\.el\\'"))
+    (load f nil 'nomessage))
+  (message "Config reloaded (recipes/*.el)"))
 
 (defun my/split-right-follow ()
   "Split side-by-side and select the new window."
@@ -94,8 +118,9 @@
    ("C-l"  . windmove-right)
    ("C-q"  . delete-window)
    ("s-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
-   ("C-x C-r" . eval-region)            ; eval the region (was find-file-read-only)
+   ("C-x C-r" . my/eval-region)         ; eval the region + echo (was find-file-read-only)
    ("C-."     . find-file)              ; same as the `SPC .' leader
+   ("M-,"     . persp-switch-to-buffer*)
    :map minibuffer-local-map
    ("C-w"  . backward-kill-word)))
 

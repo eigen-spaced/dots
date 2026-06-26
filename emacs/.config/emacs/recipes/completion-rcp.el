@@ -80,9 +80,18 @@
                          alist)))
       (cons (display-buffer-in-direction buffer alist) 'window))))
 
+(defun my/minibuffer-category ()
+  (completion-metadata-get
+   (completion-metadata (buffer-substring-no-properties
+                         (minibuffer-prompt-end) (point))
+                        minibuffer-completion-table
+                        minibuffer-completion-predicate)
+   'category))
+
 (defun my/vertico-exit-in-direction (direction)
-  (display-buffer-override-next-command
-   (my/split-direction-action direction) nil "[split]")
+  (unless (eq (my/minibuffer-category) 'consult-location)
+    (display-buffer-override-next-command
+     (my/split-direction-action direction) nil "[split]"))
   (vertico-exit))
 
 (defun my/vertico-exit-right () (interactive) (my/vertico-exit-in-direction 'right))

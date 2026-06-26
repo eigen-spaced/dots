@@ -69,11 +69,13 @@ Built-in commenting -- no package needed; comments respect the major mode."
     (indent-rigidly (line-beginning-position) (line-end-position) (- tab-width))))
 
 (defun my/meow-paste-below ()
-  "Vim `p': paste after point / below the line."
+  "Vim `p': paste after point / below the line.
+Pastes the most recent copy, whether it came from an Emacs buffer (kill
+ring) or the system clipboard, whichever is newer."
   (interactive)
-  (when (null kill-ring) (user-error "Kill ring is empty"))
-  (let* ((select-enable-clipboard meow-use-clipboard)
-         (text (current-kill 0)))
+  (let ((text (ignore-errors (current-kill 0))))
+    (unless (and text (not (string-empty-p text)))
+      (user-error "Nothing to paste"))
     (cond
      ((use-region-p)
       (let ((beg (region-beginning)))
@@ -87,11 +89,13 @@ Built-in commenting -- no package needed; comments respect the major mode."
       (insert text) (backward-char 1)))))
 
 (defun my/meow-paste-above ()
-  "Vim `P': paste before point / above the line."
+  "Vim `P': paste before point / above the line.
+Pastes the most recent copy, whether it came from an Emacs buffer (kill
+ring) or the system clipboard, whichever is newer."
   (interactive)
-  (when (null kill-ring) (user-error "Kill ring is empty"))
-  (let* ((select-enable-clipboard meow-use-clipboard)
-         (text (current-kill 0)))
+  (let ((text (ignore-errors (current-kill 0))))
+    (unless (and text (not (string-empty-p text)))
+      (user-error "Nothing to paste"))
     (cond
      ((use-region-p)
       (let ((beg (region-beginning)))
@@ -114,12 +118,18 @@ Built-in commenting -- no package needed; comments respect the major mode."
     (kill-ring-save (point) (line-end-position))))
 
 (defun my/scroll-half-page-down ()
-  "Vim `C-f' feel: scroll down half a window, recentering."
-  (interactive) (forward-line (max 1 (/ (window-body-height) 2))) (recenter))
+  "Scroll down half a window. Cancels any active selection first."
+  (interactive)
+  (when (region-active-p) (deactivate-mark))
+  (forward-line (max 1 (/ (window-body-height) 2)))
+  (recenter))
 
 (defun my/scroll-half-page-up ()
-  "Vim `C-b' feel: scroll up half a window, recentering."
-  (interactive) (forward-line (- (max 1 (/ (window-body-height) 2)))) (recenter))
+  "Scroll up half a window. Cancels any active selection first."
+  (interactive)
+  (when (region-active-p) (deactivate-mark))
+  (forward-line (- (max 1 (/ (window-body-height) 2))))
+  (recenter))
 
 ;; Make `consult-line' feed meow's search ring, so after `/' you can repeat the
 ;; same query with n/N (`meow-search') -- consult-line is otherwise a one-shot
@@ -145,9 +155,6 @@ Built-in commenting -- no package needed; comments respect the major mode."
        (t (skip-syntax-backward "^w " (line-beginning-position))))
       (delete-region (point) beg)))))
 
-;; Vim `gv': remember each region as it is deactivated, so it can be restored
-;; after an accidental exit.  Direction is preserved (mark/point), and it comes
-;; back as a normal selection -- c/d/y act on it, H/J/K/L extend, h/j/k/l cancel.
 (defvar-local my/meow-last-selection nil
   "Bounds (MARK . POINT) of the most recent region in this buffer.")
 
@@ -170,6 +177,13 @@ time `(mark)' no longer points at the selection's start."
                      (cdr my/meow-last-selection))
                     t)                     ; activate the mark (region)
     (user-error "No selection to restore")))
+
+(defun my/clear-mark-ring ()
+  "Clear this buffer's mark ring (and the global mark ring)."
+  (interactive)
+  (setq mark-ring nil
+        global-mark-ring nil)
+  (message "Mark ring cleared"))
 
 (defun my/open-dashboard ()
   "Show the dashboard in the current window."
@@ -284,7 +298,7 @@ With no region, insert the pair and enter insert state between them."
    '("k" . meow-prev)
    '("/" . consult-line)
    '("i" . meow-temp-normal)
-   '("<escape>" . keyboard-quit))
+   '("<escape>" . ignore))
   (setq meow-selection-command-fallback
         '((meow-change . meow-change-char)
           (meow-cancel-selection . ignore)
@@ -332,8 +346,7 @@ With no region, insert the pair and enter insert state between them."
    '("E" . meow-next-symbol)
    '("f" . meow-find-expand)
    '("F" . (lambda () (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find-expand))))
-   '("g" . my/meow-g-prefix)
-   '("G" . end-of-buffer)
+   '("g" . meow-cancel-selection)
    '("h" . meow-left)
    '("H" . meow-left-expand)
    '("i" . meow-insert)
@@ -376,7 +389,7 @@ With no region, insert the pair and enter insert state between them."
    '("{" . my/meow-surround-brace)
    '("\"" . my/meow-surround-quote)
    '("`" . my/meow-surround-backtick)
-   '("<escape>" . keyboard-quit)))
+   '("<escape>" . ignore)))
 
 ;;; vim `g' prefix --------------------------------------------------
 ;; `g' is a prefix (was bare `meow-cancel-selection' -- ESC still cancels).
@@ -447,28 +460,21 @@ With no region, insert the pair and enter insert state between them."
   ;; map, so they fire in every state — including motion-state buffers like the
   ;; dashboard, and insert state.
   (define-key global-map (kbd "s-x") #'execute-extended-command)
+  ;; Right-hand M-x: once your right hand is on Hyper (right-Cmd) for H-<n>
+  ;; workspaces, H-x is in reach — left hand taps `x'.
+  (define-key global-map (kbd "H-x") #'execute-extended-command)
   (define-key global-map (kbd "s-!") #'shell-command)
   (define-key global-map (kbd "s-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
-  (define-key global-map (kbd "C-x C-x") #'my/meow-reselect) ; vim `gv' reselect (was V)
+  (define-key global-map (kbd "C-x r") #'my/meow-reselect) ; vim `gv' reselect (was V)
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
-  ;; (setq meow--kbd-kill-line "C-S-k")
-  ;; (define-key global-map (kbd "C-S-k") #'kill-line)
-  ;; Scroll lives on C-u/C-d (vim half-page) below.  C-u has no meow internal
-  ;; use, but meow-delete acts by *executing* `meow--kbd-delete-char' (default
-  ;; C-d), so redirect that macro to C-S-d -- else C-d scrolls instead of
-  ;; deleting.  (C-f/C-b stay meow's default forward/backward-char, driving h/l.)
-  ;; Same key-hijack pattern as meow--kbd-kill-line above.
+
   (setq meow--kbd-delete-char "C-S-d")
   (define-key global-map (kbd "C-S-d") #'delete-char)
   (dolist (km (list meow-normal-state-keymap meow-motion-state-keymap))
     (define-key km (kbd "C-u") #'my/scroll-half-page-up)
     (define-key km (kbd "C-d") #'my/scroll-half-page-down))
-  ;; Insert state is for editing, not window nav: shadow the global C-h/j/k/l
-  ;; windmove with insert-mode editing.  C-h/C-w/C-k = delete char/word/to-eol
-  ;; (vim insert trio); C-j newline, C-l recenter.  Nav stays on normal/motion.
+
   (define-key meow-insert-state-keymap (kbd "C-h") #'backward-delete-char)
-  (define-key meow-insert-state-keymap (kbd "C-j") #'electric-newline-and-maybe-indent)
-  (define-key meow-insert-state-keymap (kbd "C-k") #'kill-line)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
   (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word))
 
@@ -540,6 +546,7 @@ BINDINGS are KEY COMMAND pairs."
   "S" #'consult-line-multi
   "p" #'consult-ripgrep
   "m" #'consult-mark
+  "M" #'my/clear-mark-ring
   "d" #'consult-flymake
   "f" #'isearch-forward
   "b" #'isearch-backward)
@@ -574,7 +581,7 @@ BINDINGS are KEY COMMAND pairs."
 (my/leader-prefix "k" "code"
   "d" #'xref-find-definitions
   "D" #'xref-find-references
-  "," #'xref-go-back                     ; was M-, (now embrace)
+  "," #'xref-go-back
   "a" #'eglot-code-actions
   "n" #'eglot-rename
   "i" #'eglot-find-implementation
@@ -589,8 +596,6 @@ BINDINGS are KEY COMMAND pairs."
   "b" #'eval-buffer)
 
 (my/leader-prefix "w" "window"
-  "\\" #'my/split-right-follow
-  "-"  #'my/split-below-follow
   "c"  #'delete-window
   "o"  #'delete-other-windows
   "w"  #'ace-window
@@ -647,7 +652,8 @@ BINDINGS are KEY COMMAND pairs."
 
 (my/leader-prefix "q" "quit"
   "q" #'save-buffers-kill-terminal
-  "f" #'my/delete-frame-confirm)
+  "f" #'my/delete-frame-confirm
+  "r" #'my/reload-config)
 
 (provide 'meow-rcp)
 
