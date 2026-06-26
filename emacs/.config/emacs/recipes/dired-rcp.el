@@ -43,7 +43,9 @@
   :init (dirvish-override-dired-mode)
   :commands (dirvish dirvish-dwim my/dirvish-org)
   :custom
-  (dirvish-attributes '(file-size))
+  ;; Doom/minibuffer look: nerd icon on the left, perms + size + mtime columns on
+  ;; the right.  `nerd-icons' auto-loads dirvish-icons.
+  (dirvish-attributes '(nerd-icons file-modes file-size file-time))
   (dirvish-reuse-session 'open)
   (dirvish-default-layout '(1 0.16 0.5))
   (dirvish-quick-access-entries

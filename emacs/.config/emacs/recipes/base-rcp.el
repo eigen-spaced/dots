@@ -140,7 +140,13 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   (which-key-add-column-padding 3)       ; breathing room between columns (doom-ish)
   (which-key-separator "  ")
   (which-key-min-display-lines 2)
-  :init (which-key-mode 1))
+  ;; Size the popup by real pixels, not whole lines -- otherwise the line-spacing
+  ;; below isn't counted and the bottom row clips.
+  (which-key-allow-imprecise-window-fit nil)
+  :init (which-key-mode 1)
+  :config
+  (add-hook 'which-key-init-buffer-hook
+            (lambda () (setq-local line-spacing 6))))
 
 (use-package window
   :ensure nil

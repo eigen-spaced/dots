@@ -36,7 +36,13 @@
 
 (use-package nerd-icons-completion
   :after marginalia
-  :config (nerd-icons-completion-mode))
+  :config
+  (nerd-icons-completion-mode)
+  ;; Icons only appear once this hooks marginalia's annotation pipeline. Add it
+  ;; for future toggles AND run it now -- marginalia-mode is already enabled, so
+  ;; its mode-hook won't fire again.
+  (add-hook 'marginalia-mode-hook #'nerd-icons-completion-marginalia-setup)
+  (nerd-icons-completion-marginalia-setup))
 
 ;; Darker background for UI buffers (minibuffer, popups, sidebars) vs file buffers.
 (use-package solaire-mode

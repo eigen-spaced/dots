@@ -470,9 +470,18 @@ With no region, insert the pair and enter insert state between them."
 
   (setq meow--kbd-delete-char "C-S-d")
   (define-key global-map (kbd "C-S-d") #'delete-char)
+  ;; `meow-page-down' internally does (key-binding "C-v") via `meow--kbd-scoll-up';
+  ;; we steal C-v for meow-to-block, so repoint that lookup at the PageDown key
+  ;; (also bound to `scroll-up-command') to keep meow-page-down working.
+  (setq meow--kbd-scoll-up "<next>")
   (dolist (km (list meow-normal-state-keymap meow-motion-state-keymap))
     (define-key km (kbd "C-u") #'my/scroll-half-page-up)
-    (define-key km (kbd "C-d") #'my/scroll-half-page-down))
+    (define-key km (kbd "C-d") #'my/scroll-half-page-down)
+    (define-key km (kbd "C-v")   #'meow-to-block)
+    (define-key km (kbd "C-S-v") #'meow-block))
+  ;; M-n/M-p mirror C-n/C-p (line down/up) but for the half page, in every state.
+  (define-key global-map (kbd "M-n") #'my/scroll-half-page-down)
+  (define-key global-map (kbd "M-p") #'my/scroll-half-page-up)
 
   (define-key meow-insert-state-keymap (kbd "C-h") #'backward-delete-char)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)

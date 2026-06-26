@@ -27,6 +27,15 @@
 (defface my/mode-line-modified
   '((t :inherit warning))
   "Mode-line face for the unsaved [+] indicator.")
+(defface my/mode-line-macro
+  '((t :inherit error :weight bold))
+  "Mode-line face for the macro-recording indicator (red).")
+
+(defvar my/mode-line-macro-record-icon
+  (if (fboundp 'nerd-icons-mdicon)
+      (nerd-icons-mdicon "nf-md-record" :face 'my/mode-line-macro)
+    (propertize "●" 'face 'my/mode-line-macro))
+  "Red dot shown while a kbd macro is being recorded or run.")
 
 (defun my/mode-line-buffer ()
   "Project-relative path + file name, with a [+] flag when unsaved."
@@ -43,6 +52,12 @@
                 (when (buffer-modified-p)
                   (propertize " [+]" 'face 'my/mode-line-modified))))
     (propertize (format-mode-line "%b") 'face 'my/mode-line-file)))
+
+(defun my/mode-line-macro ()
+  "A red dot while recording/running a kbd macro.
+Plain kmacro has no register name during recording, so the dot is all we show."
+  (when (or defining-kbd-macro executing-kbd-macro)
+    (concat my/mode-line-macro-record-icon " ")))
 
 (defun my/mode-line-vc ()
   "Current Git branch with an icon, or nil outside version control."
@@ -70,6 +85,7 @@
 
 (setq-default mode-line-format
               '("%e" mode-line-front-space
+                (:eval (my/mode-line-macro))
                 mode-line-modified " "
                 (:eval (my/mode-line-buffer))
                 (:eval (my/mode-line-vc))
