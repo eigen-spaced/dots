@@ -11,7 +11,7 @@ return {
           },
         },
       }
-      vim.cmd("colorscheme carbonfox")
+      vim.cmd("colorscheme duskfox")
     end,
   },
 

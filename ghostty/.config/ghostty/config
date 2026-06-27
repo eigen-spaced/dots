@@ -1,10 +1,10 @@
-theme = Carbonfox
+theme = Duskfox
 
 macos-titlebar-style = tabs
 
 # Font config
 font-family = "Cascadia Code NF"
-font-size = 17
+font-size = 18
 
 ## Keybinds
 keybind = alt+n=new_tab
