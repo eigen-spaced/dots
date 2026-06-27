@@ -7,20 +7,20 @@
 # `emacsclient -c' instead, which creates a proper, focused, themed client frame
 # (via server-after-make-frame-hook).
 #
-# Icon: built from bootstrap/emacs-icon.png if present (the bundled Emacs.icns is
-# legacy-format and renders blank on current macOS), else falls back to it.
+# Icon: mirrors the emacs-plus app's own icon (selected via
+# ~/.config/emacs-plus/build.yml — currently liquid-glass), copying its Tahoe
+# Assets.car so the applet gets the native icon with no white tile.
 # Idempotent; safe to re-run.
 set -euo pipefail
 
 [[ "$OSTYPE" == darwin* ]] || { echo "macOS-only — skipping Emacs launcher."; exit 0; }
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="/Applications/Emacs.app"
 EMACSCLIENT="/opt/homebrew/bin/emacsclient"
 
-# Icon source: prefer the repo PNG, else the installed emacs-plus icon.
-ICON_SRC="$SCRIPT_DIR/emacs-icon.png"
-[[ -f "$ICON_SRC" ]] || ICON_SRC="$(find /opt/homebrew/Cellar/emacs-plus* -name Emacs.icns 2>/dev/null | sort | tail -1)"
+# The emacs-plus app whose icon (chosen via ~/.config/emacs-plus/build.yml) we
+# mirror onto the launcher.
+SRC_APP="/opt/homebrew/opt/emacs-plus@31/Emacs.app"
 
 echo "Building Emacs Dock launcher at $APP ..."
 
@@ -49,29 +49,24 @@ done
 EOF
 chmod +x "$LAUNCHER"
 
-# 2. Build + install a modern, multi-resolution icns. (iconutil requires the
-#    staging directory to be named *.iconset.)
-if [[ -n "$ICON_SRC" && -f "$ICON_SRC" ]]; then
-    iset="$(mktemp -d)/icon.iconset"; mkdir -p "$iset"
-    # name:pixels — @2x entries are double their base size.
-    for spec in 16:icon_16x16 32:icon_16x16@2x 32:icon_32x32 64:icon_32x32@2x \
-                128:icon_128x128 256:icon_128x128@2x 256:icon_256x256 \
-                512:icon_256x256@2x 512:icon_512x512; do
-        px="${spec%%:*}"
-        sips -s format png -z "$px" "$px" "$ICON_SRC" --out "$iset/${spec##*:}.png" >/dev/null 2>&1
-    done
-    iconutil -c icns "$iset" -o "$APP/Contents/Resources/applet.icns"
-    rm -rf "$(dirname "$iset")"
-    # macOS 26's osacompile compiles the (generic) applet icon into an asset
-    # catalog that overrides CFBundleIconFile. Drop it so our applet.icns wins.
-    /usr/libexec/PlistBuddy -c 'Delete :CFBundleIconName' "$APP/Contents/Info.plist" 2>/dev/null || true
+# 2. Mirror the emacs-plus app's icon onto the applet. On Tahoe that means its
+#    Assets.car + CFBundleIconName (a plain .icns gets a white tile); the .icns is
+#    the pre-Tahoe fallback. osacompile leaves a generic Assets.car — replace it.
+if [[ -d "$SRC_APP" ]]; then
+    cp "$SRC_APP/Contents/Resources/Emacs.icns" "$APP/Contents/Resources/applet.icns" 2>/dev/null || true
     rm -f "$APP/Contents/Resources/Assets.car"
+    /usr/libexec/PlistBuddy -c 'Delete :CFBundleIconName' "$APP/Contents/Info.plist" 2>/dev/null || true
+    if [[ -f "$SRC_APP/Contents/Resources/Assets.car" ]]; then
+        cp "$SRC_APP/Contents/Resources/Assets.car" "$APP/Contents/Resources/Assets.car"
+        name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconName' "$SRC_APP/Contents/Info.plist" 2>/dev/null || echo Emacs)"
+        /usr/libexec/PlistBuddy -c "Add :CFBundleIconName string $name" "$APP/Contents/Info.plist"
+    fi
 else
-    echo "WARN: no icon source found — applet keeps the generic icon."
+    echo "WARN: $SRC_APP not found — applet keeps the generic icon."
 fi
 
 # 3. Re-sign ad-hoc (bundle contents changed).
-codesign --force --sign - "$APP" >/dev/null 2>&1 || true
+codesign --force --deep --sign - "$APP" >/dev/null 2>&1 || true
 
 # 4. Refresh icon / LaunchServices caches.
 lsreg=/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister

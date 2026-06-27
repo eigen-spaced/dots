@@ -2,35 +2,53 @@
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
-(use-package modus-themes)
+;; Theme packages -- switch any time with `SPC t t'.  modus-vivendi-tinted (Prot)
+;; is the active theme; ef-themes + doom-themes stay installed to switch to.
+(use-package modus-themes
+  :custom
+  (modus-themes-italic-constructs t)
+  (modus-themes-bold-constructs t)
+  (modus-themes-mixed-fonts t)
+  (modus-themes-org-blocks 'gray-background))
 
-;; pixel-themes builds on modus-themes; not on an ELPA archive, so install via :vc.
-;; bat preview colours are kept in sync in bat/themes/pixel-miri16.tmTheme.
-;; Kept installed (not the active theme) so `SPC t t' can switch back to it.
-(use-package pixel-themes
-  :vc (:url "https://github.com/lucasobx/pixel-themes" :rev :newest)
-  :config
-  (pixel-themes-mode 1))
+(use-package ef-themes)
 
-;; doom-themes (https://github.com/doomemacs/themes) -- doom-one is active.
-;; modus/pixel above stay installed; switch with `SPC t t'.
 (use-package doom-themes
   :custom
   (doom-themes-enable-bold t)
   (doom-themes-enable-italic t)
   :config
-  (load-theme 'doom-one t)
-  (doom-themes-org-config)
-  ;; On a daemon the theme loads before any GUI frame exists, so frame-dependent
-  ;; face attributes (notably the default background) never get set -- you get
-  ;; the theme's foreground on a white background.  Re-apply once a graphical
-  ;; frame is up, then drop the hook (same pattern as the dashboard reload).
-  (when (daemonp)
-    (defun my/theme-reapply-on-frame ()
-      (when (display-graphic-p)
-        (load-theme 'doom-one t)
-        (remove-hook 'server-after-make-frame-hook #'my/theme-reapply-on-frame)))
-    (add-hook 'server-after-make-frame-hook #'my/theme-reapply-on-frame)))
+  (doom-themes-org-config))
+
+;; doom-themes + Emacs 31 face-inheritance cycle (doomemacs/themes#875): Emacs 31
+;; now forbids cyclic :inherit and ERRORS while realizing the face, which aborts
+;; new GUI-frame creation -- emacsclient -c (the launcher, ⌘⌃ binds) then makes no
+;; frame.  The cycle: Emacs 31's `gnus-group-news-low' inherits
+;; `gnus-group-news-low-empty', which doom-themes points back at
+;; `gnus-group-news-low'.  We don't use gnus, so flatten the gnus-group faces'
+;; inheritance via a top-priority override after every `load-theme' (also guards
+;; switching to a doom theme).  Drop once doom-themes ships the fix (v2.4.0).
+(defun my/flatten-gnus-faces (&rest _)
+  (dolist (f (face-list))
+    (when (string-prefix-p "gnus-group-" (symbol-name f))
+      (ignore-errors
+        (face-spec-set f '((t :inherit unspecified)) 'face-override-spec)))))
+(advice-add 'load-theme :after #'my/flatten-gnus-faces)
+
+(defvar my/default-theme 'modus-vivendi-tinted
+  "Theme loaded at startup and re-applied on the first GUI frame.")
+(load-theme my/default-theme t)
+
+;; On a daemon the theme loads before any GUI frame exists, so frame-dependent
+;; face attributes (notably the default background) never get set -- you get the
+;; theme's foreground on a white background.  Re-apply once a graphical frame is
+;; up, then drop the hook (same pattern as the dashboard reload).
+(when (daemonp)
+  (defun my/theme-reapply-on-frame ()
+    (when (display-graphic-p)
+      (load-theme my/default-theme t)
+      (remove-hook 'server-after-make-frame-hook #'my/theme-reapply-on-frame)))
+  (add-hook 'server-after-make-frame-hook #'my/theme-reapply-on-frame))
 
 (use-package nerd-icons)
 

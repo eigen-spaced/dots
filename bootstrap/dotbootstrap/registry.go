@@ -58,8 +58,8 @@ func registry(repo string) []item {
 		{"Apps (casks)", "Hammerspoon", "scriptable macOS hotkeys", "brew install --cask hammerspoon", "[ -d /Applications/Hammerspoon.app ]", true},
 
 		// --- Emacs ----------------------------------------------------------
-		{"Emacs", "emacs-plus@30", "native-comp Emacs built from source",
-			"brew install d12frosted/emacs-plus/emacs-plus@30", have("emacs"), false},
+		{"Emacs", "emacs-plus@31", "native-comp Emacs built from source",
+			"brew install d12frosted/emacs-plus/emacs-plus@31", have("emacs"), false},
 		{"Emacs", "Emacs daemon agent", "launchd agent: emacs --fg-daemon at login", emacsDaemonCmd,
 			`[ -f "$HOME/Library/LaunchAgents/com.sunny.emacs-daemon.plist" ]`, false},
 		{"Emacs", "Emacs Dock launcher", "/Applications/Emacs.app applet (emacsclient -c)",
