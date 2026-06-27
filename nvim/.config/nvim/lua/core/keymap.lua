@@ -103,6 +103,3 @@ keymap.set(
   [[:vsp <C-R>=expand("%:p:h") . "/" <CR>]],
   { silent = false }
 )
-
--- keymap.set("n", "<leader>e", [[ <cmd>Lex! %:p:h | vertical resize 40<CR> ]], { silent = true })
-keymap.set("n", "ex", [[ <cmd>Lex!<CR> ]], { silent = true })

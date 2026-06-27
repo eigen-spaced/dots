@@ -8,16 +8,17 @@ return {
     require("mini.misc").setup()
 
     require("mini.files").setup()
-    vim.keymap.set("n", "<leader>.", function()
+    vim.keymap.set("n", "-", function()
       MiniFiles.open()
     end, { desc = "Open MiniFiles" })
 
     local pick = require("mini.pick")
     pick.setup {
-      -- fzf-lua muscle memory: C-j/C-k move the selection.
       mappings = {
-        move_down = "<C-j>",
-        move_up = "<C-k>",
+        -- move_down = "<C-j>",
+        move_down = "<C-n>",
+        -- move_up = "<C-k>",
+        move_up = "<C-p>",
       },
     }
 

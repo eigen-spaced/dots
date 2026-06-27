@@ -70,17 +70,33 @@ for mode, color in pairs {
   Pending = palette.carpYellow,
   Visual = palette.oniViolet,
 } do
-  statusline_groups["StatuslineMode" .. mode] = { fg = palette.sumiInk2, bg = color }
-  statusline_groups["StatuslineModeSeparator" .. mode] = { fg = color, bg = palette.sumiInk2 }
+  statusline_groups["StatuslineMode" .. mode] =
+    { fg = palette.sumiInk2, bg = color }
+  statusline_groups["StatuslineModeSeparator" .. mode] =
+    { fg = color, bg = palette.sumiInk2 }
 end
 
-statusline_groups["Filename"] = { fg = palette.sumiInk2, bg = palette.springViolet1 }
-statusline_groups["FilenameSeperator"] = { fg = palette.springViolet1, bg = palette.sumiInk2 }
+statusline_groups["Filename"] =
+  { fg = palette.sumiInk2, bg = palette.springViolet1 }
+statusline_groups["FilenameSeperator"] =
+  { fg = palette.springViolet1, bg = palette.sumiInk2 }
 
 statusline_groups = vim.tbl_extend("error", statusline_groups, {
-  StatuslineItalic = { fg = palette.fujiWhite, bg = palette.sumiInk2, italic = true },
-  StatuslineSpinner = { fg = palette.springGreen, bg = palette.sumiInk2, bold = true },
-  StatuslineTitle = { fg = palette.fujiWhite, bg = palette.sumiInk2, bold = true },
+  StatuslineItalic = {
+    fg = palette.fujiWhite,
+    bg = palette.sumiInk2,
+    italic = true,
+  },
+  StatuslineSpinner = {
+    fg = palette.springGreen,
+    bg = palette.sumiInk2,
+    bold = true,
+  },
+  StatuslineTitle = {
+    fg = palette.fujiWhite,
+    bg = palette.sumiInk2,
+    bold = true,
+  },
 })
 
 local groups = vim.tbl_extend("error", statusline_groups, {})
