@@ -72,23 +72,12 @@
    '((error   "" compilation-error)
      (warning "" compilation-warning)
      (note    "" compilation-info)))
-  (flymake-no-changes-timeout 0.5)
-  :config
-  ;; Bump the margin glyph size to sit closer to the bookmark icon: re-face each
-  ;; margin string (keeping the user's literal glyph) with a taller face that
-  ;; still inherits the original colour.  flymake renders the glyph as
-  ;; `(:inherit (FACE default))', so a relative `:height' on FACE scales it.
-  (defface my/flymake-margin-error '((t :inherit compilation-error :height 1.15))
-    "Taller margin glyph for flymake errors.")
-  (defface my/flymake-margin-warning '((t :inherit compilation-warning :height 1.15))
-    "Taller margin glyph for flymake warnings.")
-  (defface my/flymake-margin-note '((t :inherit compilation-info :height 1.15))
-    "Taller margin glyph for flymake notes.")
-  (dolist (spec '((flymake-error   . my/flymake-margin-error)
-                  (flymake-warning . my/flymake-margin-warning)
-                  (flymake-note    . my/flymake-margin-note)))
-    (when-let* ((cur (get (car spec) 'flymake-margin-string)))
-      (put (car spec) 'flymake-margin-string (list (car cur) (cdr spec))))))
+  ;; Glyphs render at natural size: the left margin is one column wide
+  ;; (= `frame-char-width', ~11px) and `flymake-autoresize-margins' keeps it
+  ;; there, so a scaled-up glyph (:height > 1.0) overflows and gets clipped on the
+  ;; right.  For bigger glyphs you'd need `flymake-autoresize-margins' nil + a
+  ;; 2-column `left-margin-width' (which adds a gap before the code).
+  (flymake-no-changes-timeout 0.5))
 
 ;; Workspace symbol search (replaces consult-lsp); file symbols stay on
 ;; consult-imenu (C-c s i, completion-rcp).
