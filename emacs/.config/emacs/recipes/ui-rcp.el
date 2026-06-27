@@ -2,8 +2,8 @@
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
-;; Theme packages -- switch any time with `SPC t t'.  modus-vivendi-tinted (Prot)
-;; is the active theme; ef-themes + doom-themes stay installed to switch to.
+;; Theme packages -- switch any time with `SPC t t'.  ef-dream (Prot's ef-themes)
+;; is the active theme; modus-themes + doom-themes stay installed to switch to.
 (use-package modus-themes
   :custom
   (modus-themes-italic-constructs t)
@@ -35,7 +35,7 @@
         (face-spec-set f '((t :inherit unspecified)) 'face-override-spec)))))
 (advice-add 'load-theme :after #'my/flatten-gnus-faces)
 
-(defvar my/default-theme 'modus-vivendi-tinted
+(defvar my/default-theme 'ef-dream
   "Theme loaded at startup and re-applied on the first GUI frame.")
 (load-theme my/default-theme t)
 

@@ -117,7 +117,7 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
    ("C-h"  . windmove-left)
    ("C-l"  . windmove-right)
    ("C-q"  . delete-window)
-   ("s-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
+   ("M-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
    ("C-x C-r" . my/eval-region)         ; eval the region + echo (was find-file-read-only)
    ("C-."     . find-file)              ; same as the `SPC .' leader
    ("C-,"     . persp-switch-to-buffer*)

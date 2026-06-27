@@ -52,7 +52,7 @@ _comp_options+=(globdots)    # let completion see hidden files
 # --- Modular config (loader helpers + utility funcs come first) -------------
 source "$ZDOTDIR/zsh-functions"
 
-zsh_add_file "zsh-vim"
+# zsh_add_file "zsh-vim"
 zsh_add_file "zsh-aliases"
 [[ -n $IS_MAC  ]] && zsh_add_file "zsh-aliases-mac"
 [[ -n $IS_ARCH ]] && zsh_add_file "zsh-aliases-arch"
@@ -92,3 +92,13 @@ export PIP_REQUIRE_VIRTUALENV=true
 [[ -f "$HOME/.zshrc-personal" ]] && source "$HOME/.zshrc-personal"
 
 eval "$(zoxide init zsh)"
+
+# --- Misc -------------------------------------------------------------------
+if command -v nvim >/dev/null 2>&1; then
+    export MANPAGER='nvim +Man!'
+elif command -v less >/dev/null 2>&1; then
+    export MANPAGER='less --incsearch'
+else
+    unset MANPAGER
+fi
+

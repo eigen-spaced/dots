@@ -22,13 +22,14 @@
                             (left-fringe . 8)
                             (right-fringe . 8)))
 
-;; Right-side modifiers, two-handed by design (left hand on the number/letter,
-;; right hand on the modifier):
-;;   right-Cmd    = Hyper -> H-<n> workspaces, H-x M-x
-;;   right-Option = Alt   -> A-<n> javelin   (was a redundant Meta; left-Option
-;;                                            stays Meta, left-Cmd stays super)
+;;   left-Cmd     = Meta  -> M-x, M-!, M-%, M-w …
+;;   left-Option  = super -> free layer for personal global binds
+;;   right-Cmd    = Hyper -> H-<n> workspaces, H-x
+;;   right-Option = Alt   -> A-<n> javelin
 (when (eq system-type 'darwin)
-  (setq ns-right-command-modifier 'hyper
+  (setq ns-command-modifier 'meta
+        ns-option-modifier 'super
+        ;; ns-right-command-modifier 'hyper
         ns-right-option-modifier 'alt))
 
 ;; lsp-mode uses plists (not hash tables) for server messages = less GC.  Read

@@ -27,15 +27,6 @@
            (new (if (eq c (downcase c)) (upcase c) (downcase c))))
       (delete-char 1) (insert-char new))))
 
-(defun my/meow-append ()
-  "Vim `a': append after the selection; with none, insert *after* the char at
-point (not at point, which is what bare `meow-append' does)."
-  (interactive)
-  (if (region-active-p)
-      (call-interactively #'meow-append)
-    (unless (eolp) (forward-char 1))
-    (meow-insert)))
-
 (defun my/meow-substitute-line ()
   "Vim `S'/`cc': change the whole line, keeping its indentation.
 With a region, change every line it spans."
@@ -416,7 +407,7 @@ nearest such pair ahead on the line (so meow's own inner/bounds then selects it)
    '("@" . kmacro-end-or-call-macro)
    '("0" . beginning-of-visual-line)
    '("$" . end-of-visual-line)
-   '("a" . my/meow-append)
+   '("a" . meow-append)
    '("A" . (lambda () (interactive) (end-of-line) (meow-insert)))
    '("b" . meow-back-word)
    '("B" . meow-back-symbol)
@@ -429,6 +420,7 @@ nearest such pair ahead on the line (so meow's own inner/bounds then selects it)
    '("f" . meow-find-expand)
    '("F" . (lambda () (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-find-expand))))
    '("g" . meow-cancel-selection)
+   '("G" . meow-grab)
    '("h" . meow-left)
    '("H" . meow-left-expand)
    '("i" . meow-insert)
@@ -527,15 +519,8 @@ nearest such pair ahead on the line (so meow's own inner/bounds then selects it)
     (meow--which-key-describe-keymap)))
 
 (with-eval-after-load 'meow
-  ;; Super-key twins for M-x / M-! bound in the GLOBAL map, not a meow state
-  ;; map, so they fire in every state — including motion-state buffers like the
-  ;; dashboard, and insert state.
-  (define-key global-map (kbd "s-x") #'execute-extended-command)
-  ;; Right-hand M-x: once your right hand is on Hyper (right-Cmd) for H-<n>
-  ;; workspaces, H-x is in reach — left hand taps `x'.
   (define-key global-map (kbd "H-x") #'execute-extended-command)
-  (define-key global-map (kbd "s-!") #'shell-command)
-  (define-key global-map (kbd "s-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
+  (define-key global-map (kbd "M-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
   (define-key global-map (kbd "C-c r") #'my/meow-reselect) ; vim `gv' reselect
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
 
@@ -550,9 +535,8 @@ nearest such pair ahead on the line (so meow's own inner/bounds then selects it)
     (define-key km (kbd "C-d") #'my/scroll-half-page-down)
     (define-key km (kbd "C-v")   #'meow-to-block)
     (define-key km (kbd "C-S-v") #'meow-block))
-  ;; M-n/M-p mirror C-n/C-p (line down/up) but for the half page, in every state.
-  (define-key global-map (kbd "M-n") #'my/scroll-half-page-down)
-  (define-key global-map (kbd "M-p") #'my/scroll-half-page-up)
+  (define-key global-map (kbd "M-S-n") #'my/scroll-half-page-down)
+  (define-key global-map (kbd "M-S-p") #'my/scroll-half-page-up)
 
   (define-key meow-insert-state-keymap (kbd "C-h") #'backward-delete-char)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)

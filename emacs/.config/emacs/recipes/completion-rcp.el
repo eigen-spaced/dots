@@ -51,6 +51,30 @@
    consult-fd consult-find consult-recent-file
    :preview-key '(:debounce 0.4 any)))
 
+;; consult-imenu narrow-key + face per LSP kind (pairs with the by-kind index in
+;; eglot-rcp).  Deferred: `consult-imenu-config' is defined when consult-imenu loads.
+(with-eval-after-load 'consult-imenu
+  (let ((types '((?f "Function"      font-lock-function-name-face)
+                 (?m "Method"        font-lock-function-name-face)
+                 (?o "Constructor"   font-lock-function-name-face)
+                 (?v "Variable"      font-lock-variable-name-face)
+                 (?F "Field"         font-lock-variable-name-face)
+                 (?p "Property"      font-lock-variable-name-face)
+                 (?C "Constant"      font-lock-constant-face)
+                 (?E "EnumMember"    font-lock-constant-face)
+                 (?c "Class"         font-lock-type-face)
+                 (?s "Struct"        font-lock-type-face)
+                 (?i "Interface"     font-lock-type-face)
+                 (?n "Namespace"     font-lock-type-face)
+                 (?M "Module"        font-lock-type-face)
+                 (?e "Enum"          font-lock-type-face)
+                 (?t "TypeParameter" font-lock-type-face))))
+    (dolist (mode '(c-ts-mode c++-ts-mode rust-ts-mode go-ts-mode
+                              python-ts-mode python-mode js-ts-mode
+                              typescript-ts-mode tsx-ts-mode))
+      (add-to-list 'consult-imenu-config
+                   `(,mode :toplevel "Function" :types ,types)))))
+
 (use-package consult-dir
   :ensure t
   :commands (consult-dir consult-dir-jump-file)

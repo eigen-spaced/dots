@@ -6,6 +6,8 @@ macos-titlebar-style = tabs
 font-family = "Cascadia Code NF"
 font-size = 18
 
+macos-option-as-alt = true
+
 ## Keybinds
 keybind = alt+n=new_tab
 keybind = alt+h=previous_tab
