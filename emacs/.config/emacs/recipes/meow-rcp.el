@@ -47,7 +47,7 @@ With a region, change every line it spans."
     (back-to-indentation) (kill-line) (meow-insert)))
 
 (defun my/meow-comment ()
-  "Vim `gc': toggle comments on the active region, else the current line.
+  "Toggle comments on the active region, else the current line.
 Built-in commenting -- no package needed; comments respect the major mode."
   (interactive)
   (if (use-region-p)
@@ -243,29 +243,6 @@ is outside any project (or the buffer name when it visits no file)."
             (file-relative-name file root)
           file)))))
 
-(defun my/meow-ex (line)
-  "Minimal vim ex command line; LINE is what you type after `:'.
-Handles w wq x q q! qa qa! wqa e e! `:N' goto-line and `[%]s/PAT/REP/[flags]'."
-  (interactive (list (read-string ":" nil 'my/meow-ex-history)))
-  (setq line (string-trim line))
-  (cond
-   ((string-empty-p line))
-   ((string-match-p "\\`[0-9]+\\'" line)
-    (goto-char (point-min)) (forward-line (1- (string-to-number line))))
-   ((string-match-p "\\`%?s[^[:alnum:]]" line) (my/meow-ex--substitute line))
-   ((string-prefix-p "e " line) (find-file (string-trim (substring line 1))))
-   (t (pcase line
-        ((or "w" "w!")                (save-buffer)
-         (message "\"%s\" written" (my/buffer-display-path)))
-        ((or "wq" "wq!" "x" "xit")    (save-buffer) (my/meow-quit-buffer))
-        ("q"                          (my/meow-quit-buffer))
-        ("q!"                         (set-buffer-modified-p nil) (my/meow-quit-buffer))
-        ((or "e" "e!" "edit" "edit!") (revert-buffer t t))
-        ((or "wqa" "wqa!" "xa" "xa!") (save-some-buffers t) (save-buffers-kill-terminal))
-        ("qa"                         (save-buffers-kill-terminal))
-        ("qa!"                        (kill-emacs))
-        (_ (user-error "Unknown ex command: :%s" line))))))
-
 (defun my/meow-surround (open close)
   "Wrap the active region with OPEN and CLOSE.
 With no region, insert the pair and enter insert state between them."
@@ -286,6 +263,111 @@ With no region, insert the pair and enter insert state between them."
 (my/meow-define-surround my/meow-surround-brace    "{" "}")
 (my/meow-define-surround my/meow-surround-quote    "\"" "\"")
 (my/meow-define-surround my/meow-surround-backtick "`" "`")
+
+;;; vim-style ci/ca reach for ,/. ----------------------------------
+;; Keep meow's `,'/`.' thing dispatch intact (s square, r round, c curly, g
+;; string, e symbol, ...).  Add vim's ci"/ca( reach: for a *pair* thing, if point
+;; isn't already inside such a pair, first jump into the nearest one ahead on the
+;; line, then hand the same thing-char back to meow -- so `, s'/`. r' selects
+;; whether or not you're inside, and meow's normal selection/expand is untouched.
+
+(defun my/meow--match-forward (open close from)
+  "From FROM, return the position of the CLOSE matching an already-open level."
+  (save-excursion
+    (goto-char from)
+    (let ((depth 0)
+          (re (regexp-opt (list (char-to-string open) (char-to-string close))))
+          result)
+      (while (and (not result) (re-search-forward re nil t))
+        (let ((c (char-before)))
+          (cond ((eq c open)  (setq depth (1+ depth)))
+                ((eq c close) (if (zerop depth) (setq result (1- (point)))
+                                (setq depth (1- depth)))))))
+      result)))
+
+(defun my/meow--bracket-inner (open close)
+  "Inner (BEG . END) of the nearest OPEN…CLOSE pair, or nil.
+Prefer the pair enclosing point (handles nesting), else the next on the line."
+  (let ((pt (point)))
+    (or
+     (save-excursion
+       (let ((depth 0)
+             (re (regexp-opt (list (char-to-string open) (char-to-string close))))
+             ob)
+         (while (and (not ob) (re-search-backward re nil t))
+           (cond ((eq (char-after) close) (setq depth (1+ depth)))
+                 ((eq (char-after) open)  (if (zerop depth) (setq ob (point))
+                                            (setq depth (1- depth))))))
+         (when ob
+           (let ((cb (my/meow--match-forward open close (1+ ob))))
+             (when (and cb (< ob pt) (<= pt cb)) (cons (1+ ob) cb))))))
+     (save-excursion
+       (when (search-forward (char-to-string open) (line-end-position) t)
+         (let ((ob (1- (point)))
+               (cb (my/meow--match-forward open close (point))))
+           (when cb (cons (1+ ob) cb))))))))
+
+(defun my/meow--quote-inner (q)
+  "Inner (BEG . END) of the nearest Q…Q pair on the current line, or nil."
+  (let* ((pt (point)) (eol (line-end-position)) (qs (char-to-string q))
+         (positions '()))
+    (save-excursion
+      (goto-char (line-beginning-position))
+      (while (search-forward qs eol t)
+        (unless (eq (char-before (1- (point))) ?\\)   ; skip \" escapes
+          (push (1- (point)) positions))))
+    (setq positions (nreverse positions))
+    (let ((pairs '()))
+      (while (and positions (cdr positions))
+        (push (cons (car positions) (cadr positions)) pairs)
+        (setq positions (cddr positions)))
+      (setq pairs (nreverse pairs))
+      (when-let* ((hit (or (seq-find (lambda (p) (and (< (car p) pt) (<= pt (cdr p)))) pairs)
+                           (seq-find (lambda (p) (>= (car p) pt)) pairs))))
+        (cons (1+ (car hit)) (cdr hit))))))
+
+(defun my/meow--pair-inner (open close)
+  "Inner bounds of the nearest OPEN…CLOSE pair (quotes when OPEN = CLOSE)."
+  (if (eq open close) (my/meow--quote-inner open)
+    (my/meow--bracket-inner open close)))
+
+(defun my/meow--string-inner ()
+  "Inner bounds of the nearest \"…\"/'…'/`…` on the line, or nil."
+  (let ((pt (point)) best)
+    (dolist (q '(?\" ?' ?`) best)
+      (when-let* ((b (my/meow--quote-inner q)))
+        (when (or (null best) (< (abs (- (car b) pt)) (abs (- (car best) pt))))
+          (setq best b))))))
+
+(defun my/meow--thing-pair (ch)
+  "Inner-bounds finder for meow thing char CH when it names a pair, else nil."
+  (pcase (alist-get ch meow-char-thing-table)
+    ('round  (lambda () (my/meow--pair-inner ?\( ?\))))
+    ('square (lambda () (my/meow--pair-inner ?\[ ?\])))
+    ('curly  (lambda () (my/meow--pair-inner ?{  ?})))
+    ('string #'my/meow--string-inner)))
+
+(defun my/meow--reach (ch)
+  "If thing char CH is a pair and point isn't inside one, move point into the
+nearest such pair ahead on the line (so meow's own inner/bounds then selects it)."
+  (when-let* ((finder (my/meow--thing-pair ch))
+              (inner  (funcall finder)))
+    (unless (<= (car inner) (point) (cdr inner))
+      (goto-char (car inner)))))
+
+(defun my/meow-inner-nearest ()
+  "`meow-inner-of-thing' (`,') that reaches the nearest pair when point is outside it."
+  (interactive)
+  (let ((thing (meow-thing-prompt "Inner of: ")))
+    (my/meow--reach thing)
+    (meow-inner-of-thing thing)))
+
+(defun my/meow-bounds-nearest ()
+  "`meow-bounds-of-thing' (`.') that reaches the nearest pair when point is outside it."
+  (interactive)
+  (let ((thing (meow-thing-prompt "Bounds of: ")))
+    (my/meow--reach thing)
+    (meow-bounds-of-thing thing)))
 
 ;;; meow keymaps ----------------------------------------------------
 
@@ -323,8 +405,8 @@ With no region, insert the pair and enter insert state between them."
    '("!" . revert-buffer-quick)
    '(";" . meow-reverse)
    '(":" . my/meow-ex)
-   '("," . meow-inner-of-thing)
-   '("." . meow-bounds-of-thing)
+   '("," . my/meow-inner-nearest)
+   '("." . my/meow-bounds-nearest)
    '("[" . meow-beginning-of-thing)
    '("]" . meow-end-of-thing)
    '("/" . consult-line)
@@ -390,17 +472,6 @@ With no region, insert the pair and enter insert state between them."
    '("\"" . my/meow-surround-quote)
    '("`" . my/meow-surround-backtick)
    '("<escape>" . ignore)))
-
-;;; vim `g' prefix --------------------------------------------------
-;; `g' is a prefix (was bare `meow-cancel-selection' -- ESC still cancels).
-;; `gb' rehouses `meow-block' (vim `S' took its old key).
-(define-prefix-command 'my/meow-g-prefix)
-(let ((m my/meow-g-prefix))
-  (define-key m "g" #'beginning-of-buffer)   ; gg -> top of buffer
-  (define-key m "e" #'end-of-buffer)         ; ge -> end of buffer (also G)
-  (define-key m "h" #'mwim-beginning)        ; gh -> smart line start (M-h)
-  (define-key m "l" #'mwim-end)              ; gl -> smart line end   (M-l)
-  (define-key m "b" #'meow-block))           ; gb -> select block (old S)
 
 (use-package meow
   :demand t
