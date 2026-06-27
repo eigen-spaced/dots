@@ -118,7 +118,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
     (letrec ((hook (lambda ()
                      (remove-hook 'eww-after-render-hook hook)
                      (ignore-errors (eww-readable))
-                     (when-let ((win (get-buffer-window (current-buffer))))
+                     (when-let* ((win (get-buffer-window (current-buffer))))
                        (delete-other-windows win)))))
       (add-hook 'eww-after-render-hook hook))
     (eww url)))

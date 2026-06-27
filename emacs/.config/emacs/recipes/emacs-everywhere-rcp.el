@@ -3,9 +3,6 @@
 ;; focused text field of whatever app is frontmost into a dedicated Emacs frame;
 ;; C-c C-c (or finishing) sends the edited text back and dismisses the frame.
 ;;
-;; macOS needs Emacs granted Accessibility + Automation ("control System
-;; Events") on first use -- accept the prompt, or copy-in / paste-back can't
-;; reach the source app.
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
@@ -16,7 +13,7 @@
   (emacs-everywhere-frame-parameters '((name          . "emacs-everywhere")
                                        (window-system . ns)
                                        (fullscreen    . nil)
-                                       (width         . 100)
+                                       (width         . 90)
                                        (height        . 30)))
   :config
   ;; --- macOS osascript helpers ----------------------------------------
@@ -57,7 +54,35 @@
         (mapcar (lambda (h) (if (eq h 'emacs-everywhere-set-frame-position)
                                 #'my/emacs-everywhere-center-frame h))
                 (remq 'emacs-everywhere-insert-selection
-                      emacs-everywhere-init-hooks))))
+                      emacs-everywhere-init-hooks)))
+
+  ;; --- Keep the rest of Emacs out of the way --------------------------
+  ;; `emacs-everywhere' spawns `emacsclient -c', and a fresh client frame on
+  ;; macOS activates the whole app -- so every existing Emacs frame surfaces
+  ;; alongside the popup (`my/capture-frame' sidesteps this with an in-process
+  ;; `make-frame').  Hide the other frames just before the popup is spawned and
+  ;; restore them as it finishes, so only the emacs-everywhere frame shows.
+  (defvar my/emacs-everywhere--hidden-frames nil)
+  (defun my/emacs-everywhere-hide-others (&rest _)
+    (setq my/emacs-everywhere--hidden-frames
+          (seq-filter #'frame-visible-p (frame-list)))
+    (dolist (f my/emacs-everywhere--hidden-frames)
+      (make-frame-invisible f t)))
+  (defun my/emacs-everywhere-restore-others (&rest _)
+    ;; Show, then immediately order to the back: `emacs-everywhere-finish' next
+    ;; refocuses the source app, so we want these visible-but-behind, not flashed
+    ;; to the front.
+    (dolist (f my/emacs-everywhere--hidden-frames)
+      (when (frame-live-p f) (make-frame-visible f) (lower-frame f)))
+    (setq my/emacs-everywhere--hidden-frames nil))
+  (defun my/emacs-everywhere--maybe-restore (frame)
+    "Safety net: restore if the popup frame is closed without finishing."
+    (when (and my/emacs-everywhere--hidden-frames
+               (equal (frame-parameter frame 'name) "emacs-everywhere"))
+      (my/emacs-everywhere-restore-others)))
+  (advice-add 'emacs-everywhere        :before #'my/emacs-everywhere-hide-others)
+  (advice-add 'emacs-everywhere-finish :before #'my/emacs-everywhere-restore-others)
+  (add-hook 'delete-frame-functions #'my/emacs-everywhere--maybe-restore))
 
 (provide 'emacs-everywhere-rcp)
 ;;; emacs-everywhere-rcp.el ends here

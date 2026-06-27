@@ -6,7 +6,7 @@
 ;; GNU ls (coreutils) — macOS BSD ls rejects our --group-directories-first /
 ;; --time-style flags, which makes every listing + preview retry (the scroll lag).
 ;; Absolute path so dirvish's preview subprocess finds it regardless of PATH.
-(when-let ((gls (executable-find "gls")))
+(when-let* ((gls (executable-find "gls")))
   (setq insert-directory-program gls))
 
 (defvar my/bat-program (executable-find "bat")

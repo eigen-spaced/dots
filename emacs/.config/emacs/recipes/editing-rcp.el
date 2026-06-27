@@ -37,7 +37,7 @@
   :commands (evilmi-jump-items-native))
 
 (use-package embrace
-  :bind ("C-," . embrace-commander)
+  :bind ("M-," . embrace-commander)
   ;; Drop the inverse-video "boxes" on the pair previews -> clean coloured text,
   ;; closer to meow's thing menu.
   :custom-face

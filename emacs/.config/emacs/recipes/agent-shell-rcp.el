@@ -19,8 +19,6 @@
 ;; so the anthropic entry point resolves once either command runs.
 (use-package agent-shell
   :commands (agent-shell agent-shell-anthropic-start-claude-code)
-  ;; `C-c n' only inside an agent shell -> spawn a fresh session (the
-  ;; `C-u M-x agent-shell' equivalent, since C-u is half-page-scroll in meow).
   :bind (:map agent-shell-mode-map
               ("C-c n" . agent-shell-new-shell)))
 

@@ -8,6 +8,7 @@ autosave/
 transient/
 var/
 .cache/
+.agent-shell/
 custom.el
 recentf
 history

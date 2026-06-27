@@ -120,7 +120,7 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
    ("s-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
    ("C-x C-r" . my/eval-region)         ; eval the region + echo (was find-file-read-only)
    ("C-."     . find-file)              ; same as the `SPC .' leader
-   ("M-,"     . persp-switch-to-buffer*)
+   ("C-,"     . persp-switch-to-buffer*)
    :map minibuffer-local-map
    ("C-w"  . backward-kill-word)))
 

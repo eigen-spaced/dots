@@ -57,5 +57,14 @@
 
 (set-face-attribute 'default nil :font "Cascadia Code NF" :height 180)
 
+;; macOS: blend the titlebar into the theme and force dark window chrome.
+;; Guard on the OS, not `window-system' -- on the daemon that's nil at load time
+;; (see the doom-themes note above), so a `(memq window-system ...)' check would
+;; skip these and emacsclient frames would miss them.  The ns- params are ignored
+;; off ns frames, so gating on darwin is safe.
+(when (eq system-type 'darwin)
+  (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+  (add-to-list 'default-frame-alist '(ns-appearance . dark)))
+
 (provide 'ui-rcp)
 ;;; ui-rcp.el ends here

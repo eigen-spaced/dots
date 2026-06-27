@@ -24,7 +24,7 @@
 
 (defun my/ghostel--root ()
   "Project root, or `default-directory' when outside a project."
-  (or (when-let ((p (project-current))) (project-root p)) default-directory))
+  (or (when-let* ((p (project-current))) (project-root p)) default-directory))
 
 (defvar my/ghostel-popup-buffer nil
   "The dedicated popup terminal buffer.

@@ -16,7 +16,7 @@ oldest-first ordering: s-1 is the first workspace, new ones append."
   "Basename of the current project root (fallback: current directory)."
   (file-name-nondirectory
    (directory-file-name
-    (or (when-let ((p (project-current))) (project-root p))
+    (or (when-let* ((p (project-current))) (project-root p))
         default-directory))))
 
 (defun my/persp--unique-name (base)

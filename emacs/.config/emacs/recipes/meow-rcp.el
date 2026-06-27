@@ -465,7 +465,7 @@ With no region, insert the pair and enter insert state between them."
   (define-key global-map (kbd "H-x") #'execute-extended-command)
   (define-key global-map (kbd "s-!") #'shell-command)
   (define-key global-map (kbd "s-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
-  (define-key global-map (kbd "C-x r") #'my/meow-reselect) ; vim `gv' reselect (was V)
+  (define-key global-map (kbd "C-c r") #'my/meow-reselect) ; vim `gv' reselect
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
 
   (setq meow--kbd-delete-char "C-S-d")

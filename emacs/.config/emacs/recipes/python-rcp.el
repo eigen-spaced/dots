@@ -14,7 +14,7 @@
   "Alist of project root -> venv path (activated) or the symbol `declined'.")
 
 (defun my/python--project-root ()
-  (or (when-let ((p (project-current))) (project-root p))
+  (or (when-let* ((p (project-current))) (project-root p))
       default-directory))
 
 (defun my/python--find-venv (root)
@@ -55,7 +55,7 @@ with the venv on PATH."
         (my/python-activate-venv (cdr decided)))
        (decided nil)                            ; declined before — stay quiet
        (t
-        (when-let ((venv (my/python--find-venv root)))
+        (when-let* ((venv (my/python--find-venv root)))
           (cond
            ;; Healthy venv — offer to activate.
            ((my/python--venv-usable-p venv)
