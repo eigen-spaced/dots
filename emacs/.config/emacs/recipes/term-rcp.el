@@ -5,6 +5,11 @@
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
+;; `ghostel-buffer-name' is a defcustom, so it only becomes special once ghostel
+;; loads.  Declare it special up front, else the `let' in `my/ghostel-popup' binds
+;; it lexically on the first (pre-load) call and ghostel never sees the value.
+(defvar ghostel-buffer-name)
+
 (use-package ghostel
   :commands (ghostel ghostel-project my/ghostel-popup my/ghostel-full))
 
@@ -44,7 +49,7 @@ A separate terminal from `my/ghostel-full' (distinct `ghostel-buffer-name')."
                 my/ghostel-popup-buffer buf)))
       (select-window
        (display-buffer-in-side-window
-        buf '((side . bottom) (slot . 0) (window-height . 0.3)))))))
+        buf '((side . bottom) (slot . 0) (window-height . 0.45)))))))
 
 (defun my/ghostel-full ()
   "Open a project-rooted terminal in the current window."

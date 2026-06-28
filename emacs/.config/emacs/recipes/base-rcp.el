@@ -139,14 +139,14 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   (which-key-idle-delay 0.4)
   (which-key-add-column-padding 3)       ; breathing room between columns (doom-ish)
   (which-key-separator "  ")
-  (which-key-min-display-lines 2)
+  (which-key-min-display-lines 4)
   ;; Size the popup by real pixels, not whole lines -- otherwise the line-spacing
   ;; below isn't counted and the bottom row clips.
   (which-key-allow-imprecise-window-fit nil)
   :init (which-key-mode 1)
   :config
   (add-hook 'which-key-init-buffer-hook
-            (lambda () (setq-local line-spacing 6))))
+            (lambda () (setq-local line-spacing 5))))
 
 (use-package window
   :ensure nil
@@ -158,7 +158,13 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
 
 (use-package winner
   :ensure nil
-  :init (winner-mode 1))
+  :init (winner-mode 1)
+  :bind (("C-c w u" . winner-undo)
+         ("C-c w r" . winner-redo))
+  :config
+  ;; Drop winner's default C-c <left>/<right> in favour of the C-c w prefix.
+  (keymap-unset winner-mode-map "C-c <left>" t)
+  (keymap-unset winner-mode-map "C-c <right>" t))
 
 ;; "Focus follows width": grow the selected window toward `my/focus-width' (so
 ;; 80-col code never wraps), shrinking the rest.  Toggle on SPC w f.

@@ -83,30 +83,42 @@
 ;; consult-imenu's per-kind :types never match.  Re-bucket every symbol by its
 ;; `imenu-kind' so the top-level groups are kinds.  Advise the function eglot
 ;; installs, so it applies in every managed buffer, new or already-open.
+;; Skip function/method bodies: their locals are scoped, not file-level symbols.
+;; `C-u C-c s i' binds this off (my/consult-imenu) to surface those locals,
+;; nested under their scope by consult's raw-hierarchy rendering.
+(defvar my/eglot-imenu-no-regroup nil
+  "When non-nil, `my/eglot-imenu-by-kind' returns eglot's index untouched.")
 (defun my/eglot-imenu-by-kind (index)
   "Re-bucket eglot's imenu INDEX so its top-level groups are LSP kinds."
-  (let ((by-kind (make-hash-table :test #'equal))
-        (order nil))
-    (cl-labels
-        ((sym-pos (name)
-           (let ((reg (get-text-property 0 'imenu-region name)))
-             (or (car reg) (cdr reg))))
-         (record (name pos)
-           (let ((kind (or (get-text-property 0 'imenu-kind name) "Other")))
-             (unless (member kind order) (push kind order))
-             (push (cons name pos) (gethash kind by-kind))))
-         (walk (items)
-           (dolist (item items)
-             (if (imenu--subalist-p item)
-                 (let ((head (car item)))
-                   ;; Real symbols carry `imenu-kind'; synthetic group heads don't.
-                   (when (get-text-property 0 'imenu-kind head)
-                     (record head (sym-pos head)))
-                   (walk (cdr item)))
-               (record (car item) (cdr item))))))
-      (walk index))
-    (mapcar (lambda (kind) (cons kind (nreverse (gethash kind by-kind))))
-            (nreverse order))))
+  (if my/eglot-imenu-no-regroup
+      index
+    (let ((by-kind (make-hash-table :test #'equal))
+          (order nil))
+      (cl-labels
+          ((sym-pos (name)
+             (let ((reg (get-text-property 0 'imenu-region name)))
+               (or (car reg) (cdr reg))))
+           (code-body-p (kind)
+             (member kind '("Function" "Method" "Constructor")))
+           (record (name pos)
+             (let ((kind (or (get-text-property 0 'imenu-kind name) "Other")))
+               (unless (member kind order) (push kind order))
+               (push (cons name pos) (gethash kind by-kind))))
+           (walk (items)
+             (dolist (item items)
+               (if (imenu--subalist-p item)
+                   (let* ((head (car item))
+                          ;; Real symbols carry `imenu-kind'; synthetic heads don't.
+                          (kind (get-text-property 0 'imenu-kind head)))
+                     (when kind (record head (sym-pos head)))
+                     ;; Recurse into declaration scopes to hoist members by kind,
+                     ;; but stop at function bodies so locals don't pollute.
+                     (unless (code-body-p kind)
+                       (walk (cdr item))))
+                 (record (car item) (cdr item))))))
+        (walk index))
+      (mapcar (lambda (kind) (cons kind (nreverse (gethash kind by-kind))))
+              (nreverse order)))))
 (advice-add 'eglot-imenu :filter-return #'my/eglot-imenu-by-kind)
 
 (defvar my/hidden-tooling-buffer-rx

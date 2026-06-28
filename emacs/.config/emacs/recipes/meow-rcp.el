@@ -605,15 +605,11 @@ BINDINGS are KEY COMMAND pairs."
   "s"   #'persp-state-save
   "l"   #'persp-state-load)
 
-(my/leader-prefix "s" "search"
-  "s" #'consult-line
-  "S" #'consult-line-multi
-  "p" #'consult-ripgrep
-  "m" #'consult-mark
-  "M" #'my/clear-mark-ring
-  "d" #'consult-flymake
-  "f" #'isearch-forward
-  "b" #'isearch-backward)
+;; Search is canonical under `C-c s' (completion-rcp et al.).  Point the leader at
+;; that very keymap so `SPC s' and `C-c s' are one menu -- the only meow-side line;
+;; drop meow and the `C-c s' bindings stay put.
+(define-key my/leader-map (kbd "s")
+            (cons "search" (keymap-lookup global-map "C-c s")))
 
 (my/leader-prefix "p" "project"
   "p" #'projectile-switch-project
