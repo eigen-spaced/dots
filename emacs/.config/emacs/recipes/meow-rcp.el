@@ -346,19 +346,34 @@ nearest such pair ahead on the line (so meow's own inner/bounds then selects it)
     (unless (<= (car inner) (point) (cdr inner))
       (goto-char (car inner)))))
 
+(defun my/meow--select-pair (inner boundsp)
+  "Select INNER (BEG . END); with BOUNDSP widen one delimiter char each side."
+  (meow--select (meow--make-selection
+                 '(select . char)
+                 (if boundsp (1- (car inner)) (car inner))
+                 (if boundsp (1+ (cdr inner)) (cdr inner)))
+                t))
+
+(defun my/meow--thing-nearest (thing boundsp)
+  "Select inner (or BOUNDSP) of THING, reaching the nearest pair on the line.
+meow's `string' thing is syntax-gated, so it can't grab quotes inside a comment;
+when the matched pair lives in one, select our own character match instead."
+  (if-let* ((finder (my/meow--thing-pair thing))
+            (inner  (funcall finder))
+            ((nth 4 (syntax-ppss (car inner)))))   ; pair lives in a comment
+      (my/meow--select-pair inner boundsp)
+    (my/meow--reach thing)
+    (if boundsp (meow-bounds-of-thing thing) (meow-inner-of-thing thing))))
+
 (defun my/meow-inner-nearest ()
   "`meow-inner-of-thing' (`,') that reaches the nearest pair when point is outside it."
   (interactive)
-  (let ((thing (meow-thing-prompt "Inner of: ")))
-    (my/meow--reach thing)
-    (meow-inner-of-thing thing)))
+  (my/meow--thing-nearest (meow-thing-prompt "Inner of: ") nil))
 
 (defun my/meow-bounds-nearest ()
   "`meow-bounds-of-thing' (`.') that reaches the nearest pair when point is outside it."
   (interactive)
-  (let ((thing (meow-thing-prompt "Bounds of: ")))
-    (my/meow--reach thing)
-    (meow-bounds-of-thing thing)))
+  (my/meow--thing-nearest (meow-thing-prompt "Bounds of: ") t))
 
 ;;; meow keymaps ----------------------------------------------------
 
@@ -659,6 +674,9 @@ BINDINGS are KEY COMMAND pairs."
   "c"  #'delete-window
   "o"  #'delete-other-windows
   "w"  #'ace-window
+  "s"  #'ace-swap-window               ; swap two panes
+  "m"  #'my/ace-move-window            ; move this buffer to a chosen pane
+  "y"  #'my/ace-copy-window            ; mirror this buffer into a chosen pane
   "h"  #'windmove-left
   "j"  #'windmove-down
   "k"  #'windmove-up

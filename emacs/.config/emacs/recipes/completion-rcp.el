@@ -6,8 +6,7 @@
 (use-package vertico
   :init (vertico-mode)
   :bind (:map vertico-map
-              ("C-j" . vertico-next)
-              ("C-k" . vertico-previous)))
+              ("C-." . embark-act)))      ; act on the current candidate; C-n/C-p navigate
 
 ;; `~/' or `//' resets the path instead of appending (vertico-directory-tidy).
 (use-package vertico-directory
@@ -177,7 +176,90 @@ Picking a childless symbol just jumps to it."
          ("C-d"   . consult-dir)
          ("C-M-d" . consult-dir-jump-file)))
 
-(use-package embark)
+;; Open an embark candidate in any window -- or a split you make on the spot via
+;; ace-window's dispatch menu.  `C-.' (embark-act) then `o' hands the candidate to
+;; ace-window.  Selects the target window directly, so unlike the C-v/C-s vertico
+;; splits it works with consult-buffer's preview (which eats display-buffer overrides).
+;; `aw-dispatch-always' is a defcustom, special only once ace-window loads (it's
+;; deferred).  Declare it up front, else the `let' below binds it lexically and the
+;; real global stays nil -- so ace-window never offers its split dispatch.
+(defvar aw-dispatch-always)
+(defvar aw-dispatch-alist)
+(defvar my/focus-width-inhibit)          ; defined in base-rcp
+
+(defun my/aw-dispatch-hint ()
+  "Echo ace-window's dispatch actions, stacked one per line, as a visible cue.
+ace-window shows nothing on a single window, so this is the only prompt then."
+  (message "%s"
+           (mapconcat
+            (lambda (a)
+              (format " %s  %s"
+                      (propertize (char-to-string (car a)) 'face 'aw-key-face)
+                      (or (nth 2 a) (symbol-name (nth 1 a)))))
+            aw-dispatch-alist "\n")))
+
+(defun my/aw-split-dispatch ()
+  "`aw-dispatch-alist' filtered to just the split actions.
+For the embark open-in-window flow: window letters still pick an existing
+window, but swap/move/copy/... don't apply when placing a fresh candidate."
+  (seq-filter (lambda (a)
+                (memq (nth 1 a)
+                      '(aw-split-window-vert aw-split-window-horz aw-split-window-fair)))
+              aw-dispatch-alist))
+
+(eval-when-compile
+  (defmacro my/embark-ace-action (fn)
+    `(defun ,(intern (concat "my/embark-ace-" (symbol-name fn))) ()
+       (interactive)
+       (with-demoted-errors "%s"
+         (require 'ace-window)
+         (let ((aw-dispatch-always t)
+               (aw-dispatch-alist (my/aw-split-dispatch)))   ; splits only in this flow
+           (my/aw-dispatch-hint)         ; ace is silent on one window; show the menu
+           (aw-switch-to-window (aw-select nil))
+           (call-interactively (symbol-function ',fn)))))))
+
+;; Show the embark action menu as a compact which-key popup instead of the
+;; full-height *Embark Actions* buffer.  `?' (embark-help-key) still opens the
+;; searchable, described action list on demand.  Adapted from embark's wiki.
+(defun my/embark-which-key-indicator ()
+  "An embark indicator that displays keymaps using which-key.
+Shows the target's type and value, plus an ellipsis when more targets follow."
+  (lambda (&optional keymap targets prefix)
+    (if (null keymap)
+        (which-key--hide-popup-ignore-command)
+      (which-key--show-keymap
+       (if (eq (plist-get (car targets) :type) 'embark-become)
+           "Become"
+         (format "Act on %s '%s'%s"
+                 (plist-get (car targets) :type)
+                 (embark--truncate-target (plist-get (car targets) :target))
+                 (if (cdr targets) "…" "")))
+       (if prefix
+           (pcase (lookup-key keymap prefix 'accept-default)
+             ((and (pred keymapp) km) km)
+             (_ (key-binding prefix 'accept-default)))
+         keymap)
+       nil nil t
+       (lambda (binding) (not (string-suffix-p "-argument" (cdr binding))))))))
+
+(defun my/embark-hide-which-key-indicator (fn &rest args)
+  "Hide the which-key popup while the `?' completing-read prompter runs."
+  (which-key--hide-popup-ignore-command)
+  (let ((embark-indicators (remq #'my/embark-which-key-indicator embark-indicators)))
+    (apply fn args)))
+
+(use-package embark
+  :custom
+  (embark-help-key "?")                  ; `?' opens the searchable, described list
+  (embark-indicators '(my/embark-which-key-indicator
+                       embark-highlight-indicator
+                       embark-isearch-highlight-indicator))
+  :config
+  (advice-add #'embark-completing-read-prompter :around #'my/embark-hide-which-key-indicator)
+  (keymap-set embark-file-map     "o" (my/embark-ace-action find-file))
+  (keymap-set embark-buffer-map   "o" (my/embark-ace-action switch-to-buffer))
+  (keymap-set embark-bookmark-map "o" (my/embark-ace-action bookmark-jump)))
 
 (use-package embark-consult
   :after (embark consult))
@@ -207,8 +289,15 @@ Picking a childless symbol just jumps to it."
 
 (defun my/vertico-exit-in-direction (direction)
   (unless (eq (my/minibuffer-category) 'consult-location)
+    ;; Hold off `my/focus-width-mode' until after the split+redisplay settle, else
+    ;; it widens the new window off 50/50.  Balance the pair once they're displayed.
+    (setq my/focus-width-inhibit t)
+    (run-with-timer 0 nil (lambda () (setq my/focus-width-inhibit nil)))
     (display-buffer-override-next-command
-     (my/split-direction-action direction) nil "[split]"))
+     (my/split-direction-action direction)
+     (lambda (_old new)
+       (when (window-live-p new) (balance-windows (window-parent new))))
+     "[split]"))
   (vertico-exit))
 
 (defun my/vertico-exit-right () (interactive) (my/vertico-exit-in-direction 'right))

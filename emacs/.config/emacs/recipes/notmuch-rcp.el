@@ -120,13 +120,14 @@
   (notmuch-fcc-dirs nil)                 ; Gmail keeps its own Sent copy
   (notmuch-draft-folder "gmail/[Gmail]/Drafts") ; C-x C-s saves drafts here (synced to Gmail)
   (notmuch-search-oldest-first nil)      ; newest mail first
-  ;; Pad each field to a fixed width so the tags land in their own right-hand
-  ;; column (Doom's layout) instead of trailing each subject.
+  ;; Pad AND truncate each field to a fixed width (the `.N' precision caps the
+  ;; length) so the tags land in their own right-hand column (Doom's layout)
+  ;; instead of a long subject/author trailing past them.
   (notmuch-search-result-format
    '(("date"    . "%12s ")
      ("count"   . "%-7s ")
-     ("authors" . "%-30s ")
-     ("subject" . "%-72s ")
+     ("authors" . "%-30.30s ")
+     ("subject" . "%-67.67s ")
      ("tags"    . "(%s)")))
   (notmuch-saved-searches
    '((:name "inbox"   :query "tag:inbox"                :key "i")

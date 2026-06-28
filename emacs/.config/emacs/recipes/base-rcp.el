@@ -133,6 +133,15 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
               c-basic-offset 2
               python-indent-offset 4)   ; Python convention
 
+;; Keep a *scratch* alive at all times: veto its kill (burying instead) so
+;; `scratch-buffer' / `SPC b x' always lands on the live one, Doom-style.
+(defun my/keep-scratch-alive ()
+  "Bury *scratch* rather than killing it."
+  (if (equal (buffer-name) "*scratch*")
+      (progn (bury-buffer) nil)
+    t))
+(add-hook 'kill-buffer-query-functions #'my/keep-scratch-alive)
+
 (use-package which-key
   :ensure nil
   :custom
@@ -172,9 +181,15 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   "Target total width (columns) for the focused window."
   :type 'integer :group 'convenience)
 
+(defvar my/focus-width-inhibit nil
+  "When non-nil, `my/focus-width--apply' is a no-op.
+Bound transiently around a deliberate split so focus widening doesn't skew
+the fresh 50/50 layout (see `my/vertico-exit-in-direction').")
+
 (defun my/focus-width--apply (&rest _)
   "Widen the selected window toward `my/focus-width' when the mode is on."
   (when (and (bound-and-true-p my/focus-width-mode)
+             (not my/focus-width-inhibit)
              (not (window-minibuffer-p (selected-window)))
              (> (count-windows) 1))
     (let ((delta (- my/focus-width (window-total-width (selected-window)))))
