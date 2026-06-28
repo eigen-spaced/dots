@@ -206,6 +206,35 @@ the fresh 50/50 layout (see `my/vertico-exit-in-direction').")
     (remove-hook 'window-selection-change-functions #'my/focus-width--apply)
     (balance-windows)))
 
+;; tmux-style fraction-snap window resize (bound SPC w >/<+/-): the arrow drags the
+;; shared border its way, snapping through `my/snap-stops'.  A far-edge window has no
+;; border on the arrow's side, so it moves its *inner* one and grow/shrink flips.
+(defconst my/snap-stops '(25 33 50 67 75)
+  "Fraction stops (percent of frame) the snap resizer steps through.")
+
+(defun my/snap--next-stop (pct grow)
+  "Return the next stop past PCT, upward when GROW else downward."
+  (if grow
+      (or (seq-find (lambda (s) (> s (+ pct 2))) my/snap-stops)
+          (car (last my/snap-stops)))
+    (or (seq-find (lambda (s) (< s (- pct 2))) (reverse my/snap-stops))
+        (car my/snap-stops))))
+
+(defun my/snap-resize (axis toward-far)
+  "Snap-resize the selected window along AXIS (`x' or `y').
+TOWARD-FAR means the arrow points right/down; the shared border follows it."
+  (let* ((win (selected-window))
+         (horizontal (eq axis 'x))
+         (at-far (window-at-side-p win (if horizontal 'right 'bottom)))
+         (at-near (window-at-side-p win (if horizontal 'left 'top))))
+    (unless (and at-far at-near)
+      (let* ((total (if horizontal (frame-width) (1- (frame-height))))
+             (cur (if horizontal (window-total-width win) (window-total-height win)))
+             (grow (if at-far (not toward-far) toward-far))
+             (pct (/ (* cur 100) total))
+             (target (/ (* total (my/snap--next-stop pct grow)) 100)))
+        (ignore-errors (window-resize win (- target cur) horizontal))))))
+
 ;; Doom's `SPC f p': jump to a config file (recipes + top-level), bound SPC P.
 ;; `recipes/' is a symlink into the dotfiles repo, so we must follow symlinks
 ;; (5th arg) AND skip package/cache dirs while descending (4th arg predicate) —

@@ -174,10 +174,18 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
 
 ;;; org ---------------------------------------------------------------
 
+;; Pop the agenda dispatcher (` *Agenda Commands*') at the bottom, full-width,
+;; instead of splitting the current window sideways (Doom-like).
+(add-to-list 'display-buffer-alist
+             '("\\*Agenda Commands\\*"
+               (display-buffer-at-bottom)
+               (window-height . fit-window-to-buffer)))
+
 (use-package org
   :ensure nil
   :commands (org-capture org-agenda org-store-link org-todo-list)
-  :hook (org-mode . my/org-prose-serif)
+  :hook ((org-mode . my/org-prose-serif)
+         (org-mode . visual-line-mode))
   :custom
   (org-agenda-files (mapcar #'my/org-file
                             '("inbox.org" "projects.org" "calendar.org" "reading.org")))

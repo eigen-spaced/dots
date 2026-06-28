@@ -2,6 +2,15 @@
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
+;; `initial-buffer-choice' is consulted for every `emacsclient -c' frame, so an
+;; emacs-everywhere popup would get the dashboard pasted over its editing buffer.
+;; Keep that frame's own buffer (it carries the `emacs-everywhere-app' param).
+(defun my/dashboard-initial-buffer ()
+  "Return the dashboard buffer, except in an emacs-everywhere frame."
+  (if (frame-parameter nil 'emacs-everywhere-app)
+      (current-buffer)
+    (get-buffer-create "*dashboard*")))
+
 (use-package dashboard
   :init (dashboard-setup-startup-hook)
   :custom
@@ -16,7 +25,7 @@
   (dashboard-display-icons-p t)
   (dashboard-set-heading-icons t)
   (dashboard-set-file-icons t)
-  (initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+  (initial-buffer-choice #'my/dashboard-initial-buffer)
   :config
   ;; On the daemon the dashboard first renders frameless, where
   ;; (face-attribute 'default :height) is a bogus 1; dashboard-agenda--set-face

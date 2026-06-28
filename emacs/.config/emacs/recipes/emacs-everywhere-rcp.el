@@ -13,8 +13,8 @@
   (emacs-everywhere-frame-parameters '((name          . "emacs-everywhere")
                                        (window-system . ns)
                                        (fullscreen    . nil)
-                                       (width         . 90)
-                                       (height        . 30)))
+                                       (width         . 70)
+                                       (height        . 25)))
   :config
   ;; --- macOS osascript helpers ----------------------------------------
   ;; emacs-everywhere compiles its AppleScript helpers into the resource fork
@@ -56,33 +56,45 @@
                 (remq 'emacs-everywhere-insert-selection
                       emacs-everywhere-init-hooks)))
 
-  ;; --- Keep the rest of Emacs out of the way --------------------------
-  ;; `emacs-everywhere' spawns `emacsclient -c', and a fresh client frame on
-  ;; macOS activates the whole app -- so every existing Emacs frame surfaces
-  ;; alongside the popup (`my/capture-frame' sidesteps this with an in-process
-  ;; `make-frame').  Hide the other frames just before the popup is spawned and
-  ;; restore them as it finishes, so only the emacs-everywhere frame shows.
-  (defvar my/emacs-everywhere--hidden-frames nil)
-  (defun my/emacs-everywhere-hide-others (&rest _)
-    (setq my/emacs-everywhere--hidden-frames
-          (seq-filter #'frame-visible-p (frame-list)))
-    (dolist (f my/emacs-everywhere--hidden-frames)
-      (make-frame-invisible f t)))
-  (defun my/emacs-everywhere-restore-others (&rest _)
-    ;; Show, then immediately order to the back: `emacs-everywhere-finish' next
-    ;; refocuses the source app, so we want these visible-but-behind, not flashed
-    ;; to the front.
-    (dolist (f my/emacs-everywhere--hidden-frames)
+  ;; --- Show only the popup --------------------------------------------
+  ;; macOS activation is per-APP: raising the popup raises every visible Emacs
+  ;; frame with it.  There is no per-window activation, so the only way to show
+  ;; the popup alone (a WM like yabai would float it; we have none) is to make
+  ;; the existing frames invisible while it's up and restore them on finish.
+  ;; `make-frame-invisible' is instant (no minimise animation), and the popup is
+  ;; spawned async right after, so the swap isn't perceptible.
+  (defvar my/ee--hidden-frames nil)
+  (defun my/ee-hide-others (&rest _)
+    (setq my/ee--hidden-frames (seq-filter #'frame-visible-p (frame-list)))
+    (dolist (f my/ee--hidden-frames) (make-frame-invisible f t)))
+  (defun my/ee-restore-others (&rest _)
+    ;; Restore visible-but-behind: `emacs-everywhere-finish' refocuses the source
+    ;; app next, so we don't want these flashed to the front.
+    (dolist (f my/ee--hidden-frames)
       (when (frame-live-p f) (make-frame-visible f) (lower-frame f)))
-    (setq my/emacs-everywhere--hidden-frames nil))
-  (defun my/emacs-everywhere--maybe-restore (frame)
-    "Safety net: restore if the popup frame is closed without finishing."
-    (when (and my/emacs-everywhere--hidden-frames
-               (equal (frame-parameter frame 'name) "emacs-everywhere"))
-      (my/emacs-everywhere-restore-others)))
-  (advice-add 'emacs-everywhere        :before #'my/emacs-everywhere-hide-others)
-  (advice-add 'emacs-everywhere-finish :before #'my/emacs-everywhere-restore-others)
-  (add-hook 'delete-frame-functions #'my/emacs-everywhere--maybe-restore))
+    (setq my/ee--hidden-frames nil))
+  (defun my/ee-restore-on-abort (frame)
+    "Restore if the popup is closed without finishing (e.g. deleted)."
+    (when (and my/ee--hidden-frames (frame-parameter frame 'emacs-everywhere-app))
+      (my/ee-restore-others)))
+  ;; Only macOS raises every app window together; elsewhere a WM handles it.
+  (when (eq system-type 'darwin)
+    (advice-add 'emacs-everywhere        :before #'my/ee-hide-others)
+    (advice-add 'emacs-everywhere-finish :before #'my/ee-restore-others)
+    (add-hook 'delete-frame-functions #'my/ee-restore-on-abort)))
+
+;; Pre-warm at idle so the FIRST capture isn't the cold one.  The first osascript
+;; per session pays a one-off AppleScript-runtime init; on a fresh daemon that
+;; overruns `emacs-everywhere-clipboard-sleep-delay' (0.1s on macOS), so the
+;; finish pastes before the source app refocuses and the text is lost.  Loading
+;; the package (compiles the helper scripts) and spending one throwaway osascript
+;; pays that cost up front, so the first real C-c C-c behaves like the rest.
+(run-with-idle-timer
+ 2 nil
+ (lambda ()
+   (require 'emacs-everywhere nil t)
+   (when (eq system-type 'darwin)
+     (call-process "osascript" nil nil nil "-e" "return 1"))))
 
 (provide 'emacs-everywhere-rcp)
 ;;; emacs-everywhere-rcp.el ends here

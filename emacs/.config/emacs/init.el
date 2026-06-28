@@ -68,6 +68,7 @@
 (require 'eww-rcp)
 (require 'org-rcp)
 (require 'markdown-rcp)
+(require 'jinx-rcp)
 (require 'notmuch-rcp)
 (require 'dired-rcp)
 (require 'term-rcp)

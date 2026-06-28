@@ -684,7 +684,11 @@ BINDINGS are KEY COMMAND pairs."
   "u"  #'winner-undo
   "r"  #'winner-redo
   "f"  #'my/focus-width-mode
-  "="  #'balance-windows)
+  "="  #'balance-windows
+  ">"  (lambda () (interactive) (my/snap-resize 'x t))    ; widen border right
+  "<"  (lambda () (interactive) (my/snap-resize 'x nil))  ; narrow border left
+  "+"  (lambda () (interactive) (my/snap-resize 'y t))    ; grow border down
+  "-"  (lambda () (interactive) (my/snap-resize 'y nil))) ; shrink border up
 
 (my/leader-prefix "o" "open"
   "e" #'dirvish-side
