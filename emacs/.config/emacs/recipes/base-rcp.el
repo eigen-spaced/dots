@@ -84,6 +84,8 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   (display-line-numbers-type 'relative)
   (global-auto-revert-non-file-buffers t)
   (uniquify-buffer-name-style 'forward)
+  (repeat-exit-timeout 0.5)              ; repeat-mode: drop the transient map after 0.5s idle
+  (repeat-echo-function #'repeat-echo-message)
   (custom-file (expand-file-name "custom.el" user-emacs-directory))
   (backup-directory-alist `(("." . ,(expand-file-name "backups" user-emacs-directory))))
   (backup-by-copying t)
@@ -100,6 +102,21 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   (electric-pair-mode 1)
   (show-paren-mode 1)
   (global-hl-line-mode 1)
+  ;; repeat-mode: after a chord-prefixed command in a repeat map, its tail keys
+  ;; repeat bare -- pay the Ctrl/Meta chord once per burst (C-x o o o, undo / /,
+  ;; M-g n/p, buffer switch, etc. ship tagged).  The word map adds M-f/M-b -> bare
+  ;; f/b -- motion-only so a stray repeat just moves point, never deletes.  Tail
+  ;; keys are letters, so the 0.5s exit-timeout above keeps typed words from being
+  ;; eaten as motion; the clean fix for that edge is modal (meow) normal-state.
+  (repeat-mode 1)
+  (defvar my/word-repeat-map
+    (let ((map (make-sparse-keymap)))
+      (define-key map "f" #'forward-word)
+      (define-key map "b" #'backward-word)
+      map)
+    "Repeat map: after M-f/M-b, bare f/b keep moving by word.")
+  (dolist (cmd '(forward-word backward-word))
+    (put cmd 'repeat-map 'my/word-repeat-map))
   (setf (alist-get 'continuation fringe-indicator-alist) '(nil nil))
   (dolist (h '(prog-mode-hook conf-mode-hook text-mode-hook))
     (add-hook h #'display-line-numbers-mode))

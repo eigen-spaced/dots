@@ -77,13 +77,17 @@
 
   ;; Colored file previews via bat: a fast subprocess emitting ANSI (dirvish
   ;; renders it), so no Emacs-side fontification blocks scrolling.
+  ;; `--theme=ansi' makes bat emit only the 16 standard ANSI colors instead of a
+  ;; fixed tmTheme palette; dirvish paints those with Emacs's own ansi-color
+  ;; faces, so the preview tracks whatever theme is live (ef-dream now, and
+  ;; whatever `SPC t t' switches to) -- no per-theme bat upkeep, never stale.
   (when my/bat-program
     (dirvish-define-preview my-bat (file ext)
       "Preview regular files with bat."
       (when (and (file-regular-p file)
                  (not (member ext dirvish-binary-exts)))
         `(shell . (,my/bat-program "--color=always" "--style=plain"
-                   "--theme=pixel-miri16" "--paging=never" "--line-range" ":500" ,file))))
+                   "--theme=ansi" "--paging=never" "--line-range" ":500" ,file))))
     (add-to-list 'dirvish-preview-dispatchers 'my-bat t)))
 
 ;; Colored dired listings + colored directory previews (the "highlighting").

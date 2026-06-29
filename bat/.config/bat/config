@@ -1,3 +1,4 @@
-# bat config — theme matches vanilla-emacs (pixel-themes-miri16).
-# Custom theme lives in themes/; rebuild the cache after changing it: bat cache --build
---theme="pixel-miri16"
+# bat config — `ansi` emits the 16 standard ANSI colors instead of a fixed
+# palette, so output follows the terminal's own colorscheme (Ghostty) with no
+# per-theme upkeep. Mirrors the dirvish bat preview, which uses --theme=ansi too.
+--theme="ansi"
