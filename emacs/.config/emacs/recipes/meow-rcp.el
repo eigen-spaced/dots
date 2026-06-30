@@ -185,41 +185,19 @@ time `(mark)' no longer points at the selection's start."
 
 (defun my/meow-quit-buffer ()
   "Quit -- bound to `q' and to `:q'/`:wq'.  In a split, close the window (vim
-`:q', buffer kept).  As the sole window, kill the buffer; when only the
-*scratch*/*Messages* fallback is left, land on the dashboard.  Refuse on the lone
-dashboard -- there is nothing to quit."
+`:q', buffer kept).  As the sole window, bury the buffer (like `meow-quit', via
+`previous-buffer'); if that leaves only the *scratch*/*Messages* fallback, land
+on the dashboard.  Refuse on the lone dashboard -- there is nothing to quit."
   (interactive)
   (cond
    ((> (length (window-list nil 'no-minibuffer)) 1) (delete-window))
    ((derived-mode-p 'dashboard-mode) (message "Can't quit the dashboard"))
-   (t (kill-current-buffer)
+   (t (previous-buffer)
       (when (member (buffer-name) '("*scratch*" "*Messages*"))
         (my/open-dashboard)))))
 
 (with-eval-after-load 'dashboard
   (define-key dashboard-mode-map (kbd "q") #'my/meow-quit-buffer))
-
-;;; Vim ex command line (`:') ---------------------------------------
-;; `:' reads a command line (with history) and dispatches the write/quit/edit
-;; family, `:N' goto-line, and `[%]s/PAT/REP/[flags]' substitute.  Patterns are
-;; Emacs regexps (so REP backrefs are \1, not vim's \1 vs &); flag `c' confirms.
-(defvar my/meow-ex-history nil "Minibuffer history for `my/meow-ex'.")
-
-(defun my/meow-ex--substitute (line)
-  "Run an ex substitute LINE: [%]s/PAT/REP/[flags].
-`%' targets the whole buffer, else the region, else the current line.
-Flag `c' turns it into an interactive `query-replace-regexp'."
-  (let* ((whole (eq (aref line 0) ?%))
-         (body  (if whole (substring line 1) line))    ; starts at the `s'
-         (delim (char-to-string (aref body 1)))        ; char after `s' = separator
-         (parts (split-string (substring body 2) (regexp-quote delim)))
-         (pat (nth 0 parts)) (rep (or (nth 1 parts) "")) (flags (or (nth 2 parts) "")))
-    (when (or (null pat) (string-empty-p pat)) (user-error "Empty search pattern"))
-    (let ((beg (cond (whole (point-min)) ((use-region-p) (region-beginning)) (t (line-beginning-position))))
-          (end (cond (whole (point-max)) ((use-region-p) (region-end))       (t (line-end-position)))))
-      (if (string-search "c" flags)
-          (save-excursion (goto-char beg) (query-replace-regexp pat rep nil beg end))
-        (replace-regexp-in-region pat rep beg end)))))
 
 (defun my/buffer-display-path ()
   "File path for the `:w' message: bare name when the file sits in the project
@@ -410,7 +388,6 @@ when the matched pair lives in one, select our own character match instead."
    '("-" . negative-argument)
    '("!" . revert-buffer-quick)
    '(";" . meow-reverse)
-   '(":" . my/meow-ex)
    '("," . my/meow-inner-nearest)
    '("." . my/meow-bounds-nearest)
    '("[" . meow-beginning-of-thing)
@@ -419,6 +396,7 @@ when the matched pair lives in one, select our own character match instead."
    '("~" . my/meow-toggle-char-case)
    '("_" . back-to-indentation)
    '("Q" . kmacro-start-macro-or-insert-counter)
+   '("*" . my/meow-reselect)
    '("@" . kmacro-end-or-call-macro)
    '("0" . beginning-of-visual-line)
    '("$" . end-of-visual-line)
@@ -536,7 +514,6 @@ when the matched pair lives in one, select our own character match instead."
 (with-eval-after-load 'meow
   (define-key global-map (kbd "H-x") #'execute-extended-command)
   (define-key global-map (kbd "M-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
-  (define-key global-map (kbd "C-c r") #'my/meow-reselect) ; vim `gv' reselect
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
 
   (setq meow--kbd-delete-char "C-S-d")
@@ -550,8 +527,8 @@ when the matched pair lives in one, select our own character match instead."
     (define-key km (kbd "C-d") #'my/scroll-half-page-down)
     (define-key km (kbd "C-v")   #'meow-to-block)
     (define-key km (kbd "C-S-v") #'meow-block))
-  (define-key global-map (kbd "M-S-n") #'my/scroll-half-page-down)
-  (define-key global-map (kbd "M-S-p") #'my/scroll-half-page-up)
+  (define-key global-map (kbd "M-n") #'scroll-up-command)
+  (define-key global-map (kbd "M-p") #'scroll-down-command)
 
   (define-key meow-insert-state-keymap (kbd "C-h") #'backward-delete-char)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
@@ -620,9 +597,6 @@ BINDINGS are KEY COMMAND pairs."
   "s"   #'persp-state-save
   "l"   #'persp-state-load)
 
-;; Search is canonical under `C-c s' (completion-rcp et al.).  Point the leader at
-;; that very keymap so `SPC s' and `C-c s' are one menu -- the only meow-side line;
-;; drop meow and the `C-c s' bindings stay put.
 (define-key my/leader-map (kbd "s")
             (cons "search" (keymap-lookup global-map "C-c s")))
 

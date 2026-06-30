@@ -66,6 +66,7 @@
 (require 'editing-rcp)
 (require 'emacs-everywhere-rcp)
 (require 'eww-rcp)
+(require 'pdf-rcp)
 (require 'org-rcp)
 (require 'markdown-rcp)
 (require 'jinx-rcp)

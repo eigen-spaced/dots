@@ -60,6 +60,23 @@
   (let ((shr-use-colors nil))
     (apply orig args)))
 
+;;; Sign-off picker -------------------------------------------------
+;; A few sign-offs keyed by a short label; pick one by completion and drop it
+;; at point.  Override `my/message-signoffs' in private.el with your real
+;; sign-offs (those carry your name, so they stay out of the tracked repo).
+(defvar my/message-signoffs
+  '(("Formal" . "Kind regards,\n")
+    ("Warm"   . "Cheers,\n")
+    ("Brief"  . "Thanks,\n"))
+  "Alist of (LABEL . TEXT) sign-offs for `my/message-insert-signoff'.")
+
+(defun my/message-insert-signoff ()
+  "Pick a sign-off by label and insert it at point."
+  (interactive)
+  (let ((text (cdr (assoc (completing-read "Sign-off: " my/message-signoffs nil t)
+                          my/message-signoffs))))
+    (when text (insert text))))
+
 ;;; Reversible trash + unread toggles -------------------------------
 ;; All call notmuch's own tag functions, which redraw the line themselves:
 ;; `!' toggles +unread/-unread; `d' toggles trash (a compound +trash -inbox
@@ -147,7 +164,8 @@
   ;; HTML mail via shr; send via Gmail SMTP.  setq (not :custom) because these
   ;; libraries load with notmuch, not at startup.  Identity from private.el.
   (require 'smtpmail)
-  (setq mm-text-html-renderer 'shr
+  (setq mail-user-agent 'notmuch-user-agent ; compose-mail composes with notmuch, not Gnus
+        mm-text-html-renderer 'shr
         message-send-mail-function #'smtpmail-send-it
         send-mail-function #'smtpmail-send-it
         smtpmail-smtp-user user-mail-address
@@ -184,6 +202,16 @@
   "Kill the MIME preview and restore the pre-preview window layout."
   (interactive)
   (quit-window t))
+
+(with-eval-after-load 'message
+  (define-key message-mode-map (kbd "C-c C-z") #'my/message-insert-signoff))
+
+;; Attaching dired's marked files with `gnus-dired-attach' and declining "attach
+;; to existing buffer?" makes it compose a NEW message via `gnus-dired-mail-mode'
+;; -- which defaults to `gnus-user-agent' and boots full Gnus (the *Group* buffer
+;; + an nntp news-server error).  Point it at notmuch so "no" composes here.
+(with-eval-after-load 'gnus-dired
+  (setq gnus-dired-mail-mode 'notmuch-user-agent))
 
 (with-eval-after-load 'mml
   (defun my/mml-preview-quit-restores-window (&rest _)
