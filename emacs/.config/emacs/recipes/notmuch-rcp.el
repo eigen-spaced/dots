@@ -60,6 +60,74 @@
   (let ((shr-use-colors nil))
     (apply orig args)))
 
+(defun my/notmuch-hide-image-parts (args)
+  "Advice (`:filter-args') to start image body parts collapsed to a button.
+notmuch has no built-in knob for this, so force HIDE=t for `image/*' parts in
+`notmuch-show-insert-bodypart'.  RET on the button toggles each image in/out --
+keeps image-heavy mail scrollable and avoids paying image redisplay until asked."
+  (let ((part (nth 1 args)))
+    (if (and part (string-prefix-p "image/" (or (notmuch-show-mime-type part) "")))
+        (list (nth 0 args) part (nth 2 args) t)
+      args)))
+
+;;; Reading pane: focus follows into the message --------------------
+;; Both views should behave like a 3-pane mail client: open a message in a
+;; ~70% pane and move the cursor into it so you can scroll/read at once.
+
+(defun my/notmuch-tree-follow (&rest _)
+  "Move focus into the tree's message pane after `RET' opens it.
+Only `notmuch-tree-show-message' (RET) is advised -- `n'/`p' navigation calls
+`notmuch-show-message-in' directly, so browsing keeps focus in the list."
+  (when (window-live-p notmuch-tree-message-window)
+    (select-window notmuch-tree-message-window)))
+
+;; Search view has no preview pane of its own, so replicate notmuch-tree's:
+;; split ~30/70, show the thread in the bottom pane via a direct `notmuch-show'
+;; (wrapping `notmuch-search-show-thread' instead makes notmuch-show open a
+;; stray third window), and hang a kill-buffer-hook that deletes the pane when
+;; the message dies -- so `q' tears the pane down cleanly instead of surfacing
+;; buried buffers.  The pane window is remembered for reuse on repeated RET.
+(defvar-local my/notmuch-search-pane-window nil
+  "Reading-pane window opened from this search buffer.")
+
+(defun my/notmuch-search-pane-kill-hook ()
+  "Delete the search reading pane when its message buffer is killed."
+  (when (and (window-live-p my/notmuch-search-pane-window)
+             (eq (window-buffer my/notmuch-search-pane-window) (current-buffer)))
+    (ignore-errors (delete-window my/notmuch-search-pane-window))))
+
+(defun my/notmuch-search-show-in-split (&optional elide-toggle)
+  "Show the selected thread in a ~70% bottom pane, cursor following into it.
+Reuse the pane if already open; `q' in the message deletes the pane and
+returns to the list (see `my/notmuch-search-pane-kill-hook')."
+  (interactive "P")
+  (let ((thread-id (notmuch-search-find-thread-id))
+        (subject (notmuch-search-find-subject))
+        (query notmuch-search-query-string)
+        (search-buf (current-buffer)))
+    (if (not thread-id)
+        (progn (message "End of search results.") nil)
+      ;; Immediate "marked read" feedback like notmuch-tree: strike `unread'
+      ;; through on the search line (display only; the pane marks the db read).
+      (let ((new-tags (notmuch-update-tags (notmuch-search-get-tags)
+                                           notmuch-show-mark-read-tags)))
+        (unless (equal new-tags (notmuch-search-get-tags))
+          (notmuch-search-set-tags new-tags)))
+      (let ((win (if (window-live-p my/notmuch-search-pane-window)
+                     my/notmuch-search-pane-window
+                   (split-window-vertically (max 1 (round (* 0.3 (window-height))))))))
+        (with-selected-window win
+          (let ((display-buffer-overriding-action
+                 '((display-buffer-same-window) (inhibit-same-window . nil))))
+            (notmuch-show thread-id elide-toggle search-buf query
+                          (format "*%s*" (truncate-string-to-width subject 30 nil nil t))))
+          (setq-local my/notmuch-search-pane-window win)
+          (add-hook 'kill-buffer-hook #'my/notmuch-search-pane-kill-hook nil t))
+        (with-current-buffer search-buf
+          (setq my/notmuch-search-pane-window win))
+        (select-window win)
+        t))))
+
 ;;; Sign-off picker -------------------------------------------------
 ;; A few sign-offs keyed by a short label; pick one by completion and drop it
 ;; at point.  Override `my/message-signoffs' in private.el with your real
@@ -146,6 +214,15 @@
      ("authors" . "%-30.30s ")
      ("subject" . "%-67.67s ")
      ("tags"    . "(%s)")))
+  ;; Same fix for tree view, which uses its own format var: the default pads
+  ;; but never truncates (`%-20s'/`%-54s'), so long authors/subjects shove the
+  ;; tags column away.  Add the `.N' cap.  Subject shares its field with the
+  ;; thread-tree drawing, so deep threads eat into subject width (expected).
+  (notmuch-tree-result-format
+   '(("date"    . "%12s  ")
+     ("authors" . "%-30.30s")
+     ((("tree" . "%s") ("subject" . "%s")) . " %-64.64s ")
+     ("tags"    . "(%s)")))
   (notmuch-saved-searches
    '((:name "inbox"   :query "tag:inbox"                :key "i")
      (:name "unread"  :query "tag:unread and tag:inbox" :key "u")
@@ -178,6 +255,26 @@
 
   (add-to-list 'notmuch-search-line-faces '("trash" . dired-flagged) t)
   (advice-add 'mm-shr :around #'my/mail-shr-no-colors)
+  (advice-add 'notmuch-show-insert-bodypart :filter-args #'my/notmuch-hide-image-parts)
+  ;; Reading pane + focus follow (see functions above).  Tree: advise RET only
+  ;; (n/p keep focus in the list).  Search: rebind RET to our pane command,
+  ;; leaving `notmuch-search-show-thread' intact for programmatic callers.
+  (advice-add 'notmuch-tree-show-message :after #'my/notmuch-tree-follow)
+  (define-key notmuch-search-mode-map (kbd "RET") #'my/notmuch-search-show-in-split)
+
+  ;; A notmuch-show buffer with an inline image pegged the daemon at 100%% CPU
+  ;; when point reached the image's line near the window edge.  notmuch's
+  ;; post-command `(redisplay)' (notmuch-show-command-hook) re-runs the "make
+  ;; the cursor line fully visible" scroll logic, which can't settle on a line
+  ;; holding a tall-ish image at a window boundary -- redisplay_window/try_window
+  ;; spins forever (bidi in the trace is just the incidental per-iteration cost).
+  ;; Root-caused via `sample': it was never long lines or image *size* (the
+  ;; image was 372x477).  Letting the cursor line be partially visible and
+  ;; disabling auto-vscroll in mail buffers stops the loop.
+  (add-hook 'notmuch-show-mode-hook
+            (lambda ()
+              (setq-local make-cursor-line-fully-visible nil
+                          auto-window-vscroll nil)))
 
   (dolist (map (list notmuch-search-mode-map notmuch-tree-mode-map
                      notmuch-show-mode-map notmuch-hello-mode-map))
