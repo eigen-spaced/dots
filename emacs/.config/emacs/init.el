@@ -23,7 +23,7 @@
 ;; benchmark-init/show-durations-tree).  Note: it times *file loads* only, not
 ;; function calls like `exec-path-from-shell-initialize'.
 (when (getenv "EMACS_BENCH")
-  (require 'benchmark-init)
+  (use-package benchmark-init :demand t)   ; ensure-installed on a fresh machine
   (benchmark-init/activate)
   (add-hook 'after-init-hook
             (lambda ()

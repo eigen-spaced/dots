@@ -21,7 +21,9 @@
     (set-process-sentinel
      (start-process-shell-command "notmuch-update" "*notmuch-update*" my/notmuch-sync-command)
      (lambda (_proc event)
-       (when (string-prefix-p "finished" event)
+       (if (not (string-prefix-p "finished" event))
+           (message "notmuch: sync failed (%s) — see *notmuch-update*"
+                    (string-trim event))
          (when (buffer-live-p buf)
            (with-current-buffer buf
              (when (derived-mode-p 'notmuch-hello-mode 'notmuch-search-mode 'notmuch-tree-mode)

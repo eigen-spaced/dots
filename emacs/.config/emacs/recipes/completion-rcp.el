@@ -168,7 +168,6 @@ Picking a childless symbol just jumps to it."
                    `(,mode :toplevel "Function" :types ,types)))))
 
 (use-package consult-dir
-  :ensure t
   :commands (consult-dir consult-dir-jump-file)
   ;; C-j is vertico-next, so jump-file goes on C-M-d (bound in vertico-map).
   :bind (("C-c s d" . consult-dir)
@@ -260,13 +259,6 @@ Shows the target's type and value, plus an ellipsis when more targets follow."
 (use-package embark-consult
   :after (embark consult))
 
-(defun my/embark-split-opener (opener splitter)
-  "Return a command that runs SPLITTER, selects the new window, then OPENER."
-  (lambda ()
-    (interactive)
-    (select-window (funcall splitter))
-    (call-interactively opener)))
-
 (defun my/split-direction-action (direction)
   "PRE-FUNCTION for `display-buffer-override-next-command' that splits in DIRECTION."
   (lambda (buffer alist)
@@ -328,10 +320,22 @@ Shows the target's type and value, plus an ellipsis when more targets follow."
 ;; Dimming the eglot annotation lives in eglot-rcp.el — eglot hard-codes it to
 ;; font-lock-function-name-face, so it must be re-faced at the capf, not here.
 
+;; Capfs are tried in order and the first with candidates wins: in managed code
+;; buffers eglot's (buffer-local) capf answers, so dabbrev only surfaces where
+;; the LSP is silent -- comments, strings, buffers with no server.
+(defun my/cape-dabbrev ()
+  "`cape-dabbrev' with a compact [D] annotation in place of its \" Dabbrev\"."
+  (cape-wrap-properties #'cape-dabbrev :annotation-function (lambda (_) " [D]")))
+
 (use-package cape
   :init
-  (add-hook 'completion-at-point-functions #'cape-dabbrev)
+  (add-hook 'completion-at-point-functions #'my/cape-dabbrev)
   (add-hook 'completion-at-point-functions #'cape-file))
+
+;; Emacs 30+ text-mode installs `ispell-completion-at-point' -- a plain
+;; dictionary word list, no annotation -- ahead of the global capfs, so prose
+;; buffers completed from the dictionary instead of dabbrev.  Disable it.
+(setq text-mode-ispell-word-completion nil)
 
 ;; Snippet engine.  Templates are elisp sexps; eglot-tempel (eglot-rcp) routes
 ;; LSP snippet completions through it, so clangd's `reserve(std::size_t new_cap)'

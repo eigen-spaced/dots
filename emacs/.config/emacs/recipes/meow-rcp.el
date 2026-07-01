@@ -59,11 +59,11 @@ Built-in commenting -- no package needed; comments respect the major mode."
       (indent-rigidly (region-beginning) (region-end) (- tab-width))
     (indent-rigidly (line-beginning-position) (line-end-position) (- tab-width))))
 
-(defun my/meow-paste-below ()
-  "Vim `p': paste after point / below the line.
-Pastes the most recent copy, whether it came from an Emacs buffer (kill
-ring) or the system clipboard, whichever is newer."
-  (interactive)
+(defun my/meow--paste (above)
+  "Paste the newest of kill ring / system clipboard, vim-style.
+A region is replaced outright; a linewise copy (trailing newline) goes on
+its own line ABOVE or below the current one; a charwise copy lands before
+or after point."
   (let ((text (ignore-errors (current-kill 0))))
     (unless (and text (not (string-empty-p text)))
       (user-error "Nothing to paste"))
@@ -73,29 +73,23 @@ ring) or the system clipboard, whichever is newer."
         (kill-region (region-beginning) (region-end)) (insert text) (goto-char beg)))
      ((string-suffix-p "\n" text)
       (let ((content (substring text 0 (1- (length text)))) target)
-        (end-of-line) (insert "\n") (setq target (point))
-        (insert content) (goto-char target) (back-to-indentation)))
+        (if above
+            (progn (beginning-of-line) (setq target (point)) (insert content "\n"))
+          (end-of-line) (insert "\n") (setq target (point)) (insert content))
+        (goto-char target) (back-to-indentation)))
      (t
-      (unless (or (eobp) (eolp)) (forward-char 1))
+      (unless (or above (eobp) (eolp)) (forward-char 1))
       (insert text) (backward-char 1)))))
 
-(defun my/meow-paste-above ()
-  "Vim `P': paste before point / above the line.
-Pastes the most recent copy, whether it came from an Emacs buffer (kill
-ring) or the system clipboard, whichever is newer."
+(defun my/meow-paste-below ()
+  "Vim `p': paste after point / below the line."
   (interactive)
-  (let ((text (ignore-errors (current-kill 0))))
-    (unless (and text (not (string-empty-p text)))
-      (user-error "Nothing to paste"))
-    (cond
-     ((use-region-p)
-      (let ((beg (region-beginning)))
-        (kill-region (region-beginning) (region-end)) (insert text) (goto-char beg)))
-     ((string-suffix-p "\n" text)
-      (let ((content (substring text 0 (1- (length text)))) target)
-        (beginning-of-line) (setq target (point))
-        (insert content "\n") (goto-char target) (back-to-indentation)))
-     (t (insert text) (backward-char 1)))))
+  (my/meow--paste nil))
+
+(defun my/meow-paste-above ()
+  "Vim `P': paste before point / above the line."
+  (interactive)
+  (my/meow--paste t))
 
 (defun my/meow-save-clipboard ()
   "Vim `y': copy the selection to `kill-ring` AND system clipboard."
@@ -444,7 +438,7 @@ when the matched pair lives in one, select our own character match instead."
    '("t" . meow-till-expand)
    '("T" . (lambda () (interactive) (let ((current-prefix-arg -1)) (call-interactively #'meow-till-expand))))
    '("u" . meow-undo)
-   '("U" . undo-fu-only-redo)
+   '("U" . undo-redo)
    '("v" . meow-visit)
    '("w" . meow-mark-word)
    '("W" . meow-mark-symbol)
@@ -712,7 +706,9 @@ BINDINGS are KEY COMMAND pairs."
 (my/leader-prefix "t" "toggle"
   "l" #'display-line-numbers-mode
   "w" #'whitespace-mode
-  "t" #'load-theme
+  ;; consult-theme (not load-theme): disables the current theme first (no
+  ;; stacking) and live-previews candidates as you move over them.
+  "t" #'consult-theme
   "f" #'toggle-frame-fullscreen)
 
 (my/leader-prefix "q" "quit"

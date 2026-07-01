@@ -49,7 +49,7 @@ Use `persp-switch' (SPC TAB TAB) when you want to type a custom name."
 perspective.el's own modestring lists every workspace; we replace it with
 just the active one (see :config)."
   (when (bound-and-true-p persp-mode)
-    (propertize (format " %s " (persp-current-name)) 'face 'persp-selected-face)))
+    (propertize (persp-current-name) 'face 'persp-selected-face)))
 
 (use-package perspective
   :custom

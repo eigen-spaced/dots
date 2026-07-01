@@ -1,4 +1,4 @@
-;;; editing-rcp.el --- avy, undo-fu, evil-matchit, mwim -*- lexical-binding: t; -*-
+;;; editing-rcp.el --- avy, undo persistence, evil-matchit, mwim -*- lexical-binding: t; -*-
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
@@ -18,14 +18,12 @@
   (avy-all-windows nil)
   (avy-background t))
 
-(use-package undo-fu
-  :commands (undo-fu-only-undo undo-fu-only-redo)
-  :custom
-  ;; Raise the ceilings so long histories aren't truncated (Doom's values) --
-  ;; otherwise persisted undo gets cut off on reload.
-  (undo-limit        (* 256 1024))       ; 256kb
-  (undo-strong-limit (* 3 1024 1024))    ; 3mb
-  (undo-outer-limit  (* 48 1024 1024)))  ; 48mb
+;; Redo is the built-in `undo-redo' (Emacs 28+, on meow's `U').  Raise the
+;; ceilings so long histories aren't truncated (Doom's values) -- otherwise
+;; persisted undo gets cut off on reload.
+(setq undo-limit        (* 256 1024)      ; 256kb
+      undo-strong-limit (* 3 1024 1024)   ; 3mb
+      undo-outer-limit  (* 48 1024 1024)) ; 48mb
 
 (use-package undo-fu-session
   :init (undo-fu-session-global-mode)

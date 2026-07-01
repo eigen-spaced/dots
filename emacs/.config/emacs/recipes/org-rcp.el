@@ -227,7 +227,6 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
                           (org-agenda-files
                            (list (expand-file-name "reading.org" org-directory)))))))))
   :config
-  (require 'org-protocol)
   (org-clock-persistence-insinuate)
   (add-hook 'org-capture-after-finalize-hook #'my/capture-frame-cleanup)
   (define-key org-mode-map (kbd "C-c i") #'my/org-insert-src-block)

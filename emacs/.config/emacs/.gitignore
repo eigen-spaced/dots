@@ -19,5 +19,6 @@ org-clock-save.el
 org-roam.db
 .org-id-locations
 persp-state
+theme
 # Machine-local identity (see private.el.example).
 private.el

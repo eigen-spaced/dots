@@ -10,7 +10,7 @@
 ;; keep zooming inline as before.
 ;;
 ;; We hook via :before-until ADVICE rather than a key binding, because the
-;; image's text-property keymap is consulted before Evil's state maps, so a
+;; image's text-property keymap is consulted before meow's state maps, so a
 ;; binding in `eww-mode-map' never fires while point is on an image. The advice
 ;; acts only in EWW on an SVG; otherwise it returns nil and the stock command
 ;; runs untouched.
@@ -126,7 +126,7 @@ images return nil so the stock command zooms them inline as usual."
       t)))
 
 ;; Reload-safe: drop any prior versions of this advice (including names used by
-;; earlier iterations) before re-adding, so `doom/reload' never stacks them.
+;; earlier iterations) before re-adding, so `my/reload-config' never stacks them.
 (dolist (fn '(my/eww-svg-zoom-a my/eww-svg-zoom-prompt-a
               my/eww-svg-zoom-in-a my/eww-svg-zoom-out-a))
   (advice-remove 'image-increase-size fn)

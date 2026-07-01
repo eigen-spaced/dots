@@ -2,8 +2,9 @@
 ;;; Code:
 (eval-when-compile (require 'use-package))
 
-;; Theme packages -- switch any time with `SPC t t'.  ef-dream (Prot's ef-themes)
-;; is the active theme; modus-themes + doom-themes stay installed to switch to.
+;; Theme packages -- switch any time with `SPC t t' (persists across restarts).
+;; ef-dream (Prot's ef-themes) is the default; modus-themes + doom-themes stay
+;; installed to switch to.
 (use-package modus-themes
   :custom
   (modus-themes-italic-constructs t)
@@ -36,8 +37,31 @@
 (advice-add 'load-theme :after #'my/flatten-gnus-faces)
 
 (defvar my/default-theme 'ef-dream
-  "Theme loaded at startup and re-applied on the first GUI frame.")
-(load-theme my/default-theme t)
+  "Fallback theme when `my/theme-file' holds no saved choice.")
+
+;; Persist the SPC t t pick: `consult-theme' writes the chosen theme to a
+;; machine-local file (gitignored), and startup/reload prefers it over
+;; `my/default-theme' -- so a theme switch survives restarts.
+(defvar my/theme-file (expand-file-name "theme" user-emacs-directory)
+  "File holding the last theme picked with `consult-theme'.")
+
+(defun my/saved-theme ()
+  "Theme saved in `my/theme-file' (if still installed), else `my/default-theme'."
+  (or (when (file-readable-p my/theme-file)
+        (let ((sym (intern (string-trim
+                            (with-temp-buffer
+                              (insert-file-contents my/theme-file)
+                              (buffer-string))))))
+          (car (memq sym (custom-available-themes)))))
+      my/default-theme))
+
+(defun my/theme-persist (&rest _)
+  "Save the active theme to `my/theme-file'."
+  (when-let* ((theme (car custom-enabled-themes)))
+    (with-temp-file my/theme-file (insert (symbol-name theme) "\n"))))
+(advice-add 'consult-theme :after #'my/theme-persist)
+
+(load-theme (my/saved-theme) t)
 
 ;; On a daemon the theme loads before any GUI frame exists, so frame-dependent
 ;; face attributes (notably the default background) never get set -- you get the
@@ -46,7 +70,7 @@
 (when (daemonp)
   (defun my/theme-reapply-on-frame ()
     (when (display-graphic-p)
-      (load-theme my/default-theme t)
+      (load-theme (my/saved-theme) t)
       (remove-hook 'server-after-make-frame-hook #'my/theme-reapply-on-frame)))
   (add-hook 'server-after-make-frame-hook #'my/theme-reapply-on-frame))
 

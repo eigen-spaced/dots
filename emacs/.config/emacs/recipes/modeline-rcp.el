@@ -66,40 +66,42 @@ Plain kmacro has no register name during recording, so the dot is all we show."
 (defun my/mode-line-vc ()
   "Current Git branch with an icon, or nil outside version control."
   (when (and vc-mode buffer-file-name)
-    (concat "  " my/mode-line-git-icon " "
+    (concat my/mode-line-git-icon " "
             (string-trim (replace-regexp-in-string "\\` *Git[:-]" "" vc-mode)))))
 
 (defun my/mode-line-encoding ()
-  "EOL style + coding system, e.g. \"LF  UTF-8\"."
+  "EOL style + coding system, e.g. \"LF UTF-8\"."
   (let* ((cs (or buffer-file-coding-system 'utf-8))
          (name (symbol-name (or (coding-system-get cs :mime-charset)
                                 (coding-system-get cs :name)
                                 'utf-8))))
     (concat (pcase (coding-system-eol-type cs)
               (0 "LF") (1 "CRLF") (2 "CR") (_ ""))
-            "  "
+            " "
             (upcase (replace-regexp-in-string "\\`prefer-" "" name)))))
 
 (defun my/mode-line-filetype ()
   "Major mode name (its nerd icon now sits before the file name)."
   (format-mode-line mode-name))
 
+;; Position is doom-style `LINE:COL PCT' (e.g. 132:0 65%) instead of the stock
+;; `Bot (27,0)'; the stock modified segment (`--'/`**') is dropped -- the [+]
+;; flag in `my/mode-line-buffer' covers it.
 (setq-default mode-line-format
               '("%e" mode-line-front-space
                 (:eval (my/mode-line-macro))
-                mode-line-modified " "
                 (:eval (my/mode-line-buffer))
-                "  " mode-line-position
+                " %l:%c %p"
                 mode-line-format-right-align
                 (:eval (let ((vc (my/mode-line-vc)))
-                         (if (string-empty-p vc) "" (concat vc "  "))))
+                         (if vc (concat vc "  ") "")))
                 (:eval (my/mode-line-encoding))
-                "   " mode-line-misc-info "  "
+                " " mode-line-misc-info " "
                 (:eval (my/mode-line-filetype))
                 ;; Trailing slack: `mode-line-format-right-align' mismeasures the
                 ;; filetype's nerd glyph, so without padding the tail spills past
                 ;; the window edge and clips.
-                "   "))
+                "  "))
 
 ;; Slightly taller mode line: pad vertically with a box coloured like the mode
 ;; line's own background (invisible padding, not a visible border).

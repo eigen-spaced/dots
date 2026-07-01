@@ -42,14 +42,6 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
     (load f nil 'nomessage))
   (message "Config reloaded (recipes/*.el)"))
 
-(defun my/split-right-follow ()
-  "Split side-by-side and select the new window."
-  (interactive) (select-window (split-window-right)))
-
-(defun my/split-below-follow ()
-  "Split stacked and select the new window."
-  (interactive) (select-window (split-window-below)))
-
 (defun my/split-with-previous-buffer (&optional vertical)
   "Move current buffer to a new window; show previous buffer in its place.
 Without prefix: horizontal split — current buffer moves to the right
@@ -147,8 +139,9 @@ window, previous buffer occupies the top."
   (add-hook 'after-init-hook
             (lambda () (when (file-exists-p custom-file) (load custom-file nil t))))
   :bind
+  ;; C-q shadows quoted-insert (M-x still reaches it).  M-q stays fill-paragraph;
+  ;; frame closing is on SPC q f.
   (("C-q"  . delete-window)
-   ("M-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
    ("C-x C-r" . my/eval-region)         ; eval the region + echo (was find-file-read-only)
    ("C-."     . find-file)              ; same as the `SPC .' leader
    ("C-,"     . persp-switch-to-buffer*)
