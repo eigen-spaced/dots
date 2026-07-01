@@ -1,0 +1,81 @@
+;; -*- mode: lisp-data -*-
+;; Tempel templates.  Rust + Python adapted from Crandel/tempel-collection;
+;; C/C++ hand-written.  M-+ completes a name at point, M-* inserts from a menu;
+;; TAB/S-TAB step between fields.
+
+fundamental-mode
+
+(today (format-time-string "%Y-%m-%d"))
+
+rust-mode rust-ts-mode
+
+(if "if " p " {" n> q n "}" > q)
+(el "if " p " {" n> p n "} else {" > n> p n "}" > q)
+(elif "if " p " {" n> p n "} else if " p " {" > n> p n "}" > q)
+(fn "fn " p "(" p ") {" n> p n "}" q)
+(fnr "fn " p "(" p ") -> " p " {" n> p n "}" q)
+(crt "extern crate " q ";")
+(drv & "#[derive(" p ")]" q)
+(d "dbg!(" p ")" q)
+(lp "loop {" n> q n "}" > q)
+
+c-mode
+
+(inc "#include <" p ">")
+(incq "#include \"" p "\"")
+(main "int main(int argc, char *argv[])" n "{" n> r> n> "return 0;" n "}" >)
+(if "if (" p ") {" n> r> n "}" >)
+(ife "if (" p ") {" n> p n "} else {" n> p n "}" >)
+(for "for (" p "; " p "; " p ") {" n> r> n "}" >)
+(while "while (" p ") {" n> r> n "}" >)
+(fn (p "void") " " p "(" p ")" n "{" n> r> n "}" >)
+(struct "struct " p " {" n> p n "};" >)
+(switch "switch (" p ") {" n> "case " p ":" n> p n> "break;" n> "default:" n> p n "}" >)
+(pr "printf(\"" p "\\n\"" p ");")
+
+c++-mode
+
+(inc "#include <" p ">")
+(incq "#include \"" p "\"")
+(main "int main(int argc, char *argv[])" n "{" n> r> n> "return 0;" n "}" >)
+(if "if (" p ") {" n> r> n "}" >)
+(ife "if (" p ") {" n> p n "} else {" n> p n "}" >)
+(for "for (" p "; " p "; " p ") {" n> r> n "}" >)
+(forr "for (auto &" (p "e") " : " p ") {" n> r> n "}" >)
+(while "while (" p ") {" n> r> n "}" >)
+(fn (p "void") " " p "(" p ")" n "{" n> r> n "}" >)
+(class "class " (p "Name") n "{" n> "public:" n> p n "};" >)
+(struct "struct " p " {" n> p n "};" >)
+(ns "namespace " p " {" n> r> n "}" >)
+(tpl "template <typename " (p "T") ">" n> q)
+(cout "std::cout << " p " << std::endl;")
+(vec "std::vector<" p "> " p ";")
+(uptr "std::unique_ptr<" p "> " p ";")
+(sptr "std::shared_ptr<" p "> " p ";")
+
+python-base-mode
+
+(class "class " p "(" p "):" n> q)
+(def "def " p "(" p "):" n> q)
+(method "def " p "(self" p "):" n> q)
+(init "def __init__(self" p "):" n> q)
+(if "if " p ":" n> q)
+(ife "if " p ":" n> p n> "else:" n> q)
+(elif "elif " p ":" n> q)
+(for "for " p " in " p ":" n> q)
+(while "while " p ":" n> q)
+(try "try:" n> p n> "except " p ":" n> q)
+(with "with " p ":" n> q)
+(import "import " q)
+(from "from " p " import " q)
+(main "def main():" n> q)
+(ifmain "if __name__ == '__main__':" n> q)
+(lambda "lambda " p ": " q)
+(print "print(" p ")")
+(return "return " q)
+(self "self." q)
+(prop "@property" n> "def " p "(self):" n> q)
+(static "@staticmethod" n> "def " p "(" p "):" n> q)
+(classmethod "@classmethod" n> "def " p "(cls, " p "):" n> q)
+(doc "\"\"\"" p "\"\"\"")
+(comp "[" p " for " p " in " p "]")

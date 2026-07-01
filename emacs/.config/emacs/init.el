@@ -60,6 +60,7 @@
 (require 'dimmer-rcp)
 (require 'vcs-rcp)
 (require 'code-rcp)
+(require 'format-rcp)
 (require 'eglot-rcp)
 (require 'python-rcp)
 (require 'tree-sitter-rcp)

@@ -19,6 +19,11 @@
   (eglot-autoshutdown t)                ; stop the server when its last buffer dies
   (eglot-extend-to-xref t)              ; xref into out-of-project files the server knows
   (eglot-events-buffer-config '(:size 0 :format full)) ; no events log buffer
+  ;; clangd advertises on-type formatting with "\n" as a trigger char, so every
+  ;; RET reformats the region and clobbers electric-pair's open-newline (RET
+  ;; between {} no longer lands the cursor on an indented middle line).  Format
+  ;; on save via apheleia instead; ignore the capability.
+  (eglot-ignored-server-capabilities '(:documentOnTypeFormattingProvider))
   :config
   ;; pyrefly is the Python server — `uv tool install pyrefly'.
   (add-to-list 'eglot-server-programs
@@ -31,6 +36,14 @@
   ;; Let orderless drive eglot completion (eglot otherwise forces `flex').
   (add-to-list 'completion-category-overrides '(eglot (styles orderless)))
   (add-to-list 'completion-category-overrides '(eglot-capf (styles orderless))))
+
+;; Expand LSP completion snippets through tempel: turns on snippetSupport so
+;; clangd returns `reserve(${1:std::size_t new_cap})' and tempel fills the
+;; fields.  Loads as soon as eglot does (before any connection negotiates caps).
+(use-package eglot-tempel
+  :after eglot
+  :demand t
+  :config (eglot-tempel-mode))
 
 (defun my/eglot-dim-completion-annotations (capf)
   (when (consp capf)

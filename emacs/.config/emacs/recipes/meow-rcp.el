@@ -102,6 +102,12 @@ ring) or the system clipboard, whichever is newer."
   (interactive)
   (let ((meow-use-clipboard t)) (call-interactively #'meow-save)))
 
+(defun my/copy-buffer-to-kill-ring ()
+  "Copy the entire current buffer to the kill ring."
+  (interactive)
+  (kill-ring-save (point-min) (point-max))
+  (message "Buffer copied"))
+
 (defun my/meow-save-to-eol ()
   "`Y': copy from point to end of line (kill-ring + system clipboard)."
   (interactive)
@@ -513,7 +519,8 @@ when the matched pair lives in one, select our own character match instead."
 
 (with-eval-after-load 'meow
   (define-key global-map (kbd "H-x") #'execute-extended-command)
-  (define-key global-map (kbd "M-/") #'my/meow-comment) ; Cmd-/ toggle comment (was gc)
+  (define-key global-map (kbd "M-/") #'my/meow-comment)
+  (define-key global-map (kbd "C-c C-w") #'my/copy-buffer-to-kill-ring)
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
 
   (setq meow--kbd-delete-char "C-S-d")
@@ -532,7 +539,8 @@ when the matched pair lives in one, select our own character match instead."
 
   (define-key meow-insert-state-keymap (kbd "C-h") #'backward-delete-char)
   (define-key meow-insert-state-keymap (kbd "C-l") #'recenter-top-bottom)
-  (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word))
+  (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word)
+  (define-key meow-insert-state-keymap (kbd "C-S-j") #'delete-indentation)) ; join to prev line
 
 ;; ESC aborts any real minibuffer prompt (M-x, find-file, completing-read);
 ;; without this ESC is just the Meta prefix and dangles.  (The y/n and
@@ -625,7 +633,8 @@ BINDINGS are KEY COMMAND pairs."
 (my/leader-prefix "g" "grab"
   "g" #'meow-grab
   "p" #'meow-swap-grab
-  "y" #'meow-sync-grab)
+  "c" #'meow-sync-grab
+  "y" #'my/copy-buffer-to-kill-ring)
 
 (my/leader-prefix "k" "code"
   "d" #'xref-find-definitions

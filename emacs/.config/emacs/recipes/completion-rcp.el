@@ -333,5 +333,18 @@ Shows the target's type and value, plus an ellipsis when more targets follow."
   (add-hook 'completion-at-point-functions #'cape-dabbrev)
   (add-hook 'completion-at-point-functions #'cape-file))
 
+;; Snippet engine.  Templates are elisp sexps; eglot-tempel (eglot-rcp) routes
+;; LSP snippet completions through it, so clangd's `reserve(std::size_t new_cap)'
+;; expands with fields.  M-+ completes a template name, M-* inserts one; while a
+;; template/LSP snippet is active, TAB/S-TAB step between its fields.
+(use-package tempel
+  :bind (("M-+" . tempel-complete)
+         ("M-*" . tempel-insert)
+         :map tempel-map
+         ("TAB"     . tempel-next)
+         ([tab]     . tempel-next)
+         ("S-TAB"   . tempel-previous)
+         ([backtab] . tempel-previous)))
+
 (provide 'completion-rcp)
 ;;; completion-rcp.el ends here
