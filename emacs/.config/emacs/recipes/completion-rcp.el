@@ -178,11 +178,7 @@ Picking a childless symbol just jumps to it."
 
 ;; Open an embark candidate in any window -- or a split you make on the spot via
 ;; ace-window's dispatch menu.  `C-.' (embark-act) then `o' hands the candidate to
-;; ace-window.  Selects the target window directly, so unlike the C-v/C-s vertico
-;; splits it works with consult-buffer's preview (which eats display-buffer overrides).
-;; `aw-dispatch-always' is a defcustom, special only once ace-window loads (it's
-;; deferred).  Declare it up front, else the `let' below binds it lexically and the
-;; real global stays nil -- so ace-window never offers its split dispatch.
+;; ace-window.
 (defvar aw-dispatch-always)
 (defvar aw-dispatch-alist)
 (defvar my/focus-width-inhibit)          ; defined in base-rcp

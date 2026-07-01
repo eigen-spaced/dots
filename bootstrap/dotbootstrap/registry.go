@@ -72,6 +72,10 @@ func registry(repo string) []item {
 		{"Emacs", "mupdf", "emacs-reader backend (epub/mobi/cbz)", "brew install mupdf", have("mutool"), false},
 		{"Emacs", "pdf-tools build deps", "automake/autoconf/pkg-config/poppler — compiles epdfinfo (PDF rendering)",
 			"brew install automake autoconf pkg-config poppler", have("automake"), false},
+		// Opt-in (def:false): jinx auto-compiles its spell module against enchant
+		// via pkg-config on first load; a C compiler ships with macOS.
+		{"Emacs", "enchant (jinx spellcheck)", "libenchant + pkg-config — jinx spell-check for org-mode (opt-in)",
+			"brew install enchant pkg-config", have("enchant-2"), false},
 
 		// --- Toolchains -----------------------------------------------------
 		{"Toolchains", "mise runtimes", "node, python, go, uv, pnpm (latest)",

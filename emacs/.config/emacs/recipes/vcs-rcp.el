@@ -3,7 +3,15 @@
 (eval-when-compile (require 'use-package))
 
 (use-package magit
-  :commands (magit-status magit-dispatch magit-blame magit-log-current))
+  :commands (magit-status magit-dispatch magit-blame magit-log-current)
+  :custom
+  ;; magit-status fills the whole frame; quitting it (q) restores the layout.
+  (magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1)
+  :config
+  ;; On commit, stack the diff below the message (top/bottom) instead of the
+  ;; default side-by-side split.
+  (add-to-list 'display-buffer-alist
+               '("\\`magit-diff:" (display-buffer-below-selected))))
 
 ;; Margin diff indicators (the "git gutter"), sharing flymake's column.  diff-hl
 ;; over git-gutter because it hooks magit's refresh — the gutter updates the

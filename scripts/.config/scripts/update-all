@@ -7,12 +7,11 @@
 #                         REMIND_DAYS old or more; used by the launchd agent
 #
 # Covers: brew, rustup, cargo-installed crates, mise-managed tools
-# (node, python, go, deno, uv, pnpm, ...), uv tools, pnpm globals,
-# npm globals.
+# (node, python, go, deno, uv, pnpm, ...), uv tools, and pnpm globals.
 
 set -u
 
-REMIND_DAYS=14
+REMIND_DAYS=30
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/update-all"
 STAMP="$STATE_DIR/last-run"
 
@@ -69,9 +68,10 @@ have mise && step "mise upgrade" mise upgrade
 
 have uv && step "uv tools" uv tool upgrade --all
 
-# Global JS packages (pnpm respects minimumReleaseAge from global config)
+# Global JS packages (pnpm respects minimumReleaseAge from global config).
+# pnpm is the sole global package manager; npm is only Node's bundled copy
+# and holds no globals of ours, so it is intentionally not updated here.
 have pnpm && step "pnpm globals" pnpm update -g
-have npm  && step "npm globals"  npm update -g
 
 # ----------------------------------------------------------------- summary
 mkdir -p "$STATE_DIR" && touch "$STAMP"

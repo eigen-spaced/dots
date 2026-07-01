@@ -90,8 +90,9 @@ Plain kmacro has no register name during recording, so the dot is all we show."
                 mode-line-modified " "
                 (:eval (my/mode-line-buffer))
                 "  " mode-line-position
-                (:eval (my/mode-line-vc))
                 mode-line-format-right-align
+                (:eval (let ((vc (my/mode-line-vc)))
+                         (if (string-empty-p vc) "" (concat vc "  "))))
                 (:eval (my/mode-line-encoding))
                 "   " mode-line-misc-info "  "
                 (:eval (my/mode-line-filetype))

@@ -50,6 +50,23 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   "Split stacked and select the new window."
   (interactive) (select-window (split-window-below)))
 
+(defun my/split-with-previous-buffer (&optional vertical)
+  "Move current buffer to a new window; show previous buffer in its place.
+Without prefix: horizontal split — current buffer moves to the right
+window, previous buffer occupies the left.
+With prefix (C-u): VERTICAL split — current buffer moves to the bottom
+window, previous buffer occupies the top."
+  (interactive "P")
+  (let* ((cur-buf (current-buffer))
+         (prev-buf (other-buffer cur-buf t))
+         (new-win (if vertical
+                      (split-window-below)
+                    (split-window-right))))
+    (set-window-buffer (selected-window) prev-buf)
+    (set-window-buffer new-win cur-buf)
+    (select-window new-win)))
+
+
 ;; Persistence/global modes that needn't be live during (daemon) boot.  Enabled
 ;; once, on the first command: `pre-command-hook' fires *before* that command, so
 ;; opening a file as your first action still gets `save-place' restore.
@@ -130,14 +147,13 @@ Most recipes re-run cleanly; changes that only a fresh process can undo
   (add-hook 'after-init-hook
             (lambda () (when (file-exists-p custom-file) (load custom-file nil t))))
   :bind
-  (
-   ("C-h"  . windmove-left)
-   ("C-l"  . windmove-right)
-   ("C-q"  . delete-window)
+  (("C-q"  . delete-window)
    ("M-q"  . my/delete-frame-confirm)   ; Cmd-Q closes the frame (not the daemon)
    ("C-x C-r" . my/eval-region)         ; eval the region + echo (was find-file-read-only)
    ("C-."     . find-file)              ; same as the `SPC .' leader
    ("C-,"     . persp-switch-to-buffer*)
+   :map ctl-x-4-map
+   ("s"    . my/split-with-previous-buffer)
    :map minibuffer-local-map
    ("C-w"  . backward-kill-word)))
 

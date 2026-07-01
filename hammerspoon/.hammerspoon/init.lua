@@ -7,7 +7,7 @@
 require("hs.ipc")
 
 local EMACSCLIENT = "/opt/homebrew/bin/emacsclient"
-local MOD = { "cmd", "ctrl" }
+local MOD = { "cmd", "alt" }
 
 -- Evaluate ELISP in the daemon, then pull Emacs to the foreground.
 local function emacs(elisp)
@@ -26,14 +26,14 @@ local function emacsPopup(command)
 	emacs("(my/popup-frame '" .. command .. ")")
 end
 
-hs.hotkey.bind(MOD, "O", function() -- ⌘⌃O  org folder in Dirvish
+hs.hotkey.bind(MOD, "O", function() -- ⌘⌥O  org folder in Dirvish
 	emacsPopup("my/dirvish-org")
 end)
-hs.hotkey.bind(MOD, "F", function() -- ⌘⌃F  Dirvish (the new frame's default-directory)
+hs.hotkey.bind(MOD, "F", function() -- ⌘⌥F  Dirvish (the new frame's default-directory)
 	emacsPopup("dirvish")
 end)
 
--- ⌘⌃E  emacs-everywhere: edit any app's focused text field in Emacs, C-c C-c to
+-- ⌘⌥E  emacs-everywhere: edit any app's focused text field in Emacs, C-c C-c to
 -- send it back. It owns its own frame and must run while the *source* app is
 -- still frontmost (it records, then copies the field), so we DON'T pre-activate
 -- Emacs. First use prompts to let *Emacs* control "System Events" — grant it.
@@ -41,7 +41,7 @@ hs.hotkey.bind(MOD, "E", function()
 	hs.task.new(EMACSCLIENT, nil, { "-e", "(emacs-everywhere)" }):start()
 end)
 
--- ⌘⌃C  zero-decision capture into inbox.org (small floating frame)
+-- ⌘⌥C  zero-decision capture into inbox.org (small floating frame)
 hs.hotkey.bind(MOD, "C", function()
 	emacs("(my/capture-frame)")
 end)
@@ -53,16 +53,16 @@ local function spotify(cmd)
 	hs.osascript.applescript('tell application "Spotify" to ' .. cmd)
 end
 
-hs.hotkey.bind(MOD, "P", function() -- ⌘⌃P play/pause
+hs.hotkey.bind(MOD, "P", function() -- ⌘⌥P play/pause
 	spotify("playpause")
 end)
-hs.hotkey.bind(MOD, "]", function() -- ⌘⌃] next
+hs.hotkey.bind(MOD, "]", function() -- ⌘⌥] next
 	spotify("next track")
 end)
-hs.hotkey.bind(MOD, "[", function() -- ⌘⌃[ previous
+hs.hotkey.bind(MOD, "[", function() -- ⌘⌥[ previous
 	spotify("previous track")
 end)
--- ⌘⌃N now-playing HUD. (NOT ⌘⌃I — that's Firefox's web-inspector.) Uses hs.alert,
+-- ⌘⌥N now-playing HUD. (NOT ⌘⌥I — that's Firefox's web-inspector.) Uses hs.alert,
 -- not hs.notify (which is silent unless granted Notification permission).
 hs.hotkey.bind(MOD, "N", function()
 	local ok, info =
@@ -71,7 +71,7 @@ hs.hotkey.bind(MOD, "N", function()
 end)
 
 -- --- App switching: one hotkey per app (no window manager) -------------------
--- ⌘⌃+N focuses the app (pulling its windows forward), launching it if needed.
+-- ⌘⌥+N focuses the app (pulling its windows forward), launching it if needed.
 -- The digits stay clear of app-level number bindings (Emacs M-1.., Ghostty
 -- alt+1.. tabs, browser Cmd+1.. tabs). Apps are keyed by BUNDLE ID: focusing
 -- "Emacs" by NAME hits the /Applications/Emacs.app launcher applet and spawns a
@@ -320,7 +320,7 @@ end
 
 hs.hotkey.bind({ "alt" }, "space", switchShow) -- ⌥Space  window/buffer switcher
 
--- Auto-reload on config change, plus ⌘⌃R to reload by hand.
+-- Auto-reload on config change, plus ⌘⌥R to reload by hand.
 local function reloadOnLua(files)
 	for _, f in ipairs(files) do
 		if f:sub(-4) == ".lua" then
