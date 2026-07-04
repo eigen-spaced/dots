@@ -105,6 +105,8 @@
             "N":          PreviousResult,
             "a":          Add,
             "A":          AddAll,
+            // Play ONLY the hovered song (Enter/Confirm queues the whole album).
+            "P":          AddOptions(kind: Action(all: false, autoplay: Hovered, position: EndOfQueue)),
             "D":          Delete,
             "<C-r>":      Rename,
             "i":          FocusInput,

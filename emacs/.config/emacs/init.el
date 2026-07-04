@@ -72,6 +72,7 @@
 (require 'markdown-rcp)
 (require 'jinx-rcp)
 (require 'notmuch-rcp)
+(require 'mpd-rcp)
 (require 'dired-rcp)
 (require 'term-rcp)
 (require 'agent-shell-rcp)

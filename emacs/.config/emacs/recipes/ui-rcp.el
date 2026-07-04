@@ -35,6 +35,11 @@
       (ignore-errors
         (face-spec-set f '((t :inherit unspecified)) 'face-override-spec)))))
 (advice-add 'load-theme :after #'my/flatten-gnus-faces)
+;; The advice only reaches faces that exist when the theme loads; the gnus-group
+;; faces are defined later in startup (so the initial flatten misses them, leaving
+;; the cycle to abort the first GUI frame).  Re-run once init is done -- on a
+;; daemon this is before any client frame realizes faces.
+(add-hook 'emacs-startup-hook #'my/flatten-gnus-faces)
 
 (defvar my/default-theme 'ef-dream
   "Fallback theme when `my/theme-file' holds no saved choice.")

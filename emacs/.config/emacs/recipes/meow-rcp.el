@@ -514,7 +514,12 @@ when the matched pair lives in one, select our own character match instead."
 (with-eval-after-load 'meow
   (define-key global-map (kbd "H-x") #'execute-extended-command)
   (define-key global-map (kbd "M-/") #'my/meow-comment)
-  (define-key global-map (kbd "C-c C-w") #'my/copy-buffer-to-kill-ring)
+  ;; Copy whole buffer.  Major modes' C-c C-<letter> bindings shadow the
+  ;; global map, so re-bind in org explicitly (over org-evaluate-time-range,
+  ;; which we never use); code modes don't bind C-c C-y and fall through.
+  (define-key global-map (kbd "C-c C-y") #'my/copy-buffer-to-kill-ring)
+  (with-eval-after-load 'org
+    (define-key org-mode-map (kbd "C-c C-y") #'my/copy-buffer-to-kill-ring))
   (define-key meow-normal-state-keymap (kbd "?") #'eldoc-box-help-at-point)
 
   (setq meow--kbd-delete-char "C-S-d")
@@ -679,6 +684,19 @@ BINDINGS are KEY COMMAND pairs."
   "t" #'my/ghostel-popup
   "T" #'my/ghostel-full
   "-" #'dired-jump)
+
+(my/leader-prefix "a" "audio"
+  "a"   #'mpdel-core-open-artists
+  "b"   #'mpdel-browser-open
+  "l"   #'mpdel-playlist-open
+  "L"   #'mpdel-core-open-stored-playlists
+  "v"   #'mpdel-song-open
+  "SPC" #'libmpdel-playback-play-pause
+  "n"   #'libmpdel-playback-next
+  "p"   #'libmpdel-playback-previous
+  "s"   #'libmpdel-stop
+  "+"   #'mpdel-core-volume-increase
+  "-"   #'mpdel-core-volume-decrease)
 
 (my/leader-prefix "n" "notes/org"
   "c" #'org-capture

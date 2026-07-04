@@ -10,11 +10,12 @@ var/
 .cache/
 .agent-shell/
 custom.el
-recentf
+recentf.eld
 history
 places
-projects
+projects.eld
 savehist
+undo-fu-session/
 org-clock-save.el
 org-roam.db
 .org-id-locations
