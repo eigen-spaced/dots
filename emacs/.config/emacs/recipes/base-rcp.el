@@ -156,7 +156,7 @@ window, previous buffer occupies the top."
               sgml-basic-offset 2
               sh-basic-offset 2
               lua-indent-level 2
-              c-basic-offset 2
+              c-basic-offset 4           ; C/C++: match c-ts-mode-indent-offset + clang-format
               python-indent-offset 4)   ; Python convention
 
 ;; Keep a *scratch* alive at all times: veto its kill (burying instead) so

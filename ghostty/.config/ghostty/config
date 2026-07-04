@@ -3,8 +3,13 @@ theme = Duskfox
 macos-titlebar-style = tabs
 
 # Font config
-font-family = "Cascadia Code NF"
+font-family = "IoskeleyMono Nerd Font"
 font-size = 18
+# IoskeleyMono is Iosevka-based and has no ligatures to disable, but turn off
+# the standard/contextual ligature features so nothing ever fuses glyphs.
+font-feature = -liga
+font-feature = -calt
+font-feature = -dlig
 
 macos-option-as-alt = true
 

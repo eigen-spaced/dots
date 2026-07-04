@@ -37,18 +37,25 @@
                                        (unknown . "?") (ignored . "i")))
   ;; The diff-hl-margin-* faces colour the BACKGROUND (a block behind the symbol);
   ;; recolour them to paint the bar glyph itself (foreground, no block) using the
-  ;; theme's diff colours.  Re-applied on theme switch.
+  ;; theme's diff colours.  Advise `enable-theme', NOT `load-theme': consult-theme
+  ;; re-enables already-loaded themes without load-theme, and when it does call it
+  ;; ('no-enable) the theme isn't active yet, so a load-theme advice snapshots
+  ;; whatever was momentarily current (e.g. stock light diff colours -> "white"
+  ;; gutter).  load-theme still triggers this via its internal enable-theme.
+  ;; Resolve colours on a GUI frame -- on the daemon's initial frame they come
+  ;; back unspecified (ui-rcp's first-frame theme re-apply re-fires this).
   (defun my/diff-hl-margin-bar-faces (&rest _)
-    (dolist (pair '((diff-hl-margin-insert . diff-hl-insert)
-                    (diff-hl-margin-change . diff-hl-change)
-                    (diff-hl-margin-delete . diff-hl-delete)))
-      (when (facep (car pair))
-        (let ((color (face-attribute (cdr pair) :background nil t)))
-          (unless (eq color 'unspecified)
-            (set-face-attribute (car pair) nil :inherit 'unspecified
-                                :foreground color :background 'unspecified))))))
+    (when-let* ((frame (seq-find #'display-graphic-p (frame-list))))
+      (dolist (pair '((diff-hl-margin-insert . diff-hl-insert)
+                      (diff-hl-margin-change . diff-hl-change)
+                      (diff-hl-margin-delete . diff-hl-delete)))
+        (when (facep (car pair))
+          (let ((color (face-attribute (cdr pair) :background frame t)))
+            (unless (eq color 'unspecified)
+              (set-face-attribute (car pair) nil :inherit 'unspecified
+                                  :foreground color :background 'unspecified)))))))
   (my/diff-hl-margin-bar-faces)
-  (advice-add 'load-theme :after #'my/diff-hl-margin-bar-faces)
+  (advice-add 'enable-theme :after #'my/diff-hl-margin-bar-faces)
   (diff-hl-margin-mode 1)
   (defun my/diff-hl-yield-to-flymake (orig ovl type shape)
     "Around `diff-hl-highlight-on-margin': yield the cell to a flymake diagnostic."

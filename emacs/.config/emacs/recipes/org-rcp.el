@@ -22,6 +22,7 @@
   '(org-block org-block-begin-line org-block-end-line org-code org-verbatim
     org-table org-formula org-meta-line org-document-info-keyword
     org-special-keyword org-property-value org-drawer
+    org-modern-todo org-modern-done org-modern-tag org-modern-priority
     font-lock-comment-face font-lock-comment-delimiter-face
     line-number line-number-current-line)
   "Org faces pinned to `fixed-pitch' (monospace) under `my/org-prose-serif'.")
@@ -136,6 +137,57 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
   (forward-line -2)
   (when (fboundp 'meow-insert-mode) (meow-insert-mode 1)))
 
+;;; Inline images, on demand -----------------------------------------
+
+;; Images stay hidden until asked for (org 9.8's link-preview machinery; the
+;; stock C-c C-x C-v is still there with its finer prefix-arg variants):
+;; C-c v shows/hides every image in the buffer, and my/org-image-peek-mode
+;; previews just the link under the cursor, hiding it again on the way out.
+
+(defun my/org-toggle-images ()
+  "Show every inline image in the buffer; hide them all if any are shown."
+  (interactive)
+  (if (seq-some (lambda (ov) (overlay-get ov 'org-image-overlay))
+                (overlays-in (point-min) (point-max)))
+      (org-link-preview-clear (point-min) (point-max))
+    (org-link-preview-region t nil (point-min) (point-max))))
+
+(defvar-local my/org--image-peek-bounds nil
+  "Bounds (BEG . END) of the link auto-previewed by `my/org-image-peek-mode'.")
+
+(defun my/org--image-peek ()
+  "Preview the image link at point; hide it again once point moves off."
+  ;; Skip while typing: each keystroke inside a link would clear and re-render
+  ;; the preview (the overlay's modification hook removes it on edit).
+  (unless (memq this-command '(self-insert-command org-self-insert-command
+                               org-delete-backward-char delete-backward-char))
+    (let* ((link (org-element-lineage (org-element-context) 'link t))
+           (bounds (and link (cons (org-element-begin link)
+                                   (org-element-end link)))))
+      (unless (equal bounds my/org--image-peek-bounds)
+        (when my/org--image-peek-bounds
+          (org-link-preview-clear (car my/org--image-peek-bounds)
+                                  (cdr my/org--image-peek-bounds))
+          (setq my/org--image-peek-bounds nil))
+        ;; Only peek links nothing else is previewing, so images shown by the
+        ;; buffer-wide toggle don't get cleared when the cursor passes through.
+        (when (and bounds
+                   (not (seq-some (lambda (ov) (overlay-get ov 'org-image-overlay))
+                                  (overlays-in (car bounds) (cdr bounds)))))
+          (org-link-preview-region t nil (car bounds) (cdr bounds))
+          (setq my/org--image-peek-bounds bounds))))))
+
+(define-minor-mode my/org-image-peek-mode
+  "Show the image for the link at point, hiding it when the cursor leaves."
+  :lighter nil
+  (if my/org-image-peek-mode
+      (add-hook 'post-command-hook #'my/org--image-peek nil t)
+    (remove-hook 'post-command-hook #'my/org--image-peek t)
+    (when my/org--image-peek-bounds
+      (org-link-preview-clear (car my/org--image-peek-bounds)
+                              (cdr my/org--image-peek-bounds))
+      (setq my/org--image-peek-bounds nil))))
+
 ;;; Global floating-frame capture (for a window-manager hotkey) ------
 
 (defun my/center-frame (frame)
@@ -185,7 +237,8 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
   :ensure nil
   :commands (org-capture org-agenda org-store-link org-todo-list)
   :hook ((org-mode . my/org-prose-serif)
-         (org-mode . visual-line-mode))
+         (org-mode . visual-line-mode)
+         (org-mode . my/org-image-peek-mode))
   :custom
   (org-agenda-files (mapcar #'my/org-file
                             '("inbox.org" "projects.org" "calendar.org" "reading.org")))
@@ -193,6 +246,12 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
                         "|" "DONE(d!)" "CANCELLED(c@)")))
   (org-log-done 'time)
   (org-log-into-drawer t)
+  ;; Virtual indentation: body text lines up under its heading (org-indent-mode;
+  ;; buffer text stays flush-left on disk).  Also hides the leading stars.
+  (org-startup-indented t)
+  ;; Inline images render at 60% of the window width, unless an
+  ;; #+ATTR_ORG: :width overrides it per image.
+  (org-image-actual-width '(0.6))
   (org-refile-targets (list (cons (mapcar #'my/org-file
                                           '("projects.org" "someday.org"
                                             "calendar.org" "reading.org"))
@@ -230,7 +289,42 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
   (org-clock-persistence-insinuate)
   (add-hook 'org-capture-after-finalize-hook #'my/capture-frame-cleanup)
   (define-key org-mode-map (kbd "C-c i") #'my/org-insert-src-block)
-  (define-key org-mode-map (kbd "C-c e") #'my/org-read-in-eww))
+  (define-key org-mode-map (kbd "C-c e") #'my/org-read-in-eww)
+  (define-key org-mode-map (kbd "C-c v") #'my/org-toggle-images))
+
+;; org-modern, a subset: static bullet stars (✿ ◉ ○ ◈ ✸), #+begin_src labels,
+;; and TODO/tag/priority badges (faces pinned mono in `my/org-keep-mono-faces').
+;; Everything else (tables, timestamps, lists, checkboxes, keywords, ...)
+;; stays stock org.
+(use-package org-modern
+  :hook (org-mode . org-modern-mode)
+  :custom
+  (org-modern-star 'replace)
+  (org-modern-replace-stars "✿◉○◈✸")
+  (org-modern-timestamp nil)
+  (org-modern-table nil)
+  (org-modern-list nil)
+  (org-modern-checkbox nil)
+  (org-modern-horizontal-rule nil)
+  (org-modern-keyword nil)
+  (org-modern-footnote nil)
+  (org-modern-internal-target nil)
+  (org-modern-radio-target nil)
+  (org-modern-progress nil)
+  :config
+  ;; Badges inherit :height 0.8 from `org-modern-label'; TODO/DONE a bit bigger.
+  (set-face-attribute 'org-modern-todo nil :height 0.9)
+  (set-face-attribute 'org-modern-done nil :height 0.9))
+
+;; org-modern's block bracket is drawn in the fringe, which org-indent's line
+;; prefixes defeat (org-modern auto-disables it); this draws the bracket in the
+;; indent prefix instead.  GitHub-only package, hence :vc.  Hook depth 90: must
+;; run after org-indent and org-modern have set up.
+(use-package org-modern-indent
+  :vc (:url "https://github.com/jdtsmith/org-modern-indent" :rev :newest)
+  :defer t
+  :init
+  (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
 ;;; org-roam: linked notes + daily journal ---------------------------
 

@@ -102,7 +102,7 @@
       window-divider-default-right-width 1)
 (add-hook 'after-init-hook #'window-divider-mode)
 
-(set-face-attribute 'default nil :font "Cascadia Code NF" :height 180)
+(set-face-attribute 'default nil :font "IoskeleyMono Nerd Font" :height 180)
 
 ;; macOS: blend the titlebar into the theme and force dark window chrome.
 ;; Guard on the OS, not `window-system' -- on the daemon that's nil at load time

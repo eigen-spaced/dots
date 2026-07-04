@@ -76,6 +76,8 @@ func registry(repo string) []item {
 		// via pkg-config on first load; a C compiler ships with macOS.
 		{"Emacs", "enchant (jinx spellcheck)", "libenchant + pkg-config — jinx spell-check for org-mode (opt-in)",
 			"brew install enchant pkg-config", have("enchant-2"), false},
+		{"Emacs", "nerd-icons font", "Symbols Nerd Font Mono (NFM.ttf) — modeline/dired/dashboard glyphs",
+			nerdIconsFontCmd, `[ -f "$HOME/Library/Fonts/NFM.ttf" ]`, true},
 
 		// --- Toolchains -----------------------------------------------------
 		{"Toolchains", "mise runtimes", "node, python, go, uv, pnpm (latest)",
@@ -160,6 +162,14 @@ func registry(repo string) []item {
 			`[ -f "$HOME/Library/LaunchAgents/com.sunny.update-reminder.plist" ]`, false},
 	}
 }
+
+// nerdIconsFontCmd downloads the one font nerd-icons draws its glyphs from —
+// "Symbols Nerd Font Mono" (NFM.ttf). Without it, icons fall back to the default
+// text font and render mis-sized (tiny under a narrow font like IoskeleyMono).
+// Same file `M-x nerd-icons-install-fonts' fetches; curl keeps it daemon-free.
+const nerdIconsFontCmd = `mkdir -p "$HOME/Library/Fonts"
+curl -fsSL -o "$HOME/Library/Fonts/NFM.ttf" \
+  https://raw.githubusercontent.com/rainstormstudio/nerd-icons.el/main/fonts/NFM.ttf`
 
 // rustupCmd installs rustup if missing, then pins stable + rust-src.
 const rustupCmd = `if ! command -v rustup >/dev/null 2>&1; then

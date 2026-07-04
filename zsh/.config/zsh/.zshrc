@@ -52,7 +52,6 @@ _comp_options+=(globdots)    # let completion see hidden files
 # --- Modular config (loader helpers + utility funcs come first) -------------
 source "$ZDOTDIR/zsh-functions"
 
-# zsh_add_file "zsh-vim"
 zsh_add_file "zsh-aliases"
 [[ -n $IS_MAC  ]] && zsh_add_file "zsh-aliases-mac"
 [[ -n $IS_ARCH ]] && zsh_add_file "zsh-aliases-arch"
@@ -71,8 +70,17 @@ zsh_add_plugin "hlissner/zsh-autopair"
 ZSH_HIGHLIGHT_STYLES[path]=none
 ZSH_HIGHLIGHT_STYLES[path_prefix]=none
 
+# Emacs keymap, explicitly: zsh defaults to vi-mode when $EDITOR contains
+# "vi" (ours is nvim), and vi-mode was dropped on purpose (June 2026).
+bindkey -e
+
 # Bindings whose targets are defined in zsh-functions / plugins
 bindkey '^W' my-backward-delete-word
+# Up/Down search history filtered by what's already typed
+# (widgets from zsh-history-substring-search)
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
+bindkey -M menuselect '^[[Z' reverse-menu-complete   # Shift-Tab
 
 # --- Editor -----------------------------------------------------------------
 if [[ -n $SSH_CONNECTION ]]; then
