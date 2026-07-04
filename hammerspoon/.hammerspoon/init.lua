@@ -1,9 +1,5 @@
 -- ~/.hammerspoon/init.lua — global hotkeys driving the Emacs daemon.
 --
--- A global hotkey fires a one-line elisp call at the always-on Emacs daemon
--- (com.sunny.emacs-daemon LaunchAgent) via `emacsclient' — it just talks to the
--- socket, so no launcher or bash+sleep timing hack is needed.
-
 require "hs.ipc"
 
 local EMACSCLIENT = "/opt/homebrew/bin/emacsclient"
@@ -50,36 +46,41 @@ hs.hotkey.bind(MOD, "C", function()
   emacs "(my/capture-frame)"
 end)
 
--- --- Spotify transport (AppleScript → the desktop app) -----------------------
--- Drives the local Spotify app from any context — no API key or Premium needed.
--- smudge in Emacs uses the same AppleScript layer, so the two stay in sync.
-local function spotify(cmd)
-  hs.osascript.applescript('tell application "Spotify" to ' .. cmd)
+-- --- MPD transport (rmpc CLI → the MPD daemon) -------------------------------
+-- Talks to the daemon's socket, so it works with or without the rmpc TUI open.
+local RMPC = "/Users/sunny/.cargo/bin/rmpc"
+
+local function rmpc(sub)
+  hs.task.new(RMPC, nil, { sub }):start()
 end
 
 hs.hotkey.bind(MOD, "P", function() -- ⌘⌥P play/pause
-  spotify "playpause"
+  rmpc "togglepause"
 end)
 hs.hotkey.bind(MOD, "]", function() -- ⌘⌥] next
-  spotify "next track"
+  rmpc "next"
 end)
 hs.hotkey.bind(MOD, "[", function() -- ⌘⌥[ previous
-  spotify "previous track"
+  rmpc "prev"
 end)
--- ⌘⌥N now-playing HUD. (NOT ⌘⌥I — that's Firefox's web-inspector.) Uses hs.alert,
--- not hs.notify (which is silent unless granted Notification permission).
-hs.hotkey.bind(MOD, "N", function()
-  local ok, info =
-    hs.osascript.applescript 'tell application "Spotify" to (name of current track) & " — " & (artist of current track)'
-  hs.alert.show(ok and ("♪  " .. info) or "Spotify isn't running")
-end)
+hs.hotkey.bind(
+  MOD,
+  "N",
+  function() -- ⌘⌥N now-playing HUD (rmpc song → JSON)
+    hs.task
+      .new(RMPC, function(_, out)
+        local title = out and out:match '"title":"(.-)"'
+        local artist = out and out:match '"artist":"(.-)"'
+        hs.alert.show(
+          title and ("♪  " .. (artist and artist .. " — " or "") .. title)
+            or "MPD: nothing playing"
+        )
+      end, { "song" })
+      :start()
+  end
+)
 
--- --- App switching: one hotkey per app (no window manager) -------------------
--- ⌘⌥+N focuses the app (pulling its windows forward), launching it if needed.
--- The digits stay clear of app-level number bindings (Emacs M-1.., Ghostty
--- alt+1.. tabs, browser Cmd+1.. tabs). Apps are keyed by BUNDLE ID: focusing
--- "Emacs" by NAME hits the /Applications/Emacs.app launcher applet and spawns a
--- fresh copy instead of surfacing the running daemon (org.gnu.Emacs).
+-- --- App switching: one hotkey per app ---------------------------------------
 local appHotkeys = {
   ["1"] = { bundleID = "org.gnu.Emacs" },
   ["2"] = { bundleID = "com.mitchellh.ghostty" },

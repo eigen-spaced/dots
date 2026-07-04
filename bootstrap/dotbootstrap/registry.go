@@ -126,6 +126,10 @@ func registry(repo string) []item {
 		{"Dev tools", "tree-sitter-cli", "tree-sitter CLI", "cargo install tree-sitter-cli", have("tree-sitter"), true},
 		pnpm("codex", "@openai/codex", "OpenAI Codex CLI", "codex"),
 
+		// --- Music (MPD) ----------------------------------------------------
+		{"Music", "mpd", "Music Player Daemon", "brew install mpd", have("mpd"), false},
+		{"Music", "rmpc", "Rust MPD client / TUI", "cargo install rmpc", have("rmpc"), false},
+
 		// --- Dotfiles (stow) ------------------------------------------------
 		stowFold("nvim", "Neovim config"),
 		stow("emacs", "Emacs config (~/.config/emacs)"),
@@ -135,6 +139,8 @@ func registry(repo string) []item {
 		stow("ghostty", "Ghostty config"),
 		stow("hammerspoon", "Hammerspoon config"),
 		stow("scripts", "~/.config/scripts helpers"),
+		stow("mpd", "MPD config (~/.config/mpd)"),
+		stow("rmpc", "rmpc config (~/.config/rmpc)"),
 
 		// --- post-stow build steps ------------------------------------------
 		// Compile the stowed pixel-miri16 bat theme into bat's machine-local
@@ -148,6 +154,8 @@ func registry(repo string) []item {
 			grammarInstallCmd, `ls "$HOME/.config/emacs/tree-sitter/"libtree-sitter-go.* >/dev/null 2>&1`, true},
 
 		// --- launchd agents -------------------------------------------------
+		{"launchd", "mpd daemon agent", "launchd agent: mpd --no-daemon at login (stowed config)", mpdDaemonCmd,
+			`[ -f "$HOME/Library/LaunchAgents/com.sunny.mpd.plist" ]`, false},
 		{"launchd", "update reminder", "daily 11:00 check; notifies if update-all stale 14d+", updateReminderCmd,
 			`[ -f "$HOME/Library/LaunchAgents/com.sunny.update-reminder.plist" ]`, false},
 	}
@@ -193,6 +201,36 @@ cat > "$plist" <<PLIST
         <key>LSP_USE_PLISTS</key>
         <string>1</string>
     </dict>
+</dict>
+</plist>
+PLIST
+launchctl bootout "gui/$(id -u)/$label" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$plist"`
+
+// mpdDaemonCmd installs the launchd agent that runs the MPD daemon at login,
+// pointed at the stowed config with an explicit path — so it needs no brew
+// service and no system-wide mpd.conf. mpd won't create playlist_directory, so
+// we make it first.
+const mpdDaemonCmd = `label="com.sunny.mpd"
+plist="$HOME/Library/LaunchAgents/$label.plist"
+mkdir -p "$HOME/Library/LaunchAgents" "$HOME/.config/mpd/playlists"
+cat > "$plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>$label</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/homebrew/bin/mpd</string>
+        <string>--no-daemon</string>
+        <string>$HOME/.config/mpd/mpd.conf</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
 </dict>
 </plist>
 PLIST
