@@ -63,6 +63,7 @@
 (require 'format-rcp)
 (require 'eglot-rcp)
 (require 'python-rcp)
+(require 'lisp-rcp)
 (require 'tree-sitter-rcp)
 (require 'editing-rcp)
 (require 'emacs-everywhere-rcp)

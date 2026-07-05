@@ -97,6 +97,10 @@ func registry(repo string) []item {
 		// (not clangd — Apple's /usr/bin/clangd is fine) so apheleia can find it.
 		{"Dev tools", "clang-format on PATH", "symlink keg-only clang-format into /opt/homebrew/bin",
 			"ln -sf /opt/homebrew/opt/llvm/bin/clang-format /opt/homebrew/bin/clang-format", have("clang-format"), true},
+		// --- Dev tools: Common Lisp ----------------------------------------
+		{"Dev tools", "sbcl", "Steel Bank Common Lisp — the implementation SLY drives", "brew install sbcl", have("sbcl"), true},
+		{"Dev tools", "Quicklisp", "CL library manager (ql:quickload); installs ~/quicklisp + ~/.sbclrc loader",
+			quicklispCmd, `[ -f "$HOME/quicklisp/setup.lisp" ]`, true},
 		// --- Dev tools: Rust ------------------------------------------------
 		{"Dev tools", "rust-analyzer", "Rust LSP (rustup component)", "rustup component add rust-analyzer", have("rust-analyzer"), true},
 		// --- Dev tools: Go --------------------------------------------------
@@ -178,6 +182,26 @@ fi
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"
 rustup default stable
 rustup component add rust-src`
+
+// quicklispCmd bootstraps Quicklisp into ~/quicklisp and appends the loader to
+// ~/.sbclrc (idempotent).  `ql:add-to-init-file' prompts, so we write the
+// snippet by hand under --non-interactive instead.
+const quicklispCmd = `set -e
+tmp="$(mktemp -d)"
+curl -fsSL -o "$tmp/quicklisp.lisp" https://beta.quicklisp.org/quicklisp.lisp
+sbcl --non-interactive --load "$tmp/quicklisp.lisp" --eval '(quicklisp-quickstart:install)' --quit
+rm -rf "$tmp"
+if ! grep -q quicklisp/setup.lisp "$HOME/.sbclrc" 2>/dev/null; then
+  cat >> "$HOME/.sbclrc" <<'EOF'
+
+;; Load Quicklisp if present (ql:quickload & friends).
+#-quicklisp
+(let ((quicklisp-init (merge-pathnames "quicklisp/setup.lisp"
+                                       (user-homedir-pathname))))
+  (when (probe-file quicklisp-init)
+    (load quicklisp-init)))
+EOF
+fi`
 
 // emacsDaemonCmd installs the launchd agent that runs the Emacs daemon at login.
 const emacsDaemonCmd = `label="com.sunny.emacs-daemon"
