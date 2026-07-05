@@ -16,15 +16,13 @@
   (expand-file-name name org-directory))
 
 ;;; Serif prose ------------------------------------------------------
-;; `my/reading-serif' is defined in eww-rcp (shared by eww/org/notmuch).
-
 (defvar my/org-keep-mono-faces
   '(org-block org-block-begin-line org-block-end-line org-code org-verbatim
-    org-table org-formula org-meta-line org-document-info-keyword
-    org-special-keyword org-property-value org-drawer
-    org-modern-todo org-modern-done org-modern-tag org-modern-priority
-    font-lock-comment-face font-lock-comment-delimiter-face
-    line-number line-number-current-line)
+              org-table org-formula org-meta-line org-document-info-keyword
+              org-special-keyword org-property-value org-drawer
+              org-modern-todo org-modern-done org-modern-tag org-modern-priority
+              font-lock-comment-face font-lock-comment-delimiter-face
+              line-number line-number-current-line)
   "Org faces pinned to `fixed-pitch' (monospace) under `my/org-prose-serif'.")
 
 (defun my/org-prose-serif ()
@@ -160,7 +158,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
   ;; Skip while typing: each keystroke inside a link would clear and re-render
   ;; the preview (the overlay's modification hook removes it on edit).
   (unless (memq this-command '(self-insert-command org-self-insert-command
-                               org-delete-backward-char delete-backward-char))
+                                                   org-delete-backward-char delete-backward-char))
     (let* ((link (org-element-lineage (org-element-context) 'link t))
            (bounds (and link (cons (org-element-begin link)
                                    (org-element-end link)))))
@@ -236,14 +234,13 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
 (use-package org
   :ensure nil
   :commands (org-capture org-agenda org-store-link org-todo-list)
-  :hook ((org-mode . my/org-prose-serif)
-         (org-mode . visual-line-mode)
+  :hook ((org-mode . visual-line-mode)
          (org-mode . my/org-image-peek-mode))
   :custom
   (org-agenda-files (mapcar #'my/org-file
                             '("inbox.org" "projects.org" "calendar.org" "reading.org")))
   (org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "WAITING(w@/!)"
-                        "|" "DONE(d!)" "CANCELLED(c@)")))
+                                 "|" "DONE(d!)" "CANCELLED(c@)")))
   (org-log-done 'time)
   (org-log-into-drawer t)
   ;; Virtual indentation: body text lines up under its heading (org-indent-mode;
@@ -310,11 +307,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
   (org-modern-footnote nil)
   (org-modern-internal-target nil)
   (org-modern-radio-target nil)
-  (org-modern-progress nil)
-  :config
-  ;; Badges inherit :height 0.8 from `org-modern-label'; TODO/DONE a bit bigger.
-  (set-face-attribute 'org-modern-todo nil :height 0.9)
-  (set-face-attribute 'org-modern-done nil :height 0.9))
+  (org-modern-progress nil))
 
 ;; org-modern's block bracket is drawn in the fringe, which org-indent's line
 ;; prefixes defeat (org-modern auto-disables it); this draws the bracket in the
@@ -330,7 +323,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
 
 (use-package org-roam
   :commands (org-roam-node-find org-roam-node-insert org-roam-buffer-toggle
-             org-roam-dailies-goto-today)
+                                org-roam-dailies-goto-today)
   :custom
   (org-roam-directory (my/org-file "roam"))
   (org-roam-dailies-directory "daily/")

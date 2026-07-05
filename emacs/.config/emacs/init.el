@@ -9,9 +9,14 @@
 (setq package-archives '(("gnu"    . "https://elpa.gnu.org/packages/")
                          ("nongnu" . "https://elpa.nongnu.org/nongnu/")
                          ("melpa"  . "https://melpa.org/packages/")))
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+;; No `package-initialize' or startup refresh: early-init enables
+;; `package-quickstart', so Emacs activates every installed package before this
+;; file loads, and `package-installed-p' resolves them from `package-activated-list'
+;; (its quickstart branch) -- so `use-package-always-ensure' finds everything
+;; without ever reading the archives.  A genuinely missing package installs
+;; lazily (`package-install' refreshes archives on demand), so normal launches
+;; never touch the network.  `package-install'/`-delete' keep the quickstart
+;; cache current; regenerate by hand with `M-x package-quickstart-refresh'.
 
 (require 'use-package)
 (require 'cl-lib)
