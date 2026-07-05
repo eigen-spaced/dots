@@ -15,6 +15,12 @@
   "Absolute path of NAME under `org-directory'."
   (expand-file-name name org-directory))
 
+(defun my/gtd-file (name)
+  "Absolute path of NAME under the gtd/ subdir of `org-directory'.
+The GTD capture/agenda files (inbox, mobile, projects, calendar) live there;
+loose files like reading.org/someday.org stay at the `org-directory' root."
+  (my/org-file (concat "gtd/" name)))
+
 ;;; Serif prose ------------------------------------------------------
 (defvar my/org-keep-mono-faces
   '(org-block org-block-begin-line org-block-end-line org-code org-verbatim
@@ -50,7 +56,7 @@
   (interactive)
   (let ((cutoff (- (float-time) (* my/org-inbox-stale-days 86400)))
         (markers '()) (n 0))
-    (with-current-buffer (find-file-noselect (my/org-file "inbox.org"))
+    (with-current-buffer (find-file-noselect (my/gtd-file "inbox.org"))
       (org-with-wide-buffer
        (goto-char (point-min))
        (while (re-search-forward "^\\* " nil t)
@@ -121,6 +127,13 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
                        (delete-other-windows win)))))
       (add-hook 'eww-after-render-hook hook))
     (eww url)))
+
+(defun my/org-iso-times-in-roam ()
+  "Keep ISO (YYYY-MM-DD) timestamp display in org-roam files.
+Elsewhere `org-display-custom-times' shows DD-MM-YYYY; roam/daily notes opt out."
+  (when (and buffer-file-name
+             (file-in-directory-p buffer-file-name (my/org-file "roam")))
+    (setq-local org-display-custom-times nil)))
 
 (defun my/org-insert-src-block (lang)
   "Insert an Org #+begin_src block for LANG and place point inside it."
@@ -199,9 +212,6 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
 (defun my/capture-frame ()
   "Pop a centered floating frame and capture one entry straight into inbox.org."
   (interactive)
-  ;; Load org-capture first so `org-capture-templates' is declared special
-  ;; before we let-bind it -- otherwise (under lexical-binding) the let binds it
-  ;; lexically and loading org-capture errors ("already lexical var").
   (require 'org-capture)
   (let ((frame (make-frame '((name . "org-capture")
                              (window-system . ns)
@@ -210,7 +220,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
     (select-frame-set-input-focus frame)
     (my/center-frame frame)
     (let ((org-capture-templates
-           `(("i" "Inbox (fast)" entry (file ,(my/org-file "inbox.org"))
+           `(("i" "Inbox (fast)" entry (file ,(my/gtd-file "inbox.org"))
               "* %?\n%U\n" :prepend t :empty-lines 0))))
       (condition-case nil
           (progn (org-capture nil "i")
@@ -235,33 +245,44 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
   :ensure nil
   :commands (org-capture org-agenda org-store-link org-todo-list)
   :hook ((org-mode . visual-line-mode)
-         (org-mode . my/org-image-peek-mode))
+         (org-mode . my/org-image-peek-mode)
+         (org-mode . my/org-iso-times-in-roam))
   :custom
-  (org-agenda-files (mapcar #'my/org-file
-                            '("inbox.org" "projects.org" "calendar.org" "reading.org")))
+  (org-agenda-files (append (mapcar #'my/gtd-file
+                                    '("inbox.org"
+                                      "mobile.org"
+                                      "projects.org"
+                                      "calendar.org"))
+                            (list (my/org-file "reading.org"))))
+  (org-agenda-skip-unavailable-files t)
   (org-todo-keywords '((sequence "TODO(t)" "NEXT(n)" "WAITING(w@/!)"
                                  "|" "DONE(d!)" "CANCELLED(c@)")))
   (org-log-done 'time)
   (org-log-into-drawer t)
-  ;; Virtual indentation: body text lines up under its heading (org-indent-mode;
-  ;; buffer text stays flush-left on disk).  Also hides the leading stars.
+  (org-time-stamp-custom-formats '("%d %b %Y %a" . "%d %b %Y %a %H:%M"))
+  (org-display-custom-times t)
   (org-startup-indented t)
   ;; Inline images render at 60% of the window width, unless an
   ;; #+ATTR_ORG: :width overrides it per image.
   (org-image-actual-width '(0.6))
-  (org-refile-targets (list (cons (mapcar #'my/org-file
-                                          '("projects.org" "someday.org"
-                                            "calendar.org" "reading.org"))
+  ;; Refile destinations only -- the GTD action files (projects/calendar) plus
+  ;; someday and archive.  reading.org is a separate list, kept out on purpose.
+  (org-refile-targets (list (cons (append (mapcar #'my/gtd-file '("projects.org" "calendar.org"))
+                                          (mapcar #'my/org-file '("someday.org" "archive.org")))
                                   '(:maxlevel . 3))))
+  ;; One central archive: `org-archive-subtree' (C-c C-x C-a) and
+  ;; `my/org-inbox-archive-stale' both file under the * Archive heading in
+  ;; archive.org, instead of per-file <name>_archive siblings.
+  (org-archive-location (concat (my/org-file "archive.org") "::* Archive"))
   (org-refile-use-outline-path 'file)
   (org-outline-path-complete-in-steps nil)
   (org-refile-allow-creating-parent-nodes 'confirm)
   (org-capture-templates
-   `(("t" "Task"           entry (file ,(my/org-file "inbox.org"))
+   `(("t" "Task"           entry (file ,(my/gtd-file "inbox.org"))
       "* TODO %?\n%U" :empty-lines 1)
-     ("n" "Note"           entry (file ,(my/org-file "inbox.org"))
+     ("n" "Note"           entry (file ,(my/gtd-file "inbox.org"))
       "* %?\n%U" :empty-lines 1)
-     ("l" "Task from here" entry (file ,(my/org-file "inbox.org"))
+     ("l" "Task from here" entry (file ,(my/gtd-file "inbox.org"))
       "* TODO %?\n%U\n%a" :empty-lines 1)
      ("r" "Reading item"   entry (file ,(my/org-file "reading.org"))
       "* TODO %?\n%U" :empty-lines 1)
@@ -277,7 +298,7 @@ No capture buffer — copy a link anywhere, switch to Emacs, run this."
        (todo "WAITING" ((org-agenda-overriding-header "Waiting for")))
        (todo "TODO"    ((org-agenda-overriding-header "Inbox — process me")
                         (org-agenda-files
-                         (list (expand-file-name "inbox.org" org-directory)))))))
+                         (list (my/gtd-file "inbox.org") (my/gtd-file "mobile.org")))))))
      ("r" "Reading list"
       ((todo "TODO|NEXT" ((org-agenda-overriding-header "To read")
                           (org-agenda-files

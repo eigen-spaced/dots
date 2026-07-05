@@ -90,6 +90,21 @@
                    "--theme=ansi" "--paging=never" "--line-range" ":500" ,file))))
     (add-to-list 'dirvish-preview-dispatchers 'my-bat t)))
 
+;; Dirvish spins forever (100% CPU, C-g-proof -- needs SIGUSR2 to break) when
+;; `dired' is pointed at a path that doesn't exist: `dired-initial-position'
+;; loops in `dired-goto-next-nontrivial-file' hunting a filename that isn't in
+;; the (empty/error) listing.  Vanilla dired errors cleanly; dirvish's
+;; dired-noselect advice doesn't.  "dired a missing file" almost always means
+;; "open/create it", so hand off to `find-file' (existing files and glob forms
+;; like ~/*.el still go to real dired).
+(defun my/dired-missing-to-find-file (orig dir-or-list &rest args)
+  (let ((path (and (stringp dir-or-list) (expand-file-name dir-or-list))))
+    (if (and path (not (file-exists-p path))
+             (not (string-match-p "[*?]" dir-or-list)))
+        (find-file path)
+      (apply orig dir-or-list args))))
+(advice-add 'dired :around #'my/dired-missing-to-find-file)
+
 ;; Colored dired listings + colored directory previews (the "highlighting").
 (use-package diredfl
   :hook ((dired-mode . diredfl-mode)
