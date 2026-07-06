@@ -56,6 +56,7 @@ func registry(repo string) []item {
 		// --- Apps (casks) ---------------------------------------------------
 		{"Apps (casks)", "Ghostty", "terminal emulator", "brew install --cask ghostty", "[ -d /Applications/Ghostty.app ]", true},
 		{"Apps (casks)", "Hammerspoon", "scriptable macOS hotkeys", "brew install --cask hammerspoon", "[ -d /Applications/Hammerspoon.app ]", true},
+		{"Apps (casks)", "OrbStack", "fast Docker/Linux runtime (Docker Desktop replacement)", "brew install --cask orbstack", "[ -d /Applications/OrbStack.app ]", true},
 
 		// --- Emacs ----------------------------------------------------------
 		{"Emacs", "emacs-plus@31", "native-comp Emacs built from source",
