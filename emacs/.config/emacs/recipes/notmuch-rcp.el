@@ -188,16 +188,6 @@ returns to the list (see `my/notmuch-search-pane-kill-hook')."
   (notmuch-tree-tag
    (if (member "unread" (notmuch-tree-get-tags)) '("-unread") '("+unread"))))
 
-;;; Background auto-sync every 5 min ---------------------------------
-
-(defvar my/notmuch-sync-timer nil)
-
-(defun my/notmuch-auto-sync ()
-  "Sync mail quietly in the background; refresh manually with `g'."
-  (unless (process-live-p (get-process "notmuch-autosync"))
-    (let ((default-directory "~/"))
-      (start-process-shell-command "notmuch-autosync" nil my/notmuch-sync-command))))
-
 ;;; notmuch ----------------------------------------------------------
 
 (use-package notmuch
@@ -288,10 +278,7 @@ returns to the list (see `my/notmuch-search-pane-kill-hook')."
   (define-key notmuch-tree-mode-map   (kbd "!") #'my/notmuch-tree-toggle-unread)
   (define-key notmuch-show-mode-map   (kbd "d") #'my/notmuch-show-toggle-trash)
 
-  (add-hook 'message-mode-hook #'my/notmuch-address-setup-capf)
-
-  (when (timerp my/notmuch-sync-timer) (cancel-timer my/notmuch-sync-timer))
-  (setq my/notmuch-sync-timer (run-with-timer 300 300 #'my/notmuch-auto-sync)))
+  (add-hook 'message-mode-hook #'my/notmuch-address-setup-capf))
 
 ;; `mml-preview' (C-c C-m P) renders the outgoing MIME in a popup, but binds `q'
 ;; to a bare `kill-buffer' -- which kills the preview buffer yet leaves its window
