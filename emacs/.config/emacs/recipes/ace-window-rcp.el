@@ -29,6 +29,13 @@
           (?f aw-split-window-fair         "Split fair")
           (?? aw-show-dispatch-help))))
 
+;; Flip a split's orientation frame-wide; bound to `SPC w t' (meow-rcp).  Frame-
+;; global, so it lives in the window leader, not ace's per-window dispatch.  Also
+;; provides M-x flip-frame/flop-frame/rotate-frame.
+(use-package transpose-frame
+  :commands (transpose-frame flip-frame flop-frame
+             rotate-frame rotate-frame-clockwise rotate-frame-anticlockwise))
+
 ;; Rearrange windows by label (bound under `SPC w' in meow-rcp).  `ace-swap-window'
 ;; ships interactive; move/copy wrap `aw-select' on the matching action.
 (defun my/ace-move-window ()

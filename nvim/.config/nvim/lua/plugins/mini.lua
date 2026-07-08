@@ -8,9 +8,30 @@ return {
     require("mini.misc").setup()
 
     require("mini.files").setup()
+
+    vim.api.nvim_create_autocmd("User", {
+      pattern = "MiniFilesBufferCreate",
+      callback = function(args)
+        vim.keymap.set("n", "<CR>", function()
+          MiniFiles.go_in { close_on_file = true }
+        end, {
+          buffer = args.data.buf_id,
+          desc = "Open file (close explorer)",
+        })
+      end,
+    })
+
+    -- Open at the current file so the explorer lands in that file's directory
+    -- with the file highlighted (oil's "open where you are"); `h` then walks up
+    -- toward the project root. Unnamed/scratch buffers fall back to the cwd.
     vim.keymap.set("n", "-", function()
-      MiniFiles.open()
-    end, { desc = "Open MiniFiles" })
+      local name = vim.api.nvim_buf_get_name(0)
+      local path = (name ~= "" and vim.fn.filereadable(name) == 1) and name
+        or nil
+      -- `use_latest = false`: always open fresh at the target, never restore the
+      -- previous branch (which drags the view back up to the project root).
+      MiniFiles.open(path, false)
+    end, { desc = "Open MiniFiles at current file" })
 
     local pick = require("mini.pick")
     pick.setup {
@@ -132,13 +153,19 @@ return {
       ".build",
       ".cache",
     }
-    local function pick_files()
+    local function files_cmd()
       local cmd = { "rg", "--files", "--hidden" }
       for _, glob in ipairs(file_ignore) do
         cmd[#cmd + 1] = "--glob"
         cmd[#cmd + 1] = "!" .. glob
       end
-      pick.builtin.cli({ command = cmd }, { source = { name = "Files" } })
+      return cmd
+    end
+    local function pick_files()
+      pick.builtin.cli(
+        { command = files_cmd() },
+        { source = { name = "Files" } }
+      )
     end
 
     vim.keymap.set({ "n", "x" }, "<c-p>", pick_files, { desc = "Pick files" })
@@ -160,32 +187,23 @@ return {
         { source = { show = grep_show }, window = { config = grep_win_config } }
       )
     end, { desc = "Live grep" })
-    vim.keymap.set({ "n", "x" }, "<leader>bb", function()
+    vim.keymap.set({ "n", "x" }, "<C-,>", function()
       pick.builtin.buffers()
     end, { desc = "Pick buffers" })
     vim.keymap.set("n", "<leader>fd", function()
-      pick.builtin.cli({
-        command = {
-          "fd",
-          "--type",
-          "d",
-          "--hidden",
-          "--exclude",
-          ".git",
-          "--exclude",
-          "node_modules",
-        },
-      }, {
+      pick.builtin.cli({ command = files_cmd() }, {
         source = {
-          name = "Directories",
+          name = "Files → dir in MiniFiles",
           choose = function(item)
-            if item then
-              require("oil").toggle_float(item)
+            if item and item ~= "" then
+              vim.schedule(function()
+                MiniFiles.open(item, false)
+              end)
             end
           end,
         },
       })
-    end, { desc = "Open directory in oil" })
+    end, { desc = "Find file → open its dir in MiniFiles" })
 
     require("conf.mini_statusline").setup()
   end,

@@ -235,6 +235,8 @@ returns to the list (see `my/notmuch-search-pane-kill-hook')."
   (require 'smtpmail)
   (setq mail-user-agent 'notmuch-user-agent ; compose-mail composes with notmuch, not Gnus
         mm-text-html-renderer 'shr
+        message-confirm-send t             ; y/n before C-c C-c sends (no undo once SMTP hands off)
+        message-kill-buffer-on-exit t      ; kill the compose buffer after sending (no *sent mail to…* corpse)
         message-send-mail-function #'smtpmail-send-it
         send-mail-function #'smtpmail-send-it
         smtpmail-smtp-user user-mail-address

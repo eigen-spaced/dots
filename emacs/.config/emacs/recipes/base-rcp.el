@@ -98,6 +98,7 @@ window, previous buffer occupies the top."
   (custom-file (expand-file-name "custom.el" user-emacs-directory))
   (backup-directory-alist `(("." . ,(expand-file-name "backups" user-emacs-directory))))
   (backup-by-copying t)
+  (kill-do-not-save-duplicates t)
   (version-control t)
   (delete-old-versions t)
   (auto-save-file-name-transforms

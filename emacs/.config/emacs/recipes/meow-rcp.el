@@ -667,6 +667,7 @@ BINDINGS are KEY COMMAND pairs."
   "r"  #'winner-redo
   "f"  #'my/focus-width-mode
   "="  #'balance-windows
+  "t"  #'transpose-frame                                  ; flip split orientation
   ">"  (lambda () (interactive) (my/snap-resize 'x t))    ; widen border right
   "<"  (lambda () (interactive) (my/snap-resize 'x nil))  ; narrow border left
   "+"  (lambda () (interactive) (my/snap-resize 'y t))    ; grow border down
