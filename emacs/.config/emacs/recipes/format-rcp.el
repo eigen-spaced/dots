@@ -19,6 +19,18 @@
 ;; Match clang-format's IndentWidth for live c/c++ typing; save reformats anyway.
 (setq c-ts-mode-indent-offset 4)
 
+;; Use C99/C++ `//' line comments instead of the `/* */' block default, so M-/
+;; (my/meow-comment) toggles per-line cleanly.  With a block comment-end, uncomment
+;; strips the leading `/*' but leaves the trailing ` */' behind.  Empty comment-end
+;; fixes that; comment-start-skip still matches `//', so existing `//' lines
+;; uncomment fine.
+(defun my/c-line-comments ()
+  "Prefer `//' line comments in C-family buffers."
+  (setq-local comment-start "// "
+              comment-end ""))
+(dolist (h '(c-ts-mode-hook c++-ts-mode-hook c-mode-hook c++-mode-hook))
+  (add-hook h #'my/c-line-comments))
+
 ;; Formatter templates, inline so `my/formatter-init' can drop the right one per
 ;; filetype.  clang-format mirrors ~/Documents/projects/psydaw/.clang-format.
 (defvar my/clang-format-template "\

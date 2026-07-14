@@ -8,14 +8,39 @@
   :bind (:map vertico-map
               ("C-." . embark-act)))      ; act on the current candidate; C-n/C-p navigate
 
-;; `~/' or `//' resets the path instead of appending (vertico-directory-tidy).
+(declare-function vertico-directory-up "vertico-directory")
+(declare-function vertico--metadata-get "vertico")
+
+(defun my/vertico-directory-slash (n)
+  "Insert N slashes; in a file prompt turn a trailing `..' into an up-dir jump.
+So `../' walks up a level, shell-style, instead of leaving a literal `..' in the
+path.  `vertico-directory-up' drops the last component, so we delete the `..'
+first and let it drop the directory that preceded it."
+  (interactive "p")
+  (if (and (= n 1)
+           (eq 'file (vertico--metadata-get 'category))
+           (>= (- (point) 3) (minibuffer-prompt-end))
+           ;; only a whole `..' component counts, not a filename ending in `..'
+           (string= "/.." (buffer-substring-no-properties (- (point) 3) (point))))
+      (progn
+        (delete-char -2)          ; ".../dir/.." -> ".../dir/"
+        (vertico-directory-up 1)) ; ".../dir/"   -> ".../"
+    ;; `vertico-directory-tidy' only collapses the shadowed prefix when
+    ;; `this-command' is `self-insert-command', so keep looking like one --
+    ;; otherwise binding `/' here would break the `//' and `~/' resets.
+    (setq this-command #'self-insert-command)
+    (self-insert-command n ?/)))
+
+;; `~/' or `//' resets the path instead of appending (vertico-directory-tidy);
+;; `../' walks up a level (my/vertico-directory-slash).
 (use-package vertico-directory
   :ensure nil
   :after vertico
   :bind (:map vertico-map
               ("RET"   . vertico-directory-enter)
               ("DEL"   . vertico-directory-delete-char)
-              ("M-DEL" . vertico-directory-delete-word))
+              ("M-DEL" . vertico-directory-delete-word)
+              ("/"     . my/vertico-directory-slash))
   :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
 
 (use-package orderless

@@ -541,6 +541,21 @@ when the matched pair lives in one, select our own character match instead."
   (define-key meow-insert-state-keymap (kbd "C-w") #'my/backward-kill-word)
   (define-key meow-insert-state-keymap (kbd "C-S-j") #'delete-indentation)) ; join to prev line
 
+;; Corfu's auto-popup can outlive a *beacon* edit: meow replays the change via a
+;; kbd macro whose self-inserts arm corfu-auto's post-command timer, so a stray
+;; completion frame pops ~`corfu-auto-delay' *after* we're back in beacon state --
+;; and `meow-beacon-insert-exit' never runs `meow-insert-exit-hook', so meow's own
+;; corfu shim can't fire.  Quit any live popup AND cancel the pending auto timer
+;; (a bare `corfu-quit' misses the deferred one).  Normal insert self-heals.
+(with-eval-after-load 'meow
+  (advice-add 'meow-beacon-insert-exit :after
+              (lambda (&rest _)
+                (when (fboundp 'corfu-quit)
+                  (when (bound-and-true-p completion-in-region-mode)
+                    (corfu-quit))
+                  (when (timerp (bound-and-true-p corfu-auto--timer))
+                    (cancel-timer corfu-auto--timer))))))
+
 ;; ESC aborts any real minibuffer prompt (M-x, find-file, completing-read);
 ;; without this ESC is just the Meta prefix and dangles.  (The y/n and
 ;; read-multiple-choice confirmations are raw read-event loops, NOT minibuffers
