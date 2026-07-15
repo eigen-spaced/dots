@@ -234,6 +234,22 @@ Elsewhere `org-display-custom-times' shows DD-MM-YYYY; roam/daily notes opt out.
 
 ;;; org ---------------------------------------------------------------
 
+(defun my/org-return ()
+  "`org-return', but RET on an empty list-item body line leaves the list.
+First RET after item text indents to the continuation column (via
+`electric-indent-mode', kept on); a second RET on that now-empty
+line strips the stray indent and drops point to column 0 instead of
+opening yet another indented line.  Delegates through
+`call-interactively' so the normal path keeps electric-indent's
+continuation indent (a plain funcall would land at column 0)."
+  (interactive)
+  (if (and (org-in-item-p)
+           (save-excursion (beginning-of-line) (looking-at-p "[ \t]*$")))
+      (progn
+        (delete-region (line-beginning-position) (line-end-position))
+        (insert "\n"))
+    (call-interactively #'org-return)))
+
 ;; Pop the agenda dispatcher (` *Agenda Commands*') at the bottom, full-width,
 ;; instead of splitting the current window sideways (Doom-like).
 (add-to-list 'display-buffer-alist
@@ -247,6 +263,7 @@ Elsewhere `org-display-custom-times' shows DD-MM-YYYY; roam/daily notes opt out.
   :hook ((org-mode . visual-line-mode)
          (org-mode . my/org-image-peek-mode)
          (org-mode . my/org-iso-times-in-roam))
+  :bind (:map org-mode-map ("RET" . my/org-return))
   :custom
   (org-agenda-files (append (mapcar #'my/gtd-file
                                     '("inbox.org"
@@ -262,7 +279,10 @@ Elsewhere `org-display-custom-times' shows DD-MM-YYYY; roam/daily notes opt out.
   (org-time-stamp-custom-formats '("%d %b %Y %a" . "%d %b %Y %a %H:%M"))
   (org-display-custom-times t)
   (org-startup-indented t)
-  ;; Inline images render at 60% of the window width, unless an
+  ;; Keep M-RET well-behaved on lists.  The plain-list-item default is `auto',
+  ;; which copies the list's existing spacing -- so one loose pair makes every
+  ;; new item gain a blank line above it; `nil' forces tight lists always.
+  (org-blank-before-new-entry '((heading . auto) (plain-list-item . nil)))
   ;; #+ATTR_ORG: :width overrides it per image.
   (org-image-actual-width '(0.6))
   ;; Refile destinations only -- the GTD action files (projects/calendar) plus

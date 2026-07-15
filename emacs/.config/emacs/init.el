@@ -83,7 +83,7 @@
 (require 'term-rcp)
 (require 'agent-shell-rcp)
 (require 'dashboard-rcp)
-(require 'meow-rcp)
+(require 'hel-rcp)   ; trial: helix layer in place of meow-rcp (branch `hel')
 
 ;; GC is managed by gcmh (base-rcp), which restores a sane threshold and defers
 ;; collection to idle.  early-init keeps it maxed during startup.

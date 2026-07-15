@@ -34,12 +34,15 @@
 
 (defun my/reload-config ()
   "Re-load every recipes/*.el without restarting Emacs (a Doom-reload-ish).
-Most recipes re-run cleanly; changes that only a fresh process can undo
-(removed bindings, advice, etc.) still need a restart."
+Only recipes already loaded this session are re-loaded, so a file that
+init.el doesn't require (the other modal layer on the meow/hel branches)
+stays dormant.  Most recipes re-run cleanly; changes that only a fresh
+process can undo (removed bindings, advice, etc.) still need a restart."
   (interactive)
   (dolist (f (directory-files
               (expand-file-name "recipes" user-emacs-directory) t "\\.el\\'"))
-    (load f nil 'nomessage))
+    (when (featurep (intern (file-name-base f)))
+      (load f nil 'nomessage)))
   (message "Config reloaded (recipes/*.el)"))
 
 (defun my/split-with-previous-buffer (&optional vertical)
