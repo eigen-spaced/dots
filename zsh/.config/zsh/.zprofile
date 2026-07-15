@@ -1,4 +1,4 @@
-eval "$(/opt/homebrew/bin/brew shellenv)"
+[[ -x /opt/homebrew/bin/brew ]] && eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # --- PATH / runtime env -----------------------------------------------------
 # Login-shell env. Lives here (not interactive-only .zshrc) so a freshly
@@ -13,14 +13,18 @@ path=(
 )
 
 # mise — runtime version manager
-eval "$(mise activate zsh)"
+command -v mise >/dev/null && eval "$(mise activate zsh)"
 
 # personal scripts
 export PATH="$HOME/.config/scripts:$PATH"
 
 # pnpm — PNPM_HOME is where `pnpm add -g` puts global binaries (pnpm itself is
-# managed by mise).
-export PNPM_HOME="$HOME/Library/pnpm"
+# managed by mise).  pnpm's home dir is platform-specific; bins land in <home>/bin.
+if [[ "$OSTYPE" == darwin* ]]; then
+  export PNPM_HOME="$HOME/Library/pnpm"
+else
+  export PNPM_HOME="$HOME/.local/share/pnpm"
+fi
 case ":$PATH:" in
   *":$PNPM_HOME/bin:"*) ;;
   *) export PATH="$PNPM_HOME/bin:$PATH" ;;
