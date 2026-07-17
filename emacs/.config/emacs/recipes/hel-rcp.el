@@ -94,6 +94,7 @@
   :config
   (hel-mode)
   (hel-keymap-global-set :state 'normal
+    "C-:" #'hel-toggle-cursor-on-click
     "q"   #'my/quit-buffer
     "/"   #'consult-line
     ;; hel's `:' is M-x; jump-to-char is the more useful home for it (M-x/H-x remain).
@@ -102,6 +103,10 @@
     ;; `R' types a char over each selected char.
     "r"   #'hel-replace-with-kill-ring
     "R"   #'hel-replace-char
+    ;; Swap hel's delete pair: `d' deletes without touching the kill ring,
+    ;; `D' cuts (vim-style d).
+    "d"   #'hel-delete
+    "D"   #'hel-cut
     "g v" #'my/hel-restore-selection
     "m s" #'my/hel-mark-symbol
     ;; free while there's a single cursor (hel only claims it for multiple ones)
@@ -118,11 +123,20 @@
     (keymap-unset map "C-b" t)
     (keymap-unset map "C-e" t)
     (keymap-unset map "C-y" t)
+    (keymap-unset map "C-p" t)
+    (keymap-unset map "C-n" t)
     (keymap-set map "C-d" #'my/scroll-half-page-down)
     (keymap-set map "C-u" #'my/scroll-half-page-up)
     (keymap-set map "z z" (cons "center line"    (lambda () (interactive) (recenter))))
     (keymap-set map "z t" (cons "line to top"    (lambda () (interactive) (recenter 0))))
-    (keymap-set map "z b" (cons "line to bottom" (lambda () (interactive) (recenter -1))))))
+    (keymap-set map "z b" (cons "line to bottom" (lambda () (interactive) (recenter -1)))))
+
+  ;; hel guesses a buffer's state from "do letters self-insert?"; notmuch maps
+  ;; don't suppress unbound letters, so its buffers land in Normal state with
+  ;; their single-key commands (d, !, j, ...) shadowed.  Pin them to Emacs state.
+  (dolist (mode '(notmuch-hello-mode notmuch-search-mode
+                  notmuch-show-mode notmuch-tree-mode))
+    (hel-set-initial-state mode 'emacs)))
 
 ;; Modifier-free access to C-c/C-x/M-/C-M- chords, god-mode style.  hel-leader
 ;; claims SPC outright, so we take it back for the Doom leader and reach the
@@ -238,7 +252,12 @@
 
 (use-package hel-org
   :vc (:url "https://github.com/anuvyklack/hel-org.git" :rev "main")
-  :after (hel org))
+  :after (hel org)
+  :config
+  ;; hel-org claims M-o for hel-org-up-element (also on C-h), shadowing the
+  ;; global ace-window; unbind so the global binding shows through.
+  (hel-keymap-set org-mode-map :state 'normal
+    "M-o" nil))
 
 (use-package key-chord
   :after hel

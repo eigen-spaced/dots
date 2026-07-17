@@ -38,12 +38,12 @@
                   (insert (format "emacs-init-time: %s\n\n%-34s %9s %9s\n" (emacs-init-time)
                                   "file/package" "self-ms" "total-ms"))
                   (let ((rows (delq nil
-                               (mapcar
-                                (lambda (e)
-                                  (let ((name (alist-get :name e)) (self (alist-get :duration-adj e)))
-                                    (when (and name (not (eq name 'benchmark-init/root)) (numberp self))
-                                      (list name self (alist-get :duration e)))))
-                                (benchmark-init/flatten benchmark-init/durations-tree)))))
+                                    (mapcar
+                                     (lambda (e)
+                                       (let ((name (alist-get :name e)) (self (alist-get :duration-adj e)))
+                                         (when (and name (not (eq name 'benchmark-init/root)) (numberp self))
+                                           (list name self (alist-get :duration e)))))
+                                     (benchmark-init/flatten benchmark-init/durations-tree)))))
                     (dolist (r (sort rows (lambda (a b) (> (nth 1 a) (nth 1 b)))))
                       (insert (format "%-34s %9.1f %9.1f\n" (nth 0 r) (nth 1 r) (nth 2 r))))))))
             t))
@@ -83,7 +83,7 @@
 (require 'term-rcp)
 (require 'agent-shell-rcp)
 (require 'dashboard-rcp)
-(require 'hel-rcp)   ; trial: helix layer in place of meow-rcp (branch `hel')
+(require 'hel-rcp)
 
 ;; GC is managed by gcmh (base-rcp), which restores a sane threshold and defers
 ;; collection to idle.  early-init keeps it maxed during startup.
