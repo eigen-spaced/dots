@@ -360,6 +360,20 @@ continuation indent (a plain funcall would land at column 0)."
   :init
   (add-hook 'org-mode-hook #'org-modern-indent-mode 90))
 
+;;; org-re-reveal: reveal.js slide decks ------------------------------
+
+;; Export a deck with C-c C-e v v (browser) / v b (export + open).  reveal.js
+;; comes from the CDN, so exported HTML presents anywhere but needs network;
+;; for offline decks clone reveal.js and point REVEAL_ROOT at it per file.
+;; PDF handout: open deck.html?print-pdf in Chrome and print to PDF.
+(use-package org-re-reveal
+  :after ox
+  :custom
+  (org-re-reveal-root "https://cdn.jsdelivr.net/npm/reveal.js@5")
+  (org-re-reveal-revealjs-version "4")   ; "4" covers reveal.js 4.x and 5.x
+  (org-re-reveal-theme "white")          ; office-friendly; per file: #+REVEAL_THEME:
+  (org-re-reveal-transition "fade"))
+
 ;;; org-roam: linked notes + daily journal ---------------------------
 
 (use-package org-roam
