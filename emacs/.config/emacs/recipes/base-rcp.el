@@ -94,6 +94,7 @@ window, previous buffer occupies the top."
   (redisplay-skip-fontification-on-input t)
   (vc-handled-backends '(Git))
   (display-line-numbers-type 'relative)
+  (large-file-warning-threshold 52428800)     ; 50MB; default 10MB nags on PDFs
   (global-auto-revert-non-file-buffers t)
   (uniquify-buffer-name-style 'forward)
   (repeat-exit-timeout 0.5)              ; repeat-mode: drop the transient map after 0.5s idle
