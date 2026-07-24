@@ -80,6 +80,16 @@ Plain kmacro has no register name during recording, so the dot is all we show."
             " "
             (upcase (replace-regexp-in-string "\\`prefer-" "" name)))))
 
+(declare-function pdf-view-current-page "pdf-view")
+(declare-function pdf-cache-number-of-pages "pdf-cache")
+(defun my/mode-line-position ()
+  "LINE:COL PCT, or [page/total] in PDF buffers."
+  (if (derived-mode-p 'pdf-view-mode)
+      (format " [%s/%s]"
+              (or (ignore-errors (pdf-view-current-page)) "?")
+              (or (ignore-errors (pdf-cache-number-of-pages)) "?"))
+    (format-mode-line " %l:%c %p")))
+
 (defun my/mode-line-filetype ()
   "Major mode name (its nerd icon now sits before the file name)."
   (format-mode-line mode-name))
@@ -91,7 +101,7 @@ Plain kmacro has no register name during recording, so the dot is all we show."
               '("%e" mode-line-front-space
                 (:eval (my/mode-line-macro))
                 (:eval (my/mode-line-buffer))
-                " %l:%c %p"
+                (:eval (my/mode-line-position))
                 mode-line-format-right-align
                 (:eval (let ((vc (my/mode-line-vc)))
                          (if vc (concat vc "  ") "")))
