@@ -263,7 +263,10 @@ continuation indent (a plain funcall would land at column 0)."
   :hook ((org-mode . visual-line-mode)
          (org-mode . my/org-image-peek-mode)
          (org-mode . my/org-iso-times-in-roam))
-  :bind (:map org-mode-map ("RET" . my/org-return))
+  ;; C-, off `org-cycle-agenda-files', back to the global buffer picker.
+  :bind (:map org-mode-map
+         ("RET" . my/org-return)
+         ("C-," . persp-switch-to-buffer*))
   :custom
   (org-agenda-files (append (mapcar #'my/gtd-file
                                     '("inbox.org"

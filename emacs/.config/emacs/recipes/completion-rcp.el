@@ -49,6 +49,9 @@ first and let it drop the directory that preceded it."
   (completion-category-overrides '((file (styles partial-completion)))))
 
 (use-package marginalia
+  ;; Pad the align column past the nerd-icon prefix (uncounted in marginalia's
+  ;; width math), so file annotations don't sit flush against longer names.
+  :custom (marginalia-align-offset 3)
   :init (marginalia-mode))
 
 (use-package consult
