@@ -1,0 +1,85 @@
+;; Home row mods, round 2 (Aug 2026).
+;;
+;; Round 1 (June 2026) was reverted over tap-latency *jitter*: a letter
+;; resolved instantly or ~80ms late depending on which keys surrounded it.
+;; Two mechanisms remove that this time:
+;;
+;;   - tap-hold-require-prior-idle ("flow tap" / ZMK require-prior-idle-ms):
+;;     an HRM key pressed within 150ms of any other key emits its letter
+;;     immediately on keydown -- no tap-hold decision at all.  Mid-word
+;;     there is zero added latency and zero variance.
+;;
+;;   - chordal hold (defhands + tap-hold-opposite-hand-release): after a
+;;     pause, a press resolves to tap the instant a same-hand key follows,
+;;     and to hold only when an opposite-hand key is pressed AND released
+;;     while it is still down.
+;;
+;; Residual cost: the first letter after a >150ms pause still appears on
+;; key release (~50-100ms), not keydown.  Host-side software cannot beat
+;; that; doing better needs speculative hold, which only exists in firmware.
+;;
+;; Conventions this layout assumes:
+;;   - mod chords use the mod on the OPPOSITE hand from the letter
+;;     (same-hand chords fall back to caps-ctrl or the real thumb mods);
+;;   - holding a home-row key alone does NOT auto-repeat the letter
+;;     (it becomes the mod); tap once then press-and-hold to repeat.
+
+(defcfg
+  ;; Only defsrc keys are processed: F-row / media / fn events bypass kanata
+  ;; entirely, so brightness, volume and illumination stay native.
+  process-unmapped-keys no
+  ;; Allow two pending tap-holds at once -- multi-mod chords like d+f+p.
+  concurrent-tap-hold yes
+  ;; The flow-tap window.
+  tap-hold-require-prior-idle 150
+)
+
+(defsrc
+  esc
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '    ret
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lalt lmet           spc            rmet ralt
+  left down up   rght
+)
+
+;; Letters only.  Digits, space, tab etc. stay unassigned: pressing one
+;; under an undecided HRM key neither taps nor holds early -- the decision
+;; waits for the hold timeout, so e.g. d+1 still gives cmd-1 (slowly)
+;; instead of misfiring into "d1".
+(defhands
+  (left  q w e r t a s d f g z x c v b)
+  (right y u i o p h j k l ; ' n m , . /))
+
+(defvar
+  hold 250)
+
+;; AGCS: a=opt s=CMD d=CTRL f=shift, mirrored on the right.  Cmd sits on
+;; the ring finger (s/l) on purpose -- it's Emacs Meta, the heavy hitter;
+;; Option rides the pinky.  Same layout round 1 settled on.
+;; (timeout hold): held alone past $hold -> the modifier (mouse chords).
+(defalias
+  a   (tap-hold-opposite-hand-release $hold a lalt (timeout hold))
+  s   (tap-hold-opposite-hand-release $hold s lmet (timeout hold))
+  d   (tap-hold-opposite-hand-release $hold d lctl (timeout hold))
+  f   (tap-hold-opposite-hand-release $hold f lsft (timeout hold))
+  j   (tap-hold-opposite-hand-release $hold j rsft (timeout hold))
+  k   (tap-hold-opposite-hand-release $hold k rctl (timeout hold))
+  l   (tap-hold-opposite-hand-release $hold l rmet (timeout hold))
+  scl (tap-hold-opposite-hand-release $hold ; ralt (timeout hold))
+
+  ;; Ports of the two Karabiner rules, same timings and eager-hold feel.
+  ;; require-prior-idle 0: a ctrl chord must work mid-typing-flow too.
+  cap (tap-hold-press 300 300 esc lctl (require-prior-idle 0))
+  ent (tap-hold-press 600 600 ret rctl (require-prior-idle 0)))
+
+(deflayer base
+  esc
+  grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  @cap @a   @s   @d   @f   g    h    @j   @k   @l   @scl '    @ent
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lalt lmet           spc            rmet ralt
+  left down up   rght
+)

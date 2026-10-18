@@ -10,7 +10,7 @@
 set -u
 
 kcli='/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli'
-cfg="$HOME/.config/kanata/kanata.kbd"
+cfg="$HOME/.config/kanata/hrm.kbd"
 
 restore() { "$kcli" --select-profile 'Default profile' >/dev/null 2>&1 }
 trap restore EXIT INT TERM
