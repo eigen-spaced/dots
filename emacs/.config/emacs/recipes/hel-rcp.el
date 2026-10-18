@@ -58,10 +58,9 @@
         (t (switch-to-buffer (get-buffer-create "*dashboard*")))))
 
 (defun my/quit-buffer ()
-  "Quit: close the window in a split, else bury the buffer (dashboard as floor)."
+  "Bury the buffer (dashboard as floor).  Window closing is C-x 0, not `q'."
   (interactive)
   (cond
-   ((> (length (window-list nil 'no-minibuffer)) 1) (delete-window))
    ((derived-mode-p 'dashboard-mode) (message "Can't quit the dashboard"))
    (t (previous-buffer)
       (when (member (buffer-name) '("*scratch*" "*Messages*"))

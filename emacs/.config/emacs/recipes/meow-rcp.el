@@ -184,13 +184,9 @@ time `(mark)' no longer points at the selection's start."
         (t (switch-to-buffer (get-buffer-create "*dashboard*")))))
 
 (defun my/meow-quit-buffer ()
-  "Quit -- bound to `q' and to `:q'/`:wq'.  In a split, close the window (vim
-`:q', buffer kept).  As the sole window, bury the buffer (like `meow-quit', via
-`previous-buffer'); if that leaves only the *scratch*/*Messages* fallback, land
-on the dashboard.  Refuse on the lone dashboard -- there is nothing to quit."
+  "Bury the buffer (also `:q'/`:wq'), dashboard as floor.  Window closing is C-x 0."
   (interactive)
   (cond
-   ((> (length (window-list nil 'no-minibuffer)) 1) (delete-window))
    ((derived-mode-p 'dashboard-mode) (message "Can't quit the dashboard"))
    (t (previous-buffer)
       (when (member (buffer-name) '("*scratch*" "*Messages*"))
