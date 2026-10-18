@@ -13,7 +13,7 @@ import (
 // binary was launched from (Homebrew, pnpm globals, cargo, mise shims, uv tools)
 // and activates mise so `mise use`/runtime shims work mid-run.
 const shellPreamble = `export PNPM_HOME="$HOME/Library/pnpm"
-export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PNPM_HOME/bin:$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$HOME/.local/share/mise/shims:$PNPM_HOME/bin:$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
 command -v mise >/dev/null 2>&1 && eval "$(mise activate bash 2>/dev/null)" >/dev/null 2>&1
 [ -f "$HOME/.cargo/env" ] && . "$HOME/.cargo/env"`
 

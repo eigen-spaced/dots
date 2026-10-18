@@ -17,7 +17,9 @@ STAMP="$STATE_DIR/last-run"
 
 # Make sure everything is reachable even from a non-interactive context.
 export PNPM_HOME="$HOME/Library/pnpm"
-export PATH="$PNPM_HOME/bin:$HOME/.local/share/mise/shims:$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$HOME/.local/share/mise/shims:$PNPM_HOME/bin:$HOME/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+export CFLAGS="${CFLAGS:-} -I/opt/homebrew/include"
+export LDFLAGS="${LDFLAGS:-} -L/opt/homebrew/lib"
 
 # ---------------------------------------------------------------- reminder
 if [ "${1:-}" = "--remind" ]; then
@@ -83,7 +85,7 @@ have mise && step "mise upgrade" mise upgrade
 
 have uv && step "uv tools" uv tool upgrade --all
 
-# Global JS packages (pnpm respects minimumReleaseAge from global config).
+# Global JS packages.
 # pnpm is the sole global package manager; npm is only Node's bundled copy
 # and holds no globals of ours, so it is intentionally not updated here.
 have pnpm && step "pnpm globals" pnpm update -g
