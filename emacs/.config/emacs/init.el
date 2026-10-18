@@ -81,7 +81,6 @@
 (require 'mpd-rcp)
 (require 'dired-rcp)
 (require 'term-rcp)
-(require 'agent-shell-rcp)
 (require 'dashboard-rcp)
 (require 'hel-rcp)
 
