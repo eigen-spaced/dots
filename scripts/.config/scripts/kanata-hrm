@@ -1,0 +1,23 @@
+#!/usr/bin/env zsh
+# kanata-hrm -- driver for the kanata home row mods trial.
+#
+# Switches Karabiner to the "Kanata" profile (built-in keyboard ignored, so
+# kanata can seize it) and runs kanata in the foreground.  Ctrl-C or any
+# other exit restores the normal Karabiner profile.  Nothing survives a
+# reboot: Karabiner's own services come back on their own and kanata does
+# not autostart, so a broken state is never more than a restart away.
+
+set -u
+
+kcli='/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli'
+cfg="$HOME/.config/kanata/kanata.kbd"
+
+restore() { "$kcli" --select-profile 'Default profile' >/dev/null 2>&1 }
+trap restore EXIT INT TERM
+
+"$kcli" --select-profile Kanata || { echo "kanata-hrm: no 'Kanata' karabiner profile" >&2; exit 1 }
+sleep 1  # let karabiner release the device before kanata grabs it
+
+# Needs Input Monitoring for /opt/homebrew/bin/kanata (grant the symlink
+# path, not the versioned Cellar path, so brew upgrades keep working).
+sudo kanata --cfg "$cfg"
