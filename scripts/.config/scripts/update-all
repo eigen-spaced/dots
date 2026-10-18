@@ -48,9 +48,24 @@ step() {
 
 have() { command -v "$1" >/dev/null 2>&1; }
 
+# Source-built formulae (emacs-plus) aren't rebuilt when a dependency bumps
+# its dylib soname, so they break at launch. `--test` can't be used: it also
+# fails on harmless undeclared indirect deps.
+brew_linkage_check() {
+    local broken
+    broken=$(brew linkage 2>&1 | awk '
+        /^==> Checking .* linkage/ { f = $3 }
+        /^(Broken dependencies|Missing libraries):/ { print f }' | sort -u)
+    [ -z "$broken" ] && return 0
+    printf '\033[31mBroken dylib linkage — rebuild with: brew reinstall %s\033[0m\n' \
+        "$(echo $broken)"
+    return 1
+}
+
 if have brew; then
     step "brew update"  brew update
     step "brew upgrade" brew upgrade
+    step "brew linkage" brew_linkage_check
     step "brew cleanup" brew cleanup
 fi
 
